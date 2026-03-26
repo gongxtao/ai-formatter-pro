@@ -1,0 +1,3026 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard | Free AI Business Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        color: #1f2124;
+        background-color: #fff;
+        overflow: hidden;
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* 卡片动画效果 */
+      .cards-container {
+        transition: opacity 0.3s ease-in-out;
+      }
+      .cards-fade-out {
+        opacity: 0;
+      }
+      .cards-fade-in {
+        opacity: 1;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "sans-serif"] },
+            colors: {
+              primary: "#1e0dff",
+              secondary: "#1F2124",
+              light: "#F9FAFB",
+              sidebarBg: "#F8F9FA",
+            },
+          },
+        },
+      };
+
+      function toggleSidebar(type) {
+        const secondarySidebar = document.getElementById("secondary-sidebar");
+        const mainSidebar = document.getElementById("main-sidebar");
+        const docPanel = document.getElementById("document-panel");
+        const templatesPanel = document.getElementById("templates-panel");
+        const mainContentHome = document.getElementById("main-content-home");
+        const mainContentTemplates = document.getElementById(
+          "main-content-templates"
+        );
+
+        // 移除所有mini nav的高亮
+        const miniNavBtns = document.querySelectorAll(".mini-nav-btn");
+        miniNavBtns.forEach((btn) => {
+          btn.classList.remove("text-primary");
+          btn.classList.add("text-gray-500");
+        });
+
+        if (type === "document" || type === "templates") {
+          // Highlight the active mini nav button
+          const activeBtn = document.getElementById(`nav-btn-${type}`);
+          if (activeBtn) {
+            activeBtn.classList.remove("text-gray-500");
+            activeBtn.classList.add("text-primary");
+          }
+
+          secondarySidebar.classList.remove(
+            "w-0",
+            "opacity-0",
+            "border-none",
+            "hidden"
+          );
+          mainSidebar.classList.remove("w-[72px]");
+          mainSidebar.classList.add("w-[420px]");
+
+          if (type === "document") {
+            docPanel.classList.remove("hidden");
+            docPanel.classList.add("flex");
+            if (templatesPanel) {
+              templatesPanel.classList.add("hidden");
+              templatesPanel.classList.remove("flex");
+            }
+            if (mainContentHome) {
+              mainContentHome.classList.remove("hidden");
+              mainContentHome.style.display = "";
+            }
+            if (mainContentTemplates) {
+              mainContentTemplates.classList.add("hidden");
+              mainContentTemplates.style.display = "none";
+            }
+          } else if (type === "templates") {
+            docPanel.classList.add("hidden");
+            docPanel.classList.remove("flex");
+            if (templatesPanel) {
+              templatesPanel.classList.remove("hidden");
+              templatesPanel.classList.add("flex");
+            }
+            if (mainContentHome) {
+              mainContentHome.classList.add("hidden");
+              mainContentHome.style.display = "none";
+            }
+            if (mainContentTemplates) {
+              mainContentTemplates.classList.remove("hidden");
+              mainContentTemplates.style.display = "";
+            }
+          }
+        } else {
+          // Hide secondary sidebar
+          secondarySidebar.classList.add("w-0", "opacity-0", "border-none");
+          mainSidebar.classList.remove("w-[420px]");
+          mainSidebar.classList.add("w-[72px]");
+
+          // Show Home content by default
+          if (mainContentHome) {
+            mainContentHome.classList.remove("hidden");
+            mainContentHome.style.display = "";
+          }
+          if (mainContentTemplates) {
+            mainContentTemplates.classList.add("hidden");
+            mainContentTemplates.style.display = "none";
+          }
+        }
+      }
+
+      function handleAction(actionName) {
+        alert(
+          "正在执行: " + actionName + " \n\n(这是一个克隆页面的模拟点击效果)"
+        );
+      }
+
+      // 真实的点击切换功能
+      function switchDocument(element, docName) {
+        // 1. 移除所有菜单项的高亮状态
+        const menuItems = document.querySelectorAll(".doc-menu-item");
+        menuItems.forEach((item) => {
+          item.className =
+            "doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden";
+          const icon = item.querySelector("svg");
+          if (icon) icon.classList.remove("text-primary");
+          if (icon) icon.classList.add("text-gray-400");
+        });
+
+        // 2. 为当前点击的项添加高亮
+        element.className =
+          "doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors bg-blue-50 text-primary font-medium text-left whitespace-nowrap overflow-hidden";
+        const currentIcon = element.querySelector("svg");
+        if (currentIcon) currentIcon.classList.remove("text-gray-400");
+        if (currentIcon) currentIcon.classList.add("text-primary");
+
+        // 3. 动态更新右侧大标题和副标题
+        const mainTitle = document.getElementById("main-title");
+        const mainDesc = document.getElementById("main-desc");
+
+        const shortName = docName.replace(" Generator", ""); // 提取核心名字如 Business Plan
+
+        mainTitle.innerText = `Free AI ${docName}`;
+        mainDesc.innerText = `Prompt text or voice our AI generates editable ${shortName.toLowerCase()}s instantly. Create strategic proposals for startups or growth with no sign-up. Free, fast, and online.`;
+
+        // 更新输入框里的提示词
+        const topicTags = document.querySelectorAll(".topic-tag");
+        if (topicTags.length > 0) {
+          topicTags[0].innerText = `Create a ${shortName.toLowerCase()} for`;
+        }
+
+        // 4. 卡片区域切换动画（洗牌效果）
+        const cardsContainer = document.getElementById("cards-grid");
+
+        // 添加淡出效果
+        cardsContainer.classList.add("cards-fade-out");
+
+        setTimeout(() => {
+          // 将卡片顺序随机打乱
+          const cards = Array.from(cardsContainer.children);
+          for (let i = cards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            cardsContainer.appendChild(cards[j]); // 移动节点到末尾
+          }
+
+          // 移除淡出，添加淡入
+          cardsContainer.classList.remove("cards-fade-out");
+
+          // 更新上方模板区标题
+          const templateTitle = document.getElementById("template-title");
+          if (templateTitle) {
+            templateTitle.innerText = `Free ${shortName} Templates`;
+          }
+        }, 300); // 等待淡出动画结束 (0.3s)
+      }
+    </script>
+  </head>
+  <body class="antialiased">
+    <!-- Main Layout Container -->
+    <div class="flex h-screen w-full max-w-[1920px] mx-auto">
+      <!-- Sidebar (Left) -->
+      <aside
+        id="main-sidebar"
+        class="bg-white border-r border-gray-200 h-full flex flex-row flex-shrink-0 relative transition-all duration-300 w-[420px]"
+      >
+        <!-- Far Left Mini Icon Nav -->
+        <div
+          class="w-[72px] bg-white border-r border-gray-100 flex flex-col items-center py-4 gap-6 h-full overflow-y-auto hide-scrollbar z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] relative pb-20 flex-shrink-0"
+        >
+          <button
+            onclick="toggleSidebar(false)"
+            class="mini-nav-btn flex flex-col items-center gap-1.5 text-gray-500 hover:text-primary group"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+              ></path>
+            </svg>
+            <span class="text-[10px] font-medium">Home</span>
+          </button>
+          <button
+            id="nav-btn-document"
+            onclick="toggleSidebar('document')"
+            class="mini-nav-btn flex flex-col items-center gap-1.5 text-primary group"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              ></path>
+            </svg>
+            <span class="text-[10px] font-medium">Document</span>
+          </button>
+          <button
+            id="nav-btn-templates"
+            onclick="toggleSidebar('templates')"
+            class="mini-nav-btn flex flex-col items-center gap-1.5 text-gray-500 hover:text-primary group"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
+              ></path>
+            </svg>
+            <span class="text-[10px] font-medium">Templates</span>
+          </button>
+          <button
+            onclick="handleAction('Nav: History')"
+            class="mini-nav-btn flex flex-col items-center gap-1.5 text-gray-500 hover:text-primary group"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <span class="text-[10px] font-medium">History</span>
+          </button>
+
+          <!-- Sign In button fixed to bottom of mini nav -->
+          <div class="absolute bottom-4 w-full flex justify-center">
+            <button
+              onclick="handleAction('Sign In')"
+              class="flex flex-col items-center gap-1 text-gray-500 hover:text-gray-900 group"
+              title="Sign In"
+            >
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1.5"
+                  d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                ></path>
+              </svg>
+              <span class="text-[9px] font-medium">Sign in</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Second Sidebar Wrapper (Top Header + Document Menu) -->
+        <div
+          id="secondary-sidebar"
+          class="flex-1 flex flex-col bg-white h-full relative z-0"
+        >
+          <!-- Document Panel -->
+          <div
+            id="document-panel"
+            class="flex flex-col h-full w-full absolute inset-0 bg-white"
+          >
+            <!-- Top fixed section of sidebar -->
+            <div
+              class="p-4 border-b border-gray-100 flex justify-between items-center bg-white z-10 flex-shrink-0"
+            >
+              <span class="text-sm font-semibold text-gray-900">Document</span>
+              <div class="flex gap-2 text-gray-500">
+                <button
+                  class="hover:text-gray-900"
+                  onclick="handleAction('Edit')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    ></path>
+                  </svg>
+                </button>
+                <button
+                  class="hover:text-gray-900"
+                  onclick="handleAction('Menu')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Inner Left Document Menu -->
+            <div
+              class="flex-1 bg-white overflow-y-auto hide-scrollbar pb-32 flex flex-col relative"
+            >
+              <div class="p-3 sticky top-0 bg-white z-10">
+                <div class="relative">
+                  <svg
+                    class="w-4 h-4 absolute left-3 top-2.5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    ></path>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="What are you creating?"
+                    class="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-9 pr-3 text-[13px] focus:ring-1 focus:ring-primary outline-none"
+                    onclick="handleAction('Search Creating')"
+                  />
+                </div>
+              </div>
+
+              <div class="p-3 pt-0">
+                <div class="space-y-0.5">
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Document Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Document
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors bg-blue-50 text-primary font-medium text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Business Plan Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Business Plan
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Report Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Report
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Manual Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Manual
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Case Study Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Case Study
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Ebook Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Ebook
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'White Paper Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    White Paper
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Market Research Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Market Research
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Research Paper Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Research Paper
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Proposal Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Proposal
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Budget Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Budget
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'To Do List Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    To Do List
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Resume Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Resume
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Cover Letter Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Cover Letter
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Letter Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Letter
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Meeting Minutes Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Meeting Minutes
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Writer')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Writer
+                    <svg
+                      class="w-4 h-4 ml-auto text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5l7 7-7 7"
+                      ></path>
+                    </svg>
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Policy Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Policy
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Payslip Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Payslip
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="switchDocument(this, 'Company Profile Generator')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Company Profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Templates Panel (Hidden by default) -->
+          <div
+            id="templates-panel"
+            class="hidden flex-col h-full w-full absolute inset-0 bg-white"
+          >
+            <!-- Top fixed section of sidebar -->
+            <div
+              class="p-4 border-b border-gray-100 flex justify-between items-center bg-white z-10 flex-shrink-0"
+            >
+              <span class="text-sm font-semibold text-gray-900">Templates</span>
+              <div class="flex gap-2 text-gray-500">
+                <button
+                  class="hover:text-gray-900"
+                  onclick="handleAction('Menu')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Inner Left Templates Menu -->
+            <div
+              class="flex-1 bg-white overflow-y-auto hide-scrollbar pb-32 flex flex-col relative"
+            >
+              <div class="p-3 sticky top-0 bg-white z-10">
+                <div class="relative">
+                  <svg
+                    class="w-4 h-4 absolute left-3 top-2.5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    ></path>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search Templates..."
+                    class="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-9 pr-3 text-[13px] focus:ring-1 focus:ring-primary outline-none"
+                    onclick="handleAction('Search Templates')"
+                  />
+                </div>
+              </div>
+
+              <div class="p-3 pt-0">
+                <div class="space-y-0.5">
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Document')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Document
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Business Plan')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Business Plan
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Report')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Report
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Manual')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Manual
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Case Study')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Case Study
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Ebook')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Ebook
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: White Paper')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    White Paper
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Market Research')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Market Research
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Research Paper')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Research Paper
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Proposal')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Proposal
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Budget')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Budget
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: To Do List')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    To Do List
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors bg-blue-50 text-primary font-medium text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Resume')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-primary"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Resume
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Cover Letter')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Cover Letter
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Letter')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Letter
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Meeting Minutes')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Meeting Minutes
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Writer')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Writer
+                    <svg
+                      class="w-4 h-4 ml-auto text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5l7 7-7 7"
+                      ></path>
+                    </svg>
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Policy')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Policy
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Payslip')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Payslip
+                  </button>
+                  <button
+                    class="doc-menu-item w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-colors text-gray-700 hover:bg-gray-50 text-left whitespace-nowrap overflow-hidden"
+                    onclick="handleAction('Template Category: Company Profile')"
+                  >
+                    <svg
+                      class="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      ></path>
+                    </svg>
+                    Company Profile
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content Area (Right) -->
+      <main class="flex-1 min-w-0 bg-white relative h-screen flex flex-col">
+        <!-- Right Side Header (Top bar) -->
+        <header
+          class="w-full bg-white border-b border-gray-200 h-[68px] flex items-center justify-between px-8 sticky top-0 z-50 flex-shrink-0"
+        >
+          <div
+            class="cursor-pointer flex items-center"
+            onclick="handleAction('Go to Home')"
+          >
+            <span
+              class="text-xl font-bold tracking-tighter text-gray-900 uppercase"
+              ><span class="text-primary">AI Formatter</span></span
+            >
+          </div>
+
+          <div class="flex items-center gap-6">
+            <button
+              onclick="handleAction('Search')"
+              class="text-gray-600 hover:text-gray-900"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+            </button>
+            <button
+              onclick="handleAction('Pricing')"
+              class="text-sm font-medium text-gray-700 hover:text-gray-900"
+            >
+              Pricing
+            </button>
+            <button
+              onclick="handleAction('Sign Up')"
+              class="text-sm font-medium text-gray-700 hover:text-gray-900"
+            >
+              Sign up
+            </button>
+          </div>
+        </header>
+
+        <!-- Home Content -->
+        <div
+          id="main-content-home"
+          class="flex-1 min-w-0 overflow-y-auto pb-10"
+        >
+          <div class="max-w-[1000px] mx-auto px-8 py-12 text-center">
+            <h1
+              id="main-title"
+              class="text-[40px] md:text-[52px] font-bold text-gray-900 mb-6 tracking-tight"
+            >
+              Free AI Business Plan
+            </h1>
+            <p
+              id="main-desc"
+              class="text-gray-600 mb-12 text-base md:text-[17px] max-w-3xl mx-auto leading-relaxed"
+            >
+              Prompt text or voice our AI generates editable business plans
+              instantly. Create strategic proposals for startups or growth with
+              no sign-up. Free, fast, and online.
+            </p>
+
+            <!-- Chat Box from Dashboard -->
+            <div
+              class="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-200 overflow-hidden text-left relative max-w-[840px] mx-auto"
+            >
+              <!-- Top Banner -->
+              <div
+                class="bg-[#F8F9FF] px-4 py-3 flex items-center gap-3 border-b border-gray-100"
+              >
+                <div class="flex -space-x-1">
+                  <div
+                    class="w-5 h-5 rounded bg-blue-500 flex items-center justify-center text-[10px] text-white"
+                  >
+                    G
+                  </div>
+                  <div
+                    class="w-5 h-5 rounded bg-green-500 flex items-center justify-center text-[10px] text-white"
+                  >
+                    C
+                  </div>
+                </div>
+                <a
+                  href="#"
+                  onclick="handleAction('Upgrade')"
+                  class="text-primary text-sm font-medium hover:underline"
+                  >Upgrade</a
+                >
+                <span class="text-gray-500 text-sm"
+                  >for best quality, speed, and full control.</span
+                >
+                <button
+                  class="ml-auto text-gray-400 hover:text-gray-600"
+                  onclick="handleAction('Close Banner')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Input Area -->
+              <div class="p-5 pb-4">
+                <div
+                  class="flex items-center flex-wrap gap-2 text-[15px] text-gray-700 mb-8"
+                >
+                  <span class="topic-tag">Create a business plan for</span>
+                  <span
+                    class="bg-gray-100 px-3 py-1.5 rounded-md text-gray-400 cursor-text min-w-[80px] inline-block text-center"
+                    onclick="handleAction('Edit Topic')"
+                    >Topic</span
+                  >
+                  <span>in</span>
+                  <span
+                    class="bg-gray-100 px-3 py-1.5 rounded-md text-gray-400 cursor-text min-w-[80px] inline-block text-center"
+                    onclick="handleAction('Edit Industry')"
+                    >Industry</span
+                  >
+                </div>
+
+                <div class="flex items-center justify-between mt-4">
+                  <div class="flex items-center gap-2">
+                    <button
+                      onclick="handleAction('Add')"
+                      class="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 4v16m8-8H4"
+                        ></path>
+                      </svg>
+                    </button>
+                    <button
+                      onclick="handleAction('Web Search')"
+                      class="px-4 py-2 rounded-full border border-gray-200 text-[13px] font-medium text-primary hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                        ></path>
+                      </svg>
+                      Web Search
+                      <svg
+                        class="w-3 h-3 text-primary"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        ></path>
+                      </svg>
+                    </button>
+                    <button
+                      onclick="handleAction('Business Plan Tag')"
+                      class="px-4 py-2 rounded-full border border-gray-200 text-[13px] font-medium text-primary hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        ></path>
+                      </svg>
+                      Business Plan
+                      <svg
+                        class="w-3 h-3 text-primary"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        ></path>
+                      </svg>
+                    </button>
+                    <button
+                      onclick="handleAction('Light AI')"
+                      class="px-4 py-2 rounded-full border border-gray-200 text-[13px] font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-1.5"
+                    >
+                      Light AI
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button
+                      onclick="handleAction('Generate')"
+                      class="px-6 py-2.5 rounded-full bg-primary text-white text-[15px] font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md"
+                    >
+                      <svg
+                        class="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                      Generate
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Horizontal Tags Below Box -->
+            <div
+              class="mt-6 flex items-center gap-2 max-w-[840px] mx-auto relative"
+            >
+              <div
+                class="flex gap-2.5 overflow-x-auto hide-scrollbar flex-1 pb-1"
+              >
+                <button
+                  class="whitespace-nowrap px-5 py-2 rounded-full border border-primary bg-[#F8F9FF] text-sm text-primary font-medium flex items-center gap-2"
+                  onclick="handleAction('Tag: Business Plan')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    ></path>
+                  </svg>
+                  Business Plan
+                </button>
+                <button
+                  class="whitespace-nowrap px-5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                  onclick="handleAction('Tag: Report')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    ></path>
+                  </svg>
+                  Report
+                </button>
+                <button
+                  class="whitespace-nowrap px-5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                  onclick="handleAction('Tag: Manual')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    ></path>
+                  </svg>
+                  Manual
+                </button>
+                <button
+                  class="whitespace-nowrap px-5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                  onclick="handleAction('Tag: Case Study')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    ></path>
+                  </svg>
+                  Case Study
+                </button>
+                <button
+                  class="whitespace-nowrap px-5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                  onclick="handleAction('Tag: Ebook')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    ></path>
+                  </svg>
+                  Ebook
+                </button>
+                <button
+                  class="whitespace-nowrap px-5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                  onclick="handleAction('Tag: White Paper')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    ></path>
+                  </svg>
+                  White Paper
+                </button>
+                <button
+                  class="whitespace-nowrap px-5 py-2 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 flex items-center gap-2"
+                  onclick="handleAction('Tag: Market Research')"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    ></path>
+                  </svg>
+                  Market Research
+                </button>
+              </div>
+              <button
+                class="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 bg-white shadow-sm flex-shrink-0 z-10 hover:bg-gray-50"
+                onclick="handleAction('Scroll Tags Right')"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Templates Section -->
+          <div class="w-full px-8 pb-20 text-left mt-10 bg-[#FAFAFA]">
+            <h2
+              id="template-title"
+              class="text-[28px] font-bold text-gray-900 mb-6 tracking-tight"
+            >
+              Free Business Plan Templates
+            </h2>
+
+            <!-- Filter bar -->
+            <div
+              class="relative mb-8 pb-4 flex items-center sticky top-0 bg-[#FAFAFA] z-40 py-4"
+            >
+              <div
+                class="flex items-center gap-3 overflow-x-auto hide-scrollbar flex-1 pr-10"
+              >
+                <div class="relative min-w-[240px]">
+                  <svg
+                    class="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    ></path>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search for Templates..."
+                    class="w-full bg-white border border-gray-200 rounded-full py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary outline-none"
+                  />
+                </div>
+                <button
+                  class="whitespace-nowrap px-5 py-2 bg-blue-50 text-primary rounded-full text-sm font-medium"
+                  onclick="handleAction('Filter: Business Plan')"
+                >
+                  Business Plan
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: One Page')"
+                >
+                  One Page Business Plan
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Coffee Shop')"
+                >
+                  Coffee Shop Business Plan
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Restaurant')"
+                >
+                  Restaurant Business Plan
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Food')"
+                >
+                  Food Business Plan
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Real Estate')"
+                >
+                  Real Estate Business Plan
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Executive Summary')"
+                >
+                  Executive Summary Business Pl...
+                </button>
+              </div>
+
+              <div
+                class="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-gradient-to-l from-white via-white to-transparent pl-8 pb-4"
+              >
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-100 text-gray-400 hover:text-gray-900 z-10"
+                  onclick="handleAction('Scroll Filters Right')"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Template Cards Grid -->
+            <div
+              id="cards-grid"
+              class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-8 cards-container"
+            >
+              <!-- Card 1 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Startup Business Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div
+                    class="w-full h-full p-6 flex flex-col justify-center items-center text-center relative bg-white"
+                  >
+                    <div
+                      class="w-16 h-16 bg-black rounded-full text-white flex items-center justify-center font-bold text-sm mb-10 leading-tight"
+                    >
+                      YOUR<br />LOGO
+                    </div>
+                    <h3
+                      class="font-bold text-[22px] mb-4 leading-tight text-gray-900"
+                    >
+                      Startup<br />Business Plan
+                    </h3>
+                    <div
+                      class="text-[10px] text-gray-400 mt-auto leading-tight"
+                    >
+                      Prepared by:<br />[Your Name]
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Startup Business Plan
+                </h3>
+              </div>
+
+              <!-- Card 2 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Small Business Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-[#D4A373] aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full flex flex-col relative">
+                    <div
+                      class="h-20 bg-white w-14 mx-auto rounded-b-lg flex items-end justify-center pb-3 shadow-sm"
+                    >
+                      <span class="font-bold text-xl text-gray-800">T.</span>
+                    </div>
+                    <div
+                      class="flex-1 flex items-center justify-center p-6 text-center"
+                    >
+                      <h3
+                        class="font-bold text-[28px] text-[#4A3728] leading-none uppercase tracking-wide"
+                      >
+                        Small<br /><span class="text-[32px]">Business</span
+                        ><br />Plan
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Small Business Plan
+                </h3>
+              </div>
+
+              <!-- Card 3 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Sample Business Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative">
+                    <div
+                      class="absolute top-16 left-8 w-14 h-14 bg-black flex items-center justify-center text-white font-bold text-2xl"
+                    >
+                      T.
+                    </div>
+                    <div
+                      class="absolute top-20 right-0 w-[55%] h-1 bg-blue-100"
+                    ></div>
+                    <div
+                      class="absolute top-36 left-8 text-[10px] text-gray-400 tracking-widest font-medium"
+                    >
+                      WWW.aiformatter.net
+                    </div>
+                    <div class="absolute bottom-16 left-8 right-8">
+                      <h3
+                        class="font-light text-[32px] text-gray-800 leading-[1.1] uppercase tracking-wider"
+                      >
+                        Sample<br /><span class="font-bold"
+                          >Business<br />Plan</span
+                        >
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Sample Business Plan
+                </h3>
+              </div>
+
+              <!-- Card 4 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: One Page Business Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-[#24272D] aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative text-white">
+                    <div
+                      class="absolute top-12 left-8 w-12 h-12 border-[3px] border-white flex items-center justify-center font-bold text-2xl"
+                    >
+                      T.
+                    </div>
+                    <div class="absolute bottom-24 left-8 right-8">
+                      <h3
+                        class="font-bold text-[36px] leading-[1.1] uppercase tracking-wider"
+                      >
+                        One Page<br />Business<br />Plan
+                      </h3>
+                    </div>
+                    <div
+                      class="absolute bottom-10 left-8 right-8 h-1 bg-gray-500 w-16"
+                    ></div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  One Page Business Plan
+                </h3>
+              </div>
+
+              <!-- Card 5 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Strategic Business Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative flex flex-col p-8">
+                    <div class="flex justify-end mb-20">
+                      <div
+                        class="w-10 h-10 border-[3px] border-black flex items-center justify-center text-sm font-bold relative"
+                      >
+                        <div
+                          class="absolute w-full h-full border-[3px] border-gray-300 -top-2.5 -left-2.5"
+                        ></div>
+                        T
+                      </div>
+                    </div>
+                    <div
+                      class="text-right text-[10px] text-gray-400 mb-auto tracking-wide"
+                    >
+                      aiformatter.net
+                    </div>
+                    <div class="mt-16">
+                      <h3
+                        class="font-light text-[26px] text-gray-800 leading-[1.1] tracking-[0.2em] uppercase"
+                      >
+                        Strategic<br /><span class="font-bold"
+                          >Business<br />Plan</span
+                        >
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Strategic Business Plan
+                </h3>
+              </div>
+
+              <!-- Card 6 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Tech Startup Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-900 to-blue-900 aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div
+                    class="w-full h-full relative text-white p-6 flex flex-col"
+                  >
+                    <div
+                      class="w-12 h-12 bg-white/20 rounded flex items-center justify-center mb-auto"
+                    >
+                      <svg
+                        class="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                        ></path>
+                      </svg>
+                    </div>
+                    <h3 class="font-bold text-[28px] leading-tight mb-2">
+                      TECH<br />STARTUP
+                    </h3>
+                    <p class="text-blue-200 text-xs tracking-wider">
+                      BUSINESS PLAN 2026
+                    </p>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Tech Startup Plan
+                </h3>
+              </div>
+
+              <!-- Card 7 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Modern Agency Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative flex flex-col">
+                    <div
+                      class="h-[40%] bg-emerald-500 w-full rounded-b-[40px] flex items-center justify-center"
+                    >
+                      <div
+                        class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg translate-y-8"
+                      >
+                        <span class="font-bold text-emerald-500 text-xl"
+                          >AG</span
+                        >
+                      </div>
+                    </div>
+                    <div
+                      class="flex-1 flex flex-col items-center justify-center p-6 text-center mt-4"
+                    >
+                      <h3
+                        class="font-bold text-[22px] text-gray-900 leading-tight"
+                      >
+                        Modern Agency<br />Business Plan
+                      </h3>
+                      <div class="w-8 h-1 bg-emerald-500 mt-4"></div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Modern Agency Plan
+                </h3>
+              </div>
+
+              <!-- Card 8 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Minimalist Retail Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-[#F4F4F4] aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div
+                    class="w-full h-full relative p-8 border-[8px] border-white flex flex-col justify-between"
+                  >
+                    <div class="text-right">
+                      <span
+                        class="text-[10px] font-bold tracking-widest text-gray-500"
+                        >EST. 2026</span
+                      >
+                    </div>
+                    <div>
+                      <h3
+                        class="font-serif text-[32px] text-gray-800 leading-[1.1] mb-4"
+                      >
+                        Retail<br />Business<br />Plan.
+                      </h3>
+                      <p class="text-[9px] text-gray-500 leading-relaxed">
+                        A comprehensive guide to launching your retail
+                        storefront successfully.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Minimalist Retail Plan
+                </h3>
+              </div>
+
+              <!-- Card 9 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: E-commerce Business Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-[#FF4B4B] aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div
+                    class="w-full h-full relative text-white p-6 flex flex-col items-center justify-center text-center"
+                  >
+                    <div
+                      class="w-16 h-16 border-4 border-white rounded-full flex items-center justify-center mb-8"
+                    >
+                      <svg
+                        class="w-8 h-8"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                        ></path>
+                      </svg>
+                    </div>
+                    <h3
+                      class="font-black text-[28px] leading-[1.1] tracking-tight mb-2"
+                    >
+                      E-COMMERCE
+                    </h3>
+                    <div
+                      class="bg-white text-[#FF4B4B] px-3 py-1 text-[10px] font-bold tracking-widest mt-2"
+                    >
+                      BUSINESS PLAN
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  E-commerce Business Plan
+                </h3>
+              </div>
+
+              <!-- Card 10 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Real Estate Plan')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative p-6 flex flex-col">
+                    <div
+                      class="w-full h-[45%] bg-gray-100 rounded-lg mb-6 flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-12 h-12 text-gray-300"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                    </div>
+                    <h3
+                      class="font-bold text-[20px] text-gray-900 leading-tight mb-2"
+                    >
+                      Real Estate<br />Development Plan
+                    </h3>
+                    <p class="text-[10px] text-gray-500 mt-auto">
+                      aiformatter.net Originals
+                    </p>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Real Estate Plan
+                </h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Templates Full Page Content (Hidden by default) -->
+        <div
+          id="main-content-templates"
+          class="hidden flex-1 min-w-0 overflow-y-auto bg-[#FAFAFA]"
+        >
+          <!-- Hero Section -->
+          <div class="w-full bg-white border-b border-gray-200">
+            <div class="max-w-[1200px] mx-auto px-8 py-16 text-center">
+              <h1
+                class="text-[40px] md:text-[48px] font-bold text-gray-900 mb-6 tracking-tight"
+              >
+                Free Resume Templates
+              </h1>
+              <p
+                class="text-gray-600 mb-10 text-base md:text-[17px] max-w-3xl mx-auto leading-relaxed"
+              >
+                Explore professionally designed resume templates that are
+                customizable and free to download. Elevate your career with
+                polished designs. Start now!
+              </p>
+
+              <button
+                onclick="handleAction('Generate My Free Resume')"
+                class="px-8 py-3.5 bg-primary text-white rounded-full font-semibold hover:bg-blue-700 transition-all duration-200 shadow-[0_4px_14px_rgba(30,13,255,0.25)] hover:shadow-[0_6px_20px_rgba(30,13,255,0.3)] hover:-translate-y-0.5 flex items-center gap-2.5 mx-auto"
+              >
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+                Generate My Free Resume
+              </button>
+            </div>
+          </div>
+
+          <!-- Templates Section -->
+          <div class="w-full px-8 pb-20 text-left mt-10 bg-[#FAFAFA]">
+            <h2
+              id="template-title-templates"
+              class="text-[28px] font-bold text-gray-900 mb-6 tracking-tight"
+            >
+              Free Resume Templates
+            </h2>
+
+            <!-- Filter bar -->
+            <div
+              class="relative mb-8 pb-4 flex items-center sticky top-0 bg-[#FAFAFA] z-40 py-4"
+            >
+              <div
+                class="flex items-center gap-3 overflow-x-auto hide-scrollbar flex-1 pr-10"
+              >
+                <div class="relative min-w-[240px]">
+                  <svg
+                    class="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    ></path>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search for Templates..."
+                    class="w-full bg-white border border-gray-200 rounded-full py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary outline-none"
+                  />
+                </div>
+                <button
+                  class="whitespace-nowrap px-5 py-2 bg-blue-50 text-primary rounded-full text-sm font-medium"
+                  onclick="handleAction('Filter: Resume')"
+                >
+                  Resume
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Simple Resume')"
+                >
+                  Simple Resume
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: High School Resume')"
+                >
+                  High School Resume
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Actor Resume')"
+                >
+                  Actor Resume
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Accountant Resume')"
+                >
+                  Accountant Resume
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Academic Resume')"
+                >
+                  Academic Resume
+                </button>
+                <button
+                  class="whitespace-nowrap text-[15px] text-gray-600 hover:text-gray-900 font-medium px-2"
+                  onclick="handleAction('Filter: Professional Resume')"
+                >
+                  Professional Resume
+                </button>
+              </div>
+
+              <div
+                class="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-gradient-to-l from-white via-white to-transparent pl-8 pb-4"
+              >
+                <button
+                  class="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-100 text-gray-400 hover:text-gray-900 z-10"
+                  onclick="handleAction('Scroll Filters Right')"
+                >
+                  <svg
+                    class="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    ></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Template Cards Grid -->
+            <div
+              id="cards-grid"
+              class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-8 cards-container"
+            >
+              <!-- Card 1 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Professional Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div
+                    class="w-full h-full p-6 flex flex-col justify-center items-center text-center relative bg-white"
+                  >
+                    <div
+                      class="w-16 h-16 bg-black rounded-full text-white flex items-center justify-center font-bold text-sm mb-10 leading-tight"
+                    >
+                      YOUR<br />NAME
+                    </div>
+                    <h3
+                      class="font-bold text-[22px] mb-4 leading-tight text-gray-900"
+                    >
+                      Professional<br />Resume
+                    </h3>
+                    <div
+                      class="text-[10px] text-gray-400 mt-auto leading-tight"
+                    >
+                      [Job Title]<br />[Email]
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Professional Resume
+                </h3>
+              </div>
+
+              <!-- Card 2 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Simple Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-[#D4A373] aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full flex flex-col relative">
+                    <div
+                      class="h-20 bg-white w-14 mx-auto rounded-b-lg flex items-end justify-center pb-3 shadow-sm"
+                    >
+                      <span class="font-bold text-xl text-gray-800">JD</span>
+                    </div>
+                    <div
+                      class="flex-1 flex items-center justify-center p-6 text-center"
+                    >
+                      <h3
+                        class="font-bold text-[28px] text-[#4A3728] leading-none uppercase tracking-wide"
+                      >
+                        Simple<br /><span class="text-[32px]">Resume</span>
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Simple Resume
+                </h3>
+              </div>
+
+              <!-- Card 3 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Modern Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative">
+                    <div
+                      class="absolute top-16 left-8 w-14 h-14 bg-black flex items-center justify-center text-white font-bold text-2xl"
+                    >
+                      MR
+                    </div>
+                    <div
+                      class="absolute top-20 right-0 w-[55%] h-1 bg-blue-100"
+                    ></div>
+                    <div
+                      class="absolute top-36 left-8 text-[10px] text-gray-400 tracking-widest font-medium"
+                    >
+                      WWW.aiformatter.net
+                    </div>
+                    <div class="absolute bottom-16 left-8 right-8">
+                      <h3
+                        class="font-light text-[32px] text-gray-800 leading-[1.1] uppercase tracking-wider"
+                      >
+                        Modern<br /><span class="font-bold">Resume</span>
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Modern Resume
+                </h3>
+              </div>
+
+              <!-- Card 4 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Creative Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-[#24272D] aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative text-white">
+                    <div
+                      class="absolute top-12 left-8 w-12 h-12 border-[3px] border-white flex items-center justify-center font-bold text-2xl"
+                    >
+                      CR
+                    </div>
+                    <div class="absolute bottom-24 left-8 right-8">
+                      <h3
+                        class="font-bold text-[36px] leading-[1.1] uppercase tracking-wider"
+                      >
+                        Creative<br />Resume
+                      </h3>
+                    </div>
+                    <div
+                      class="absolute bottom-10 left-8 right-8 h-1 bg-gray-500 w-16"
+                    ></div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Creative Resume
+                </h3>
+              </div>
+
+              <!-- Card 5 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Minimalist Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative flex flex-col p-8">
+                    <div class="flex justify-end mb-20">
+                      <div
+                        class="w-10 h-10 border-[3px] border-black flex items-center justify-center text-sm font-bold relative"
+                      >
+                        <div
+                          class="absolute w-full h-full border-[3px] border-gray-300 -top-2.5 -left-2.5"
+                        ></div>
+                        MR
+                      </div>
+                    </div>
+                    <div
+                      class="text-right text-[10px] text-gray-400 mb-auto tracking-wide"
+                    >
+                      aiformatter.net
+                    </div>
+                    <div class="mt-16">
+                      <h3
+                        class="font-light text-[26px] text-gray-800 leading-[1.1] tracking-[0.2em] uppercase"
+                      >
+                        Minimalist<br /><span class="font-bold">Resume</span>
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Minimalist Resume
+                </h3>
+              </div>
+
+              <!-- Card 6 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Tech Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-gradient-to-br from-indigo-900 to-blue-900 aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div
+                    class="w-full h-full relative text-white p-6 flex flex-col"
+                  >
+                    <div
+                      class="w-12 h-12 bg-white/20 rounded flex items-center justify-center mb-auto"
+                    >
+                      <svg
+                        class="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                        ></path>
+                      </svg>
+                    </div>
+                    <h3 class="font-bold text-[28px] leading-tight mb-2">
+                      TECH<br />RESUME
+                    </h3>
+                    <p class="text-blue-200 text-xs tracking-wider">
+                      SOFTWARE ENGINEER 2026
+                    </p>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Tech Resume
+                </h3>
+              </div>
+
+              <!-- Card 7 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Executive Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative flex flex-col">
+                    <div
+                      class="h-[40%] bg-emerald-500 w-full rounded-b-[40px] flex items-center justify-center"
+                    >
+                      <div
+                        class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg translate-y-8"
+                      >
+                        <span class="font-bold text-emerald-500 text-xl">ER</span>
+                      </div>
+                    </div>
+                    <div
+                      class="flex-1 flex flex-col items-center justify-center p-6 text-center mt-4"
+                    >
+                      <h3
+                        class="font-bold text-[22px] text-gray-900 leading-tight"
+                      >
+                        Executive<br />Resume
+                      </h3>
+                      <div class="w-8 h-1 bg-emerald-500 mt-4"></div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Executive Resume
+                </h3>
+              </div>
+
+              <!-- Card 8 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Academic Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-[#F4F4F4] aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div
+                    class="w-full h-full relative p-8 border-[8px] border-white flex flex-col justify-between"
+                  >
+                    <div class="text-right">
+                      <span
+                        class="text-[10px] font-bold tracking-widest text-gray-500"
+                        >CV 2026</span
+                      >
+                    </div>
+                    <div>
+                      <h3
+                        class="font-serif text-[32px] text-gray-800 leading-[1.1] mb-4"
+                      >
+                        Academic<br />Resume.
+                      </h3>
+                      <p class="text-[9px] text-gray-500 leading-relaxed">
+                        A comprehensive academic resume for research and teaching positions.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Academic Resume
+                </h3>
+              </div>
+
+              <!-- Card 9 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Student Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-[#FF4B4B] aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div
+                    class="w-full h-full relative text-white p-6 flex flex-col items-center justify-center text-center"
+                  >
+                    <div
+                      class="w-16 h-16 border-4 border-white rounded-full flex items-center justify-center mb-8"
+                    >
+                      <svg
+                        class="w-8 h-8"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"
+                        ></path>
+                      </svg>
+                    </div>
+                    <h3
+                      class="font-black text-[28px] leading-[1.1] tracking-tight mb-2"
+                    >
+                      STUDENT
+                    </h3>
+                    <div
+                      class="bg-white text-[#FF4B4B] px-3 py-1 text-[10px] font-bold tracking-widest mt-2"
+                    >
+                      RESUME
+                    </div>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Student Resume
+                </h3>
+              </div>
+
+              <!-- Card 10 -->
+              <div
+                class="group cursor-pointer"
+                onclick="handleAction('Open Template: Chronological Resume')"
+              >
+                <div
+                  class="border border-gray-200 rounded-xl overflow-hidden bg-white aspect-[1/1.414] relative shadow-sm group-hover:shadow-lg transition-all duration-300 mb-4"
+                >
+                  <div
+                    class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-md text-[12px] font-bold text-gray-800 shadow-sm z-10 border border-gray-100"
+                  >
+                    Free
+                  </div>
+                  <div class="w-full h-full relative p-6 flex flex-col">
+                    <div
+                      class="w-full h-[45%] bg-gray-100 rounded-lg mb-6 flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-12 h-12 text-gray-300"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clip-rule="evenodd"
+                        ></path>
+                      </svg>
+                    </div>
+                    <h3
+                      class="font-bold text-[20px] text-gray-900 leading-tight mb-2"
+                    >
+                      Chronological<br />Resume
+                    </h3>
+                    <p class="text-[10px] text-gray-500 mt-auto">
+                      aiformatter.net Originals
+                    </p>
+                  </div>
+
+                  <div
+                    class="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                  >
+                    <div
+                      class="bg-white text-gray-900 px-6 py-2.5 rounded-full font-medium shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                    >
+                      Use Template
+                    </div>
+                  </div>
+                </div>
+                <h3
+                  class="font-medium text-[15px] text-gray-900 group-hover:text-primary transition-colors text-center px-2 line-clamp-2"
+                >
+                  Chronological Resume
+                </h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free AI White Paper Generator, Free AI White Paper Maker [ No Signup ]</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#1e0dff', secondary: '#1F2124', light: '#F9FAFB' }
+                }
+            }
+        }
+        function handleAction(actionName) {
+            alert('正在执行: ' + actionName + ' \n\n(这是一个克隆页面的模拟点击效果)');
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; color: #1F2124; background-color: #fff; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Navbar -->
+    <header class="fixed top-0 w-full bg-white border-b border-gray-200 z-50">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-[68px] flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button onclick="handleAction('Toggle Menu')" class="p-2 hover:bg-gray-100 rounded-md lg:hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div class="cursor-pointer flex items-center" onclick="handleAction('Go to Home')">
+                    <span class="text-2xl font-bold tracking-tighter text-gray-900">Template<span class="text-primary">.net</span></span>
+                </div>
+            </div>
+            
+            <div class="hidden lg:flex flex-1 max-w-2xl mx-8">
+                <div class="relative w-full">
+                    <input type="text" placeholder="Search templates..." class="w-full bg-gray-100 border-none rounded-full py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary outline-none" onclick="handleAction('Search Input')">
+                    <svg class="w-4 h-4 absolute left-4 top-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="handleAction('Pricing')" class="hidden lg:flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-200 hover:border-primary hover:text-primary font-medium text-sm transition-colors">
+                    <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2l2.5 5 5 .5-3.5 3.5 1 5-5-2.5-5 2.5 1-5L2.5 7.5 7.5 7 10 2z"></path></svg>
+                    Pricing
+                </button>
+                <button onclick="handleAction('Login')" class="px-5 py-2.5 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">Log In</button>
+                <button onclick="handleAction('Sign Up')" class="px-5 py-2.5 rounded-full text-sm font-medium bg-primary text-white hover:bg-blue-700 transition-colors">Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-24 pb-16">
+        <!-- Hero Section -->
+        <section class="max-w-[800px] mx-auto px-4 text-center mt-8 mb-16">
+            <h1 class="text-4xl md:text-[44px] font-extrabold text-gray-900 mb-4 leading-tight">Free AI White Paper Generator</h1>
+            <p class="text-gray-600 mb-10 text-[15px] md:text-base leading-relaxed">Write professional editable white papers in seconds. Prompt text or voice to generate a free white paper. No sign-up required. It’s fast, editable, and 100% free.</p>
+            
+            <!-- Chat Box -->
+            <div class="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-200 overflow-hidden text-left relative z-10">
+                <!-- Top Banner -->
+                <div class="bg-gray-50 px-4 py-2.5 flex items-center gap-3 border-b border-gray-100">
+                    <div class="flex -space-x-1">
+                        <div class="w-5 h-5 rounded bg-blue-500 flex items-center justify-center text-[10px] text-white">G</div>
+                        <div class="w-5 h-5 rounded bg-green-500 flex items-center justify-center text-[10px] text-white">C</div>
+                    </div>
+                    <a href="#" onclick="handleAction('Upgrade')" class="text-primary text-xs font-medium hover:underline">Upgrade</a>
+                    <span class="text-gray-500 text-xs">for best quality &amp; speed</span>
+                    <button class="ml-auto text-gray-400 hover:text-gray-600" onclick="handleAction('Close Banner')">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <!-- Input Area -->
+                <div class="p-4">
+                    <textarea class="w-full text-base text-gray-800 placeholder-gray-400 border-none focus:ring-0 resize-none outline-none" rows="3" placeholder="Enter text or voice to generate an editable template"></textarea>
+                    
+                    <div class="flex items-center justify-between mt-4">
+                        <div class="flex items-center gap-2">
+                            <button onclick="handleAction('Add File')" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            </button>
+                            <button onclick="handleAction('Tools Menu')" class="px-4 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">Tools</button>
+                            <button onclick="handleAction('White Paper Type')" class="px-4 py-1.5 rounded-full border border-gray-200 text-sm font-medium text-primary bg-blue-50">White Paper</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="handleAction('Voice Record')" class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                            </button>
+                            <button onclick="handleAction('Generate')" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white hover:bg-blue-700 transition-colors shadow-md">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Horizontal Scroll Tags -->
+            <div class="mt-6 flex gap-2 overflow-x-auto hide-scrollbar pb-2 pt-1">
+                <button onclick="handleAction('Select: Business Plan')" class="whitespace-nowrap px-4 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Business Plan</button>
+                <button onclick="handleAction('Select: Report')" class="whitespace-nowrap px-4 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Report</button>
+                <button onclick="handleAction('Select: Manual')" class="whitespace-nowrap px-4 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Manual</button>
+                <button onclick="handleAction('Select: Case Study')" class="whitespace-nowrap px-4 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Case Study</button>
+                <button onclick="handleAction('Select: Ebook')" class="whitespace-nowrap px-4 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Ebook</button>
+                <button onclick="handleAction('Select: White Paper')" class="whitespace-nowrap px-4 py-1.5 rounded-full border border-primary text-sm text-primary bg-blue-50">White Paper</button>
+                <button onclick="handleAction('Select: Market Research')" class="whitespace-nowrap px-4 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Market Research</button>
+                <button onclick="handleAction('Select: Research Paper')" class="whitespace-nowrap px-4 py-1.5 rounded-full border border-gray-200 text-sm text-gray-600 hover:bg-gray-50">Research Paper</button>
+            </div>
+        </section>
+
+        <!-- Intro Text -->
+        <section class="max-w-4xl mx-auto px-4 text-center mb-20">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6">Create White Papers, Edit Online with AI-Powered White Paper Editor</h2>
+            <p class="text-gray-600 leading-relaxed">Template.net’s Free AI White Paper Generator helps you create structured, persuasive, and informative white papers in seconds. Edit online with your branding, layout style, professional tone, and industry focus. Whether it’s for marketing, education, policy, or product strategy, generate in-depth white papers ready for clients, stakeholders, or public distribution. Export in multiple formats and share instantly.</p>
+        </section>
+
+        <!-- Features Section -->
+        <section class="max-w-7xl mx-auto px-4 mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Write Custom, Professional White Papers in Seconds</h2>
+                <p class="text-gray-600 max-w-3xl mx-auto">From executive summaries to technical content, our AI-powered white paper builder helps you create data-driven, reader-friendly documents, without the complexity of formatting or structure.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10" id="features-grid">
+                
+                <div class="group cursor-pointer" onclick="handleAction('Feature: AI Brand Voice')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">AI Brand Voice</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Choose from professional, technical, persuasive, or research-driven tone settings. Our AI rewrites your white paper to align with your objective.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: AI-Smart Formatting Suggestions')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">AI-Smart Formatting Suggestions</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Automatically structure your white paper with sections like Abstract, Introduction, Problem, Solution, Case Studies, and Conclusion.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Multiple Document Types Supported')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Multiple Document Types Supported</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Generate white papers for business, academic research, product strategy, thought leadership, industry analysis, and more.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Professional White Paper Templates')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Professional White Paper Templates</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Offers pre-structured templates tailored to business, tech, policy, or marketing use cases.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Smart Personalization')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Smart Personalization</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Auto-fill company names, statistics, policies, technical terms, and industry-specific data based on your prompt.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Auto-Suggested Visuals & Headers')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Auto-Suggested Visuals & Headers</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Let AI suggest professional titles, subheadings, and layout flow to keep your paper clear and persuasive.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Multilingual Document Generation')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Multilingual Document Generation</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Generate white papers in over 20 global languages using typed or spoken input.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Voice-Powered Drafting')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Voice-Powered Drafting</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Speak your research brief or business idea, and AI will turn it into a structured white paper instantly.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Fully Customizable Text, Styles')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Fully Customizable Text, Styles</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Edit headings, fonts, graphs, colors, and layout styles to meet brand guidelines or publishing standards.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Branding and Visual Control')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Branding and Visual Control</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Apply your company's logo, design system, and formatting to ensure brand consistency.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Data-Driven Insight Integration')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Data-Driven Insight Integration</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Allows users to plug in charts, statistics, and references with clean formatting.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Real-Time Proofreading')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Real-Time Proofreading</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Auto-check spelling, grammar, tone, and formatting for maximum professionalism and clarity.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Rewriting & Content Expansion')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Rewriting & Content Expansion</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Ask AI to summarize, elaborate, or rewrite sections based on tone, audience, or word count goals.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Export in Multiple Formats')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Export in Multiple Formats</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Download your white paper in DOCX, PDF, TXT, or RTF. Share or sync via Google Docs, Notion, OneDrive, or Dropbox.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Real-Time Collaboration')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Real-Time Collaboration</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Collaborate live with team members, clients, or subject experts. Add comments and finalize together.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Secure Cloud Workspace')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Secure Cloud Workspace</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Store your white papers securely with version control and role-based access.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Translate Full Documents Instantly')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Translate Full Documents Instantly</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Translate white papers instantly for global reach or cross-regional distribution.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Share or Embed Anywhere')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Share or Embed Anywhere</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Distribute your white paper via link, email, newsletter, or embed it into your website or portal.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Add Signature Blocks')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Add Signature Blocks</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Include executive sign-offs, expert acknowledgments, or organization signatures for final approval.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Attach Files & Media')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Attach Files & Media</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Embed reports, presentations, graphs, PDFs, or videos that support your white paper content.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Insert Maps and Locations')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Insert Maps and Locations</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Add visuals for geographic analysis, business impact zones, or data-related map insights.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Add Images and Videos')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Add Images and Videos</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Use product visuals, infographics, or explanatory videos to strengthen your paper's engagement.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Add Charts and Graphs')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Add Charts and Graphs</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Create pie charts, bar graphs, or data tables to visualize key statistics and findings.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group cursor-pointer" onclick="handleAction('Feature: Add Tables and Structured Data')">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-1 w-6 h-6 flex-shrink-0 text-primary">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">Add Tables and Structured Data</h3>
+                            <p class="text-gray-600 text-sm leading-relaxed">Include tables for comparative analysis, cost breakdowns, timelines, or study results.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="bg-gray-50 border-y border-gray-200 py-20">
+            <div class="max-w-5xl mx-auto px-4 text-center">
+                <h2 class="text-3xl font-bold text-gray-900 mb-16">How to Write a Free AI-Generated White Paper</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-left relative">
+                    <!-- Steps Line for Desktop -->
+                    <div class="hidden md:block absolute top-6 left-[16%] right-[16%] h-0.5 bg-gray-200 z-0"></div>
+                    
+                    <div class="relative z-10" onclick="handleAction('Step 1')">
+                        <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mb-6 mx-auto md:mx-0 shadow-lg cursor-pointer hover:scale-110 transition-transform">1</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 text-center md:text-left">Step 1: Start with a Prompt</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed text-center md:text-left">Type or speak the topic for your white paper, such as: "AI in healthcare," "SaaS security trends," or "Sustainability in packaging." Our AI understands your niche and begins drafting a structured, research-based white paper.</p>
+                    </div>
+                    
+                    <div class="relative z-10" onclick="handleAction('Step 2')">
+                        <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mb-6 mx-auto md:mx-0 shadow-lg cursor-pointer hover:scale-110 transition-transform">2</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 text-center md:text-left">Step 2: Generate and Edit</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed text-center md:text-left">In just seconds, you’ll get a professional white paper draft with clear sections like abstract, problem, solution, data, and conclusion. Refine the text and customize formatting.</p>
+                    </div>
+                    
+                    <div class="relative z-10" onclick="handleAction('Step 3')">
+                        <div class="w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center text-xl font-bold mb-6 mx-auto md:mx-0 shadow-lg cursor-pointer hover:scale-110 transition-transform">3</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-3 text-center md:text-left">Step 3: Finalize and Share</h3>
+                        <p class="text-gray-600 text-sm leading-relaxed text-center md:text-left">Review your document, add your company branding and visuals, then download or share your finalized white paper directly with stakeholders in your preferred format.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Work Smarter Section -->
+        <section class="max-w-6xl mx-auto px-4 py-24">
+            <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">Work Smarter and Inform with Authority</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white border border-gray-100 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="handleAction('Learn: Build Trust')">
+                    <div class="w-10 h-10 bg-blue-50 text-primary rounded-lg flex items-center justify-center mb-5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Generate White Papers That Build Trust</h3>
+                    <p class="text-gray-600">Produce highly authoritative documents that showcase your expertise and industry knowledge effortlessly.</p>
+                </div>
+                <div class="bg-white border border-gray-100 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="handleAction('Learn: Reuse')">
+                    <div class="w-10 h-10 bg-blue-50 text-primary rounded-lg flex items-center justify-center mb-5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Reuse, Update, and Version Easily</h3>
+                    <p class="text-gray-600">Keep your documentation up-to-date by rapidly modifying existing white papers to reflect new data or trends.</p>
+                </div>
+                <div class="bg-white border border-gray-100 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="handleAction('Learn: Collaborate')">
+                    <div class="w-10 h-10 bg-blue-50 text-primary rounded-lg flex items-center justify-center mb-5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Share Instantly, Collaborate Effectively</h3>
+                    <p class="text-gray-600">Work alongside your team in real-time to perfect the content before seamless multi-format exporting.</p>
+                </div>
+                <div class="bg-white border border-gray-100 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer" onclick="handleAction('Learn: Workspaces')">
+                    <div class="w-10 h-10 bg-blue-50 text-primary rounded-lg flex items-center justify-center mb-5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Smart Workspaces for White Paper Projects</h3>
+                    <p class="text-gray-600">Organize all your generated documents, assets, and drafts in one secure, easily accessible cloud environment.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="max-w-3xl mx-auto px-4 py-16 mb-20">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">White Paper FAQ</h2>
+            <div class="space-y-4">
+                <div class="border border-gray-200 rounded-xl overflow-hidden cursor-pointer" onclick="handleAction('Toggle FAQ: What is a white paper...')">
+                    <div class="px-6 py-4 bg-white hover:bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900">What is a white paper and how is it used?</h3>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-xl overflow-hidden cursor-pointer" onclick="handleAction('Toggle FAQ: How do I create a white paper...')">
+                    <div class="px-6 py-4 bg-white hover:bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900">How do I create a white paper using AI?</h3>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-xl overflow-hidden cursor-pointer" onclick="handleAction('Toggle FAQ: Can I include data...')">
+                    <div class="px-6 py-4 bg-white hover:bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900">Can I include data, visuals, and research in my white paper?</h3>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-xl overflow-hidden cursor-pointer" onclick="handleAction('Toggle FAQ: Can I export and distribute...')">
+                    <div class="px-6 py-4 bg-white hover:bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900">Can I export and distribute the white paper easily?</h3>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-xl overflow-hidden cursor-pointer" onclick="handleAction('Toggle FAQ: Can I write white papers in multiple languages...')">
+                    <div class="px-6 py-4 bg-white hover:bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900">Can I write white papers in multiple languages?</h3>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-xl overflow-hidden cursor-pointer" onclick="handleAction('Toggle FAQ: Can I rewrite or update...')">
+                    <div class="px-6 py-4 bg-white hover:bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900">Can I rewrite or update older white papers using AI?</h3>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+                <div class="border border-gray-200 rounded-xl overflow-hidden cursor-pointer" onclick="handleAction('Toggle FAQ: Can I add branding...')">
+                    <div class="px-6 py-4 bg-white hover:bg-gray-50 flex justify-between items-center">
+                        <h3 class="font-semibold text-gray-900">Can I add branding and executive sign-offs?</h3>
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200 py-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="flex items-center">
+                <span class="text-xl font-bold tracking-tighter text-gray-900">Template<span class="text-primary">.net</span></span>
+            </div>
+            <div class="text-sm text-gray-500 text-center">
+                &copy; 2026 Template.net Clone. AI White Paper Generator.
+            </div>
+            <div class="flex space-x-6">
+                <a href="#" onclick="handleAction('Privacy Policy')" class="text-gray-500 hover:text-gray-900 text-sm">Privacy</a>
+                <a href="#" onclick="handleAction('Terms of Service')" class="text-gray-500 hover:text-gray-900 text-sm">Terms</a>
+                <a href="#" onclick="handleAction('Contact Us')" class="text-gray-500 hover:text-gray-900 text-sm">Contact</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

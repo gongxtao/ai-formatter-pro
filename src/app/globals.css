@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1e0eff;
+  --color-primary-hover: #1a0bdd;
+  --color-primary-light: #eff6ff;
+  --color-secondary: #1F2124;
+  --color-light: #F9FAFB;
+  --color-sidebar-bg: #F8F9FA;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --spacing-mini-nav: 72px;
+  --spacing-sidebar: 420px;
+  --spacing-header: 68px;
+  --width-a4: 210mm;
+  --height-a4: 297mm;
+  --shadow-card: 0 8px 30px rgb(0, 0, 0, 0.08);
+  --radius-card: 12px;
+  --radius-button: 9999px;
+  --animate-fade: fade 0.3s ease-in-out;
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-secondary);
+  background: var(--color-light);
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Dashboard card shuffle animation */
+.cards-container {
+  transition: opacity 0.3s ease-in-out;
+}
+.cards-fade-out {
+  opacity: 0;
+}
+.cards-fade-in {
+  opacity: 1;
+}
+
+/* A4 page container */
+.a4-page {
+  width: var(--width-a4);
+  min-height: var(--height-a4);
+  background: white;
+  box-shadow: 0 1px 3px rgb(0, 0, 0, 0.08), 0 4px 12px rgb(0, 0, 0, 0.04);
+}

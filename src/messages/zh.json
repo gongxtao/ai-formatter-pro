@@ -1,0 +1,200 @@
+{
+  "common": {
+    "appName": "AI Formatter",
+    "loading": "加载中...",
+    "error": "出错了",
+    "retry": "重试",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "back": "返回",
+    "next": "下一步",
+    "search": "搜索",
+    "noResults": "未找到结果"
+  },
+  "nav": {
+    "home": "首页",
+    "pricing": "价格",
+    "login": "登录",
+    "signUp": "注册",
+    "searchPlaceholder": "搜索模板..."
+  },
+  "landing": {
+    "hero": {
+      "title": "免费 AI 白皮书生成器",
+      "subtitle": "几秒钟内编写专业的可编辑白皮书。通过文本或语音提示生成免费白皮书。无需注册。快速、可编辑，完全免费。",
+      "chatPlaceholder": "输入文本或语音以生成可编辑模板",
+      "bannerUpgrade": "升级",
+      "bannerHint": "获取更佳质量与速度",
+      "tools": "工具",
+      "whitePaper": "白皮书"
+    },
+    "docTypes": {
+      "businessPlan": "商业计划书",
+      "report": "报告",
+      "manual": "手册",
+      "caseStudy": "案例研究",
+      "ebook": "电子书",
+      "whitePaper": "白皮书",
+      "marketResearch": "市场调研",
+      "researchPaper": "研究论文"
+    },
+    "intro": {
+      "title": "创建白皮书，使用 AI 驱动的白皮书编辑器在线编辑",
+      "description": "Template.net 免费白皮书生成器帮助您在几秒钟内创建结构化、有说服力且信息丰富的白皮书。在线编辑，支持品牌定制、布局风格、专业语调和行业聚焦。无论是用于市场营销、教育、政策还是产品策略，都能生成面向客户、利益相关者或公开发布的深度白皮书。支持多种格式导出，即时分享。"
+    },
+    "features": {
+      "title": "几秒钟内编写自定义的专业白皮书",
+      "subtitle": "从执行摘要到技术内容，我们的 AI 白皮书生成器帮助您创建数据驱动、易于阅读的文档，无需复杂的格式设置或结构设计。",
+      "items": [
+        { "title": "AI 品牌语调", "description": "选择专业、技术、说服或研究导向的语调设置。我们的 AI 会根据您的目标重写白皮书。" },
+        { "title": "AI 智能格式建议", "description": "自动为您的白皮书构建摘要、引言、问题、解决方案、案例研究和结论等章节结构。" },
+        { "title": "支持多种文档类型", "description": "为商业、学术研究、产品策略、思想领导力、行业分析等场景生成白皮书。" },
+        { "title": "专业白皮书模板", "description": "提供针对商业、技术、政策或营销用例的预结构化模板。" },
+        { "title": "智能个性化", "description": "根据您的提示自动填充公司名称、统计数据、政策、技术术语和行业特定数据。" },
+        { "title": "自动推荐视觉元素与标题", "description": "让 AI 推荐专业标题、副标题和布局流程，保持论文清晰有力。" },
+        { "title": "多语言文档生成", "description": "使用输入或语音输入生成 20 多种全球语言的白皮书。" },
+        { "title": "语音驱动起草", "description": "说出您的研究简报或商业想法，AI 会立即将其转化为结构化的白皮书。" },
+        { "title": "完全可定制的文本和样式", "description": "编辑标题、字体、图表、颜色和布局样式，以满足品牌指南或出版标准。" },
+        { "title": "品牌和视觉控制", "description": "应用公司标志、设计系统和格式，确保品牌一致性。" },
+        { "title": "数据驱动洞察集成", "description": "以简洁的格式插入图表、统计数据和参考引用。" },
+        { "title": "实时校对", "description": "自动检查拼写、语法、语调和格式，确保最大程度的专业性和清晰度。" },
+        { "title": "重写与内容扩展", "description": "要求 AI 根据语调、受众或字数目标对章节进行总结、展开或重写。" },
+        { "title": "多格式导出", "description": "以 DOCX、PDF、TXT 或 RTF 格式下载白皮书。支持通过 Google Docs、Notion、OneDrive 或 Dropbox 共享同步。" },
+        { "title": "实时协作", "description": "与团队成员、客户或领域专家实时协作。添加评论并共同定稿。" },
+        { "title": "安全云工作区", "description": "通过版本控制和基于角色的访问权限安全存储白皮书。" },
+        { "title": "即时翻译整篇文档", "description": "即时翻译白皮书以实现全球覆盖或跨区域分发。" },
+        { "title": "随处分享或嵌入", "description": "通过链接、电子邮件、新闻通讯分发白皮书，或将其嵌入网站或门户。" },
+        { "title": "添加签名块", "description": "包含高管签署、专家致谢或组织签名以供最终审批。" },
+        { "title": "附加文件和媒体", "description": "嵌入报告、演示文稿、图表、PDF 或视频以支持白皮书内容。" },
+        { "title": "插入地图和位置", "description": "添加地理分析、业务影响区域或数据相关地图洞察的可视化内容。" },
+        { "title": "添加图片和视频", "description": "使用产品视觉图、信息图或说明视频增强论文的吸引力。" },
+        { "title": "添加图表和图形", "description": "创建饼图、柱状图或数据表以可视化关键统计和发现。" },
+        { "title": "添加表格和结构化数据", "description": "包含用于比较分析、成本明细、时间线或研究结果的表格。" }
+      ]
+    },
+    "howItWorks": {
+      "title": "如何编写免费的 AI 生成白皮书",
+      "steps": [
+        { "title": "第一步：从提示开始", "description": "输入或说出白皮书主题，例如：「医疗保健中的 AI」、「SaaS 安全趋势」或「包装的可持续性」。我们的 AI 理解您的领域并开始起草结构化的研究型白皮书。" },
+        { "title": "第二步：生成和编辑", "description": "几秒钟内，您将获得一份包含摘要、问题、解决方案、数据和结论等清晰章节的专业白皮书草稿。完善文本并自定义格式。" },
+        { "title": "第三步：定稿和分享", "description": "审核您的文档，添加公司品牌和视觉效果，然后以您首选的格式下载或直接与利益相关者分享最终白皮书。" }
+      ]
+    },
+    "workSmarter": {
+      "title": "更智能地工作，以权威方式传达信息",
+      "items": [
+        { "title": "生成建立信任的白皮书", "description": "毫不费力地制作高度权威的文档，展示您的专业知识和行业洞察力。" },
+        { "title": "轻松复用、更新和版本管理", "description": "通过快速修改现有白皮书以反映新数据或趋势，保持文档的最新状态。" },
+        { "title": "即时分享，高效协作", "description": "与团队实时协作完善内容，然后无缝导出为多种格式。" },
+        { "title": "白皮书项目的智能工作区", "description": "将所有生成的文档、资源和草稿组织在一个安全、易于访问的云环境中。" }
+      ]
+    },
+    "faq": {
+      "title": "白皮书常见问题",
+      "items": [
+        { "question": "什么是白皮书，它有什么用途？", "answer": "白皮书是一种权威性的深度报告或指南，提出问题并提供解决方案，通常用于商业和营销中以说服潜在客户或利益相关者。它常用于解释复杂技术、展示研究发现或倡导特定商业策略。" },
+        { "question": "如何使用 AI 创建白皮书？", "answer": "只需在 AI Formatter 聊天框中输入或说出您的主题。我们的 AI 将生成包含摘要、引言、问题陈述、解决方案和结论等章节的结构化白皮书草稿。然后您可以编辑、自定义并以首选格式导出最终文档。" },
+        { "question": "可以在白皮书中包含数据、视觉元素和研究内容吗？", "answer": "当然可以。您可以直接在白皮书中嵌入图表、图形、表格、图片、视频和地图。AI 还能帮助以简洁专业的格式整合统计数据和研究引用。" },
+        { "question": "可以轻松导出和分发白皮书吗？", "answer": "完全可以。以 DOCX、PDF、TXT 或 RTF 格式导出白皮书。您还可以通过链接、电子邮件分享，或将其嵌入网站。支持与 Google Docs、Notion、OneDrive 和 Dropbox 的集成。" },
+        { "question": "可以用多种语言编写白皮书吗？", "answer": "可以。我们的 AI 支持 20 多种语言的文档生成。您可以用任何支持的语言输入或说出提示，AI 将相应地生成白皮书。您还可以即时翻译现有文档。" },
+        { "question": "可以使用 AI 重写或更新旧白皮书吗？", "answer": "可以。上传您的现有白皮书，要求 AI 重写、总结、扩展或更新特定章节。您还可以根据当前需求调整语调、受众定位和内容深度。" },
+        { "question": "可以添加品牌标识和高管签署吗？", "answer": "可以。您可以在整个文档中应用公司标志、配色方案和设计系统。还支持用于高管签署、专家致谢和组织审批的签名块。" }
+      ]
+    },
+    "footer": {
+      "copyright": "© 2026 AI Formatter. AI 文档生成器。",
+      "privacy": "隐私政策",
+      "terms": "服务条款",
+      "contact": "联系我们"
+    },
+    "meta": {
+      "title": "免费 AI 白皮书生成器 | AI Formatter",
+      "description": "使用 AI 在几秒钟内创建专业白皮书。无需注册。编辑、自定义并导出多种格式。快速、可编辑，完全免费。"
+    }
+  },
+  "dashboard": {
+    "home": "首页",
+    "document": "文档",
+    "templates": "模板",
+    "history": "历史",
+    "signIn": "登录",
+    "pricing": "价格",
+    "signUp": "注册",
+    "searchPlaceholder": "你想创建什么？",
+    "templateSearchPlaceholder": "搜索模板...",
+    "heroTitle": "免费 AI {docType}",
+    "heroDescription": "通过文本或语音提示，我们的 AI 即时生成可编辑的 {docTypeLower}。无需注册即可创建专业提案。免费、快速、在线。",
+    "chatTopicTag": "创建一份 {docTypeLower}，用于",
+    "topic": "主题",
+    "industry": "行业",
+    "webSearch": "网络搜索",
+    "lightAi": "轻量 AI",
+    "generate": "生成",
+    "bannerUpgrade": "升级",
+    "bannerHint": "获取最佳质量、速度和完整控制。",
+    "templatesTitle": "免费 {docType} 模板",
+    "templatesHeroTitle": "免费 {docType} 模板",
+    "templatesHeroDescription": "探索专业设计的 {docTypeLower} 模板，可自定义且免费下载。用精美设计提升你的工作效率。立即开始！",
+    "templatesCta": "生成我的免费 {docType}",
+    "free": "免费",
+    "useTemplate": "使用模板",
+    "docTypes": {
+      "document": "文档",
+      "businessPlan": "商业计划",
+      "report": "报告",
+      "manual": "手册",
+      "caseStudy": "案例研究",
+      "ebook": "电子书",
+      "whitePaper": "白皮书",
+      "marketResearch": "市场调研",
+      "researchPaper": "研究论文",
+      "proposal": "提案",
+      "budget": "预算",
+      "todoList": "待办清单",
+      "resume": "简历",
+      "coverLetter": "求职信",
+      "letter": "信函",
+      "meetingMinutes": "会议纪要",
+      "writer": "写作",
+      "policy": "政策",
+      "payslip": "工资条",
+      "companyProfile": "公司简介"
+    }
+  },
+  "ai": {
+    "generating": "正在生成文档...",
+    "analyzing": "正在分析您的请求...",
+    "generatingContent": "正在生成内容...",
+    "insertIntoEditor": "插入编辑器",
+    "errorGenerating": "生成失败，请重试。",
+    "errorRetry": "重试",
+    "generationComplete": "文档已生成！正在打开编辑器..."
+  },
+  "editor": {
+    "save": "保存",
+    "download": "下载",
+    "backToTemplates": "返回模板",
+    "title": "编辑器",
+    "untitled": "未命名文档",
+    "startFromScratch": "从零开始",
+    "aiAssistant": "AI 助手",
+    "chatPlaceholder": "向 AI 寻求文档编辑帮助...",
+    "send": "发送",
+    "document": "文档",
+    "docTypePanelTitle": "文档",
+    "searchPlaceholder": "你想创建什么？",
+    "askAiToEdit": "让 AI 编辑",
+    "exporting": "导出中..."
+  },
+  "history": {
+    "title": "历史记录",
+    "searchPlaceholder": "搜索文档...",
+    "emptyTitle": "暂无文档",
+    "emptyDescription": "您创建的文档将显示在这里",
+    "noResults": "未找到匹配的文档",
+    "delete": "删除",
+    "savedAt": "保存于 {date}"
+  }
+}

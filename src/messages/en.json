@@ -1,0 +1,200 @@
+{
+  "common": {
+    "appName": "AI Formatter",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "noResults": "No results found"
+  },
+  "nav": {
+    "home": "Home",
+    "pricing": "Pricing",
+    "login": "Log In",
+    "signUp": "Sign Up",
+    "searchPlaceholder": "Search templates..."
+  },
+  "landing": {
+    "hero": {
+      "title": "Free AI White Paper Generator",
+      "subtitle": "Write professional editable white papers in seconds. Prompt text or voice to generate a free white paper. No sign-up required. It's fast, editable, and 100% free.",
+      "chatPlaceholder": "Enter text or voice to generate an editable template",
+      "bannerUpgrade": "Upgrade",
+      "bannerHint": "for best quality & speed",
+      "tools": "Tools",
+      "whitePaper": "White Paper"
+    },
+    "docTypes": {
+      "businessPlan": "Business Plan",
+      "report": "Report",
+      "manual": "Manual",
+      "caseStudy": "Case Study",
+      "ebook": "Ebook",
+      "whitePaper": "White Paper",
+      "marketResearch": "Market Research",
+      "researchPaper": "Research Paper"
+    },
+    "intro": {
+      "title": "Create White Papers, Edit Online with AI-Powered White Paper Editor",
+      "description": "Template.net's Free AI White Paper Generator helps you create structured, persuasive, and informative white papers in seconds. Edit online with your branding, layout style, professional tone, and industry focus. Whether it's for marketing, education, policy, or product strategy, generate in-depth white papers ready for clients, stakeholders, or public distribution. Export in multiple formats and share instantly."
+    },
+    "features": {
+      "title": "Write Custom, Professional White Papers in Seconds",
+      "subtitle": "From executive summaries to technical content, our AI-powered white paper builder helps you create data-driven, reader-friendly documents, without the complexity of formatting or structure.",
+      "items": [
+        { "title": "AI Brand Voice", "description": "Choose from professional, technical, persuasive, or research-driven tone settings. Our AI rewrites your white paper to align with your objective." },
+        { "title": "AI-Smart Formatting Suggestions", "description": "Automatically structure your white paper with sections like Abstract, Introduction, Problem, Solution, Case Studies, and Conclusion." },
+        { "title": "Multiple Document Types Supported", "description": "Generate white papers for business, academic research, product strategy, thought leadership, industry analysis, and more." },
+        { "title": "Professional White Paper Templates", "description": "Offers pre-structured templates tailored to business, tech, policy, or marketing use cases." },
+        { "title": "Smart Personalization", "description": "Auto-fill company names, statistics, policies, technical terms, and industry-specific data based on your prompt." },
+        { "title": "Auto-Suggested Visuals & Headers", "description": "Let AI suggest professional titles, subheadings, and layout flow to keep your paper clear and persuasive." },
+        { "title": "Multilingual Document Generation", "description": "Generate white papers in over 20 global languages using typed or spoken input." },
+        { "title": "Voice-Powered Drafting", "description": "Speak your research brief or business idea, and AI will turn it into a structured white paper instantly." },
+        { "title": "Fully Customizable Text, Styles", "description": "Edit headings, fonts, graphs, colors, and layout styles to meet brand guidelines or publishing standards." },
+        { "title": "Branding and Visual Control", "description": "Apply your company's logo, design system, and formatting to ensure brand consistency." },
+        { "title": "Data-Driven Insight Integration", "description": "Allows users to plug in charts, statistics, and references with clean formatting." },
+        { "title": "Real-Time Proofreading", "description": "Auto-check spelling, grammar, tone, and formatting for maximum professionalism and clarity." },
+        { "title": "Rewriting & Content Expansion", "description": "Ask AI to summarize, elaborate, or rewrite sections based on tone, audience, or word count goals." },
+        { "title": "Export in Multiple Formats", "description": "Download your white paper in DOCX, PDF, TXT, or RTF. Share or sync via Google Docs, Notion, OneDrive, or Dropbox." },
+        { "title": "Real-Time Collaboration", "description": "Collaborate live with team members, clients, or subject experts. Add comments and finalize together." },
+        { "title": "Secure Cloud Workspace", "description": "Store your white papers securely with version control and role-based access." },
+        { "title": "Translate Full Documents Instantly", "description": "Translate white papers instantly for global reach or cross-regional distribution." },
+        { "title": "Share or Embed Anywhere", "description": "Distribute your white paper via link, email, newsletter, or embed it into your website or portal." },
+        { "title": "Add Signature Blocks", "description": "Include executive sign-offs, expert acknowledgments, or organization signatures for final approval." },
+        { "title": "Attach Files & Media", "description": "Embed reports, presentations, graphs, PDFs, or videos that support your white paper content." },
+        { "title": "Insert Maps and Locations", "description": "Add visuals for geographic analysis, business impact zones, or data-related map insights." },
+        { "title": "Add Images and Videos", "description": "Use product visuals, infographics, or explanatory videos to strengthen your paper's engagement." },
+        { "title": "Add Charts and Graphs", "description": "Create pie charts, bar graphs, or data tables to visualize key statistics and findings." },
+        { "title": "Add Tables and Structured Data", "description": "Include tables for comparative analysis, cost breakdowns, timelines, or study results." }
+      ]
+    },
+    "howItWorks": {
+      "title": "How to Write a Free AI-Generated White Paper",
+      "steps": [
+        { "title": "Step 1: Start with a Prompt", "description": "Type or speak the topic for your white paper, such as: \"AI in healthcare,\" \"SaaS security trends,\" or \"Sustainability in packaging.\" Our AI understands your niche and begins drafting a structured, research-based white paper." },
+        { "title": "Step 2: Generate and Edit", "description": "In just seconds, you'll get a professional white paper draft with clear sections like abstract, problem, solution, data, and conclusion. Refine the text and customize formatting." },
+        { "title": "Step 3: Finalize and Share", "description": "Review your document, add your company branding and visuals, then download or share your finalized white paper directly with stakeholders in your preferred format." }
+      ]
+    },
+    "workSmarter": {
+      "title": "Work Smarter and Inform with Authority",
+      "items": [
+        { "title": "Generate White Papers That Build Trust", "description": "Produce highly authoritative documents that showcase your expertise and industry knowledge effortlessly." },
+        { "title": "Reuse, Update, and Version Easily", "description": "Keep your documentation up-to-date by rapidly modifying existing white papers to reflect new data or trends." },
+        { "title": "Share Instantly, Collaborate Effectively", "description": "Work alongside your team in real-time to perfect the content before seamless multi-format exporting." },
+        { "title": "Smart Workspaces for White Paper Projects", "description": "Organize all your generated documents, assets, and drafts in one secure, easily accessible cloud environment." }
+      ]
+    },
+    "faq": {
+      "title": "White Paper FAQ",
+      "items": [
+        { "question": "What is a white paper and how is it used?", "answer": "A white paper is an authoritative, in-depth report or guide that presents a problem and provides a solution, often used in business and marketing to persuade potential customers or stakeholders. It is commonly used to explain complex technologies, present research findings, or advocate for a particular business strategy." },
+        { "question": "How do I create a white paper using AI?", "answer": "Simply type or speak your topic into the AI Formatter chat box. Our AI will generate a structured white paper draft with sections like abstract, introduction, problem statement, solution, and conclusion. You can then edit, customize, and export the final document in your preferred format." },
+        { "question": "Can I include data, visuals, and research in my white paper?", "answer": "Yes! You can embed charts, graphs, tables, images, videos, and maps directly into your white paper. The AI can also help integrate statistics and research references with clean, professional formatting." },
+        { "question": "Can I export and distribute the white paper easily?", "answer": "Absolutely. Export your white paper in DOCX, PDF, TXT, or RTF format. You can also share it via link, email, or embed it into your website. Integration with Google Docs, Notion, OneDrive, and Dropbox is supported." },
+        { "question": "Can I write white papers in multiple languages?", "answer": "Yes. Our AI supports document generation in over 20 languages. You can type or speak your prompt in any supported language, and the AI will generate the white paper accordingly. You can also translate existing documents instantly." },
+        { "question": "Can I rewrite or update older white papers using AI?", "answer": "Yes. Upload your existing white paper and ask the AI to rewrite, summarize, expand, or update specific sections. You can also adjust tone, audience targeting, and content depth based on your current needs." },
+        { "question": "Can I add branding and executive sign-offs?", "answer": "Yes. You can apply your company logo, color scheme, and design system throughout the document. Signature blocks for executive sign-offs, expert acknowledgments, and organizational approvals are also supported." }
+      ]
+    },
+    "footer": {
+      "copyright": "© 2026 AI Formatter. AI Document Generator.",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact"
+    },
+    "meta": {
+      "title": "Free AI White Paper Generator | AI Formatter",
+      "description": "Create professional white papers in seconds with AI. No sign-up required. Edit, customize, and export in multiple formats. Fast, editable, and 100% free."
+    }
+  },
+  "dashboard": {
+    "home": "Home",
+    "document": "Document",
+    "templates": "Templates",
+    "history": "History",
+    "signIn": "Sign in",
+    "pricing": "Pricing",
+    "signUp": "Sign up",
+    "searchPlaceholder": "What are you creating?",
+    "templateSearchPlaceholder": "Search for Templates...",
+    "heroTitle": "Free AI {docType}",
+    "heroDescription": "Prompt text or voice our AI generates editable {docTypeLower}s instantly. Create strategic proposals for startups or growth with no sign-up. Free, fast, and online.",
+    "chatTopicTag": "Create a {docTypeLower} for",
+    "topic": "Topic",
+    "industry": "Industry",
+    "webSearch": "Web Search",
+    "lightAi": "Light AI",
+    "generate": "Generate",
+    "bannerUpgrade": "Upgrade",
+    "bannerHint": "for best quality, speed, and full control.",
+    "templatesTitle": "Free {docType} Templates",
+    "templatesHeroTitle": "Free {docType} Templates",
+    "templatesHeroDescription": "Explore professionally designed {docTypeLower} templates that are customizable and free to download. Elevate your career with polished designs. Start now!",
+    "templatesCta": "Generate My Free {docType}",
+    "free": "Free",
+    "useTemplate": "Use Template",
+    "docTypes": {
+      "document": "Document",
+      "businessPlan": "Business Plan",
+      "report": "Report",
+      "manual": "Manual",
+      "caseStudy": "Case Study",
+      "ebook": "Ebook",
+      "whitePaper": "White Paper",
+      "marketResearch": "Market Research",
+      "researchPaper": "Research Paper",
+      "proposal": "Proposal",
+      "budget": "Budget",
+      "todoList": "To Do List",
+      "resume": "Resume",
+      "coverLetter": "Cover Letter",
+      "letter": "Letter",
+      "meetingMinutes": "Meeting Minutes",
+      "writer": "Writer",
+      "policy": "Policy",
+      "payslip": "Payslip",
+      "companyProfile": "Company Profile"
+    }
+  },
+  "ai": {
+    "generating": "Generating document...",
+    "analyzing": "Analyzing your request...",
+    "generatingContent": "Generating content...",
+    "insertIntoEditor": "Insert into Editor",
+    "errorGenerating": "Failed to generate. Please try again.",
+    "errorRetry": "Retry",
+    "generationComplete": "Document generated! Opening editor..."
+  },
+  "editor": {
+    "save": "Save",
+    "download": "Download",
+    "backToTemplates": "Back to Templates",
+    "title": "Editor",
+    "untitled": "Untitled Document",
+    "startFromScratch": "Start from Scratch",
+    "aiAssistant": "AI Assistant",
+    "chatPlaceholder": "Ask AI to help edit your document...",
+    "send": "Send",
+    "document": "Document",
+    "docTypePanelTitle": "Document",
+    "searchPlaceholder": "What are you creating?",
+    "askAiToEdit": "Ask AI to Edit",
+    "exporting": "Exporting..."
+  },
+  "history": {
+    "title": "History",
+    "searchPlaceholder": "Search documents...",
+    "emptyTitle": "No documents yet",
+    "emptyDescription": "Documents you create will appear here",
+    "noResults": "No matching documents found",
+    "delete": "Delete",
+    "savedAt": "Saved at {date}"
+  }
+}
