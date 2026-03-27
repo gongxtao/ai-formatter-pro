@@ -23,9 +23,9 @@ const ToolbarButton = memo(
       const baseStyles = 'transition-colors disabled:cursor-not-allowed disabled:opacity-50'
 
       const variantStyles = {
-        default: 'w-8 h-8 flex items-center justify-center bg-transparent border-none rounded hover:bg-gray-100 disabled:opacity-50 text-gray-700',
-        color: 'w-8 h-8 flex items-center justify-center bg-transparent border-none rounded hover:bg-gray-100 disabled:opacity-50 relative',
-        text: 'h-8 px-2 flex items-center bg-transparent border-none rounded hover:bg-gray-100 disabled:opacity-50 text-gray-700 font-medium text-sm'
+        default: 'p-1.5 flex items-center justify-center bg-transparent border-none rounded hover:bg-gray-200 disabled:opacity-50 text-gray-600',
+        color: 'p-1.5 flex items-center justify-center bg-transparent border-none rounded hover:bg-gray-200 disabled:opacity-50 relative',
+        text: 'h-8 px-2 flex items-center bg-transparent border-none rounded hover:bg-gray-200 disabled:opacity-50 text-gray-600 font-medium text-sm'
       }
 
       const sizeStyles = {

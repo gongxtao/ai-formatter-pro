@@ -1,12 +1,16 @@
 'use client';
 
 import { useDashboardStore } from '@/stores/useDashboardStore';
+import { useTemplates } from '@/hooks/useTemplates';
 import { DocumentPanel } from './DocumentPanel';
 import { TemplatesPanel } from './TemplatesPanel';
 
 export function SecondarySidebar() {
   const activeNav = useDashboardStore((s) => s.activeNav);
   const isExpanded = activeNav === 'document' || activeNav === 'templates';
+
+  // Fetch categories & templates from Supabase on mount
+  useTemplates();
 
   return (
     <div

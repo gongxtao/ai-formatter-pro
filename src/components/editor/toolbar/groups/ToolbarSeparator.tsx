@@ -19,7 +19,7 @@ const ToolbarSeparator: React.FC<ToolbarSeparatorProps> = ({
   if (orientation === 'vertical') {
     return (
       <div
-        className={`w-px h-5 bg-gray-300 mx-2 ${className}`}
+        className={`w-px h-5 bg-gray-300 mx-1 ${className}`}
         role="separator"
         aria-orientation="vertical"
       />

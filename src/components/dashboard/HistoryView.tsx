@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useHistoryStore } from '@/stores/useHistoryStore';
+import { useDashboardStore } from '@/stores/useDashboardStore';
+import { Input } from '@/components/ui/Input';
 import { HistoryCard } from './HistoryCard';
 
 export function HistoryView() {
@@ -12,6 +14,7 @@ export function HistoryView() {
   const searchQuery = useHistoryStore((s) => s.searchQuery);
   const setSearchQuery = useHistoryStore((s) => s.setSearchQuery);
   const filteredDocuments = useHistoryStore((s) => s.filteredDocuments);
+  const setEditorView = useDashboardStore((s) => s.setEditorView);
 
   const [mounted, setMounted] = useState(false);
 
@@ -30,30 +33,37 @@ export function HistoryView() {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('title')}</h2>
 
         <div className="relative mb-6">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="absolute left-3 top-[38px] w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <input
+          <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('searchPlaceholder')}
-            className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50"
+            className="!pl-10 !bg-gray-50"
+            aria-label={t('searchPlaceholder')}
           />
         </div>
 
         {filtered.length === 0 && documents.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <p className="text-sm font-medium text-gray-500">{t('emptyTitle')}</p>
-            <p className="text-xs mt-1">{t('emptyDescription')}</p>
+            <p className="text-xs mt-1 mb-4">{t('emptyDescription')}</p>
+            <button
+              onClick={() => setEditorView('templates')}
+              className="px-4 py-2 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors"
+            >
+              {t('emptyCta')}
+            </button>
           </div>
         )}
 
         {filtered.length === 0 && documents.length > 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <svg className="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <p className="text-sm">{t('noResults')}</p>

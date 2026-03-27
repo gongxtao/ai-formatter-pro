@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useDashboardStore } from '@/stores/useDashboardStore';
-import { documentTypes } from '@/data/documentTypes';
+import { useTemplatesStore } from '@/stores/useTemplatesStore';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { SearchIcon } from '@/components/landing/icons/SearchIcon';
 
@@ -12,9 +12,11 @@ export function TemplatesPanel() {
   const setActiveTemplateCategory = useDashboardStore((s) => s.setActiveTemplateCategory);
   const sidebarSearchQuery = useDashboardStore((s) => s.sidebarSearchQuery);
   const setSidebarSearchQuery = useDashboardStore((s) => s.setSidebarSearchQuery);
+  const categories = useTemplatesStore((s) => s.categories);
+  const categoriesLoading = useTemplatesStore((s) => s.categoriesLoading);
 
-  const filtered = documentTypes.filter((dt) =>
-    t(dt.labelKey).toLowerCase().includes(sidebarSearchQuery.toLowerCase())
+  const filtered = categories.filter((cat) =>
+    cat.toLowerCase().includes(sidebarSearchQuery.toLowerCase())
   );
 
   return (
@@ -38,17 +40,24 @@ export function TemplatesPanel() {
         </div>
 
         <div className="p-3 pt-0">
-          <div className="space-y-0.5">
-            {filtered.map((dt) => (
-              <SidebarMenuItem
-                key={dt.key}
-                label={t(dt.labelKey)}
-                active={activeTemplateCategory === dt.key}
-                hasChevron={dt.hasChevron}
-                onClick={() => setActiveTemplateCategory(dt.key)}
-              />
-            ))}
-          </div>
+          {categoriesLoading ? (
+            <div className="space-y-2 p-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-9 bg-gray-100 rounded-lg animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {filtered.map((cat) => (
+                <SidebarMenuItem
+                  key={cat}
+                  label={cat}
+                  active={activeTemplateCategory === cat}
+                  onClick={() => setActiveTemplateCategory(cat)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

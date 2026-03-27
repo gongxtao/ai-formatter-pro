@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function EditorLoading() {
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col" aria-hidden="true">
       <div className="h-[68px] border-b border-gray-100 flex items-center px-4 gap-3">
         <Skeleton width={120} height={24} />
         <Skeleton width={160} height={24} />

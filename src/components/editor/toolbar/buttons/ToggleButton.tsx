@@ -50,8 +50,8 @@ const ToggleButton = React.forwardRef<HTMLButtonElement, ToggleButtonProps>(
         className={`
           transition-colors disabled:cursor-not-allowed disabled:opacity-50
           w-8 h-8 flex items-center justify-center
-          bg-transparent border-none rounded hover:bg-gray-100
-          text-gray-700
+          bg-transparent border-none rounded hover:bg-gray-200
+          text-gray-600
           disabled:text-gray-400
           ${isActive ? 'bg-gray-200' : ''}
           ${className}

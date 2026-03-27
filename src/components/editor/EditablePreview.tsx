@@ -111,11 +111,13 @@ export interface EditablePreviewProps {
   isDownloadingPDF?: boolean
   iframeRef?: RefObject<HTMLIFrameElement>
   previewRef?: Ref<EditablePreviewRef>
+  onIframeReady?: (iframeRef: RefObject<HTMLIFrameElement>) => void
 }
 
 // Exposed methods for parent components
 export interface EditablePreviewRef {
   insertFloatingImage: (imageUrl: string) => void
+  getIframeRef: () => React.RefObject<HTMLIFrameElement>
 }
 
 export type { FloatingImageItem } from './FloatingImageLayer'
@@ -175,7 +177,8 @@ const EditablePreviewWithRef = function EditablePreview({
   isSaving = false,
   isDownloadingPDF = false,
   iframeRef: externalIframeRef,
-  previewRef: externalPreviewRef
+  previewRef: externalPreviewRef,
+  onIframeReady
 }: EditablePreviewProps) {
   const [internalFloatingImages, setInternalFloatingImages] = useState<FloatingImageItem[]>([])
   const effectiveFloatingImages = floatingImages ?? internalFloatingImages
@@ -246,6 +249,13 @@ const EditablePreviewWithRef = function EditablePreview({
   useEffect(() => {
     floatingImagesRef.current = effectiveFloatingImages
   }, [effectiveFloatingImages])
+
+  // Notify parent when iframe ref is ready
+  useEffect(() => {
+    if (iframeRef.current && onIframeReady) {
+      onIframeReady(iframeRef)
+    }
+  }, [iframeRef, onIframeReady, selectedFile, previewKey])
 
   // 同步 selectedFloatingImageId
   useEffect(() => {
@@ -764,8 +774,16 @@ const EditablePreviewWithRef = function EditablePreview({
 
   // Expose insertFloatingImage method to parent components via previewRef
   useImperativeHandle(externalPreviewRef, () => ({
-    insertFloatingImage: handleInsertFloatingImage
-  }), [handleInsertFloatingImage])
+    insertFloatingImage: handleInsertFloatingImage,
+    getIframeRef: () => iframeRef
+  }), [handleInsertFloatingImage, iframeRef])
+
+  // Notify parent when iframe ref is ready
+  useEffect(() => {
+    if (iframeRef.current && onIframeReady) {
+      onIframeReady(iframeRef)
+    }
+  }, [iframeRef, onIframeReady])
 
   const handleTableAction = (action: string, payload?: unknown) => {
     if (!activeTable) return

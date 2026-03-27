@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useDashboardStore } from '@/stores/useDashboardStore';
-import { mockTemplates } from '@/data/mockTemplates';
+import { useTemplatesStore } from '@/stores/useTemplatesStore';
 import { TemplateCard } from './TemplateCard';
 import { TemplateFilterBar } from './TemplateFilterBar';
 
@@ -11,6 +11,8 @@ export function EditorTemplatesGrid() {
   const tDash = useTranslations('dashboard');
   const activeDocType = useDashboardStore((s) => s.activeDocType);
   const setEditorView = useDashboardStore((s) => s.setEditorView);
+  const templates = useTemplatesStore((s) => s.templates);
+  const templatesLoading = useTemplatesStore((s) => s.templatesLoading);
   const docTypeLabel = tDash(`docTypes.${activeDocType}` as 'dashboard.docTypes.businessPlan');
 
   const handleUseTemplate = () => {
@@ -22,15 +24,14 @@ export function EditorTemplatesGrid() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <h2 className="text-[28px] font-bold text-gray-900 mb-2 tracking-tight">
+    <div className="flex-1 overflow-y-auto pt-8 pb-20 px-8 text-left bg-white">
+      <h2 className="text-[28px] font-bold text-gray-900 mb-6 tracking-tight">
         {tDash('templatesTitle', { docType: docTypeLabel })}
       </h2>
-      <p className="text-sm text-gray-500 mb-6">{tDash('templatesHeroDescription', { docType: docTypeLabel, docTypeLower: docTypeLabel.toLowerCase() })}</p>
 
       <TemplateFilterBar />
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-8">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6">
         {/* Start from scratch card */}
         <div className="group cursor-pointer" onClick={handleStartFromScratch}>
           <div className="border-2 border-dashed border-gray-300 rounded-xl aspect-[1/1.414] relative flex flex-col items-center justify-center gap-3 group-hover:border-primary group-hover:bg-blue-50/30 transition-all duration-300">
@@ -49,11 +50,20 @@ export function EditorTemplatesGrid() {
         </div>
 
         {/* Template cards */}
-        {mockTemplates.map((card) => (
-          <div key={card.id} onClick={handleUseTemplate}>
-            <TemplateCard template={card} />
-          </div>
-        ))}
+        {templatesLoading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i}>
+              <div className="border border-gray-200 rounded-xl aspect-[1/1.414] bg-gray-100 animate-pulse mb-4" />
+              <div className="h-4 w-32 bg-gray-100 rounded animate-pulse mx-auto" />
+            </div>
+          ))
+        ) : (
+          templates.map((card) => (
+            <div key={card.id} onClick={handleUseTemplate}>
+              <TemplateCard template={card} />
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

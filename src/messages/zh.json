@@ -193,8 +193,16 @@
     "searchPlaceholder": "搜索文档...",
     "emptyTitle": "暂无文档",
     "emptyDescription": "您创建的文档将显示在这里",
+    "emptyCta": "创建第一个文档",
     "noResults": "未找到匹配的文档",
     "delete": "删除",
-    "savedAt": "保存于 {date}"
+    "deleteConfirm": "确定要删除此文档吗？此操作无法撤销。",
+    "deleteConfirmTitle": "删除文档",
+    "savedAt": "保存于 {date}",
+    "saved": "文档已保存",
+    "saveFailed": "保存文档失败",
+    "storageFull": "存储空间已满，请删除一些文档后重试。",
+    "exportFailed": "导出失败：{error}",
+    "docxImageWarning": "DOCX 导出不包含图片。"
   }
 }

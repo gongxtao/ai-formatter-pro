@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/Button';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -44,19 +45,18 @@ function ErrorFallback({ error, onRetry }: { error: Error | null; onRetry: () =>
   const t = useTranslations('common');
   return (
     <div className="flex flex-col items-center justify-center min-h-[200px] p-8 text-center">
-      <svg className="w-12 h-12 text-red-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-12 h-12 text-red-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
       </svg>
       <p className="text-sm font-medium text-gray-700 mb-1">{t('error')}</p>
-      {error?.message && (
-        <p className="text-xs text-gray-400 mb-3 max-w-md">{error.message}</p>
-      )}
-      <button
-        onClick={onRetry}
-        className="px-4 py-1.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors"
-      >
+      <div role="alert">
+        {error?.message && (
+          <p className="text-xs text-gray-400 mb-3 max-w-md">{error.message}</p>
+        )}
+      </div>
+      <Button variant="primary" size="sm" onClick={onRetry}>
         {t('retry')}
-      </button>
+      </Button>
     </div>
   );
 }

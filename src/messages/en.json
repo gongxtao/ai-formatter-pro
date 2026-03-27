@@ -193,8 +193,16 @@
     "searchPlaceholder": "Search documents...",
     "emptyTitle": "No documents yet",
     "emptyDescription": "Documents you create will appear here",
+    "emptyCta": "Create your first document",
     "noResults": "No matching documents found",
     "delete": "Delete",
-    "savedAt": "Saved at {date}"
+    "deleteConfirm": "Are you sure you want to delete this document? This action cannot be undone.",
+    "deleteConfirmTitle": "Delete Document",
+    "savedAt": "Saved at {date}",
+    "saved": "Document saved",
+    "saveFailed": "Failed to save document",
+    "storageFull": "Storage is full. Please delete some documents and try again.",
+    "exportFailed": "Export failed: {error}",
+    "docxImageWarning": "Images are not included in DOCX export."
   }
 }

@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEY = 'ai-formatter-history';
-const MAX_DOCUMENTS = 50;
 
 export interface HistoryDocument {
   id: string;
@@ -18,8 +17,8 @@ interface HistoryState {
   documents: HistoryDocument[];
   searchQuery: string;
   loadDocuments: () => void;
-  saveDocument: (doc: { title: string; content: string; category: string }) => void;
-  deleteDocument: (id: string) => void;
+  saveDocument: (doc: { title: string; content: string; category: string }) => boolean;
+  deleteDocument: (id: string) => boolean;
   setSearchQuery: (q: string) => void;
   filteredDocuments: () => HistoryDocument[];
 }
@@ -41,9 +40,14 @@ function loadFromStorage(): HistoryDocument[] {
   }
 }
 
-function saveToStorage(docs: HistoryDocument[]) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(docs));
+function saveToStorage(docs: HistoryDocument[]): boolean {
+  if (typeof window === 'undefined') return true;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(docs));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export const useHistoryStore = create<HistoryState>((set, get) => ({
@@ -66,16 +70,22 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
       createdAt: now,
       updatedAt: now,
     };
-    const updated = [newDoc, ...documents].slice(0, MAX_DOCUMENTS);
-    saveToStorage(updated);
-    set({ documents: updated });
+    const updated = [newDoc, ...documents];
+    const ok = saveToStorage(updated);
+    if (ok) {
+      set({ documents: updated });
+    }
+    return ok;
   },
 
   deleteDocument: (id) => {
     const { documents } = get();
     const updated = documents.filter((d) => d.id !== id);
-    saveToStorage(updated);
-    set({ documents: updated });
+    const ok = saveToStorage(updated);
+    if (ok) {
+      set({ documents: updated });
+    }
+    return ok;
   },
 
   setSearchQuery: (q) => set({ searchQuery: q }),

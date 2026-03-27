@@ -1,24 +1,23 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useDashboardStore } from '@/stores/useDashboardStore';
+import { useTemplatesStore } from '@/stores/useTemplatesStore';
 import { SearchIcon } from '@/components/landing/icons/SearchIcon';
 import { ScrollRightIcon } from './icons/ScrollRightIcon';
 
-const filterLabels = {
-  businessPlan: ['Business Plan', 'One Page Business Plan', 'Coffee Shop Business Plan', 'Restaurant Business Plan', 'Food Business Plan', 'Real Estate Business Plan', 'Executive Summary Business Plan'],
-  resume: ['Resume', 'Simple Resume', 'High School Resume', 'Actor Resume', 'Accountant Resume', 'Academic Resume', 'Professional Resume'],
-};
-
 export function TemplateFilterBar() {
   const t = useTranslations('dashboard');
-  const activeDocType = useDashboardStore((s) => s.activeDocType);
   const templateSearchQuery = useDashboardStore((s) => s.templateSearchQuery);
   const setTemplateSearchQuery = useDashboardStore((s) => s.setTemplateSearchQuery);
+  const templates = useTemplatesStore((s) => s.templates);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const filters = filterLabels[activeDocType as keyof typeof filterLabels] || filterLabels.businessPlan;
+  const filters = useMemo(() => {
+    const allTags = templates.flatMap((tpl) => tpl.tags ?? []);
+    return [...new Set(allTags)];
+  }, [templates]);
 
   const handleScroll = () => {
     if (scrollRef.current) {

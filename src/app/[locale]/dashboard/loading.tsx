@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function DashboardLoading() {
   return (
-    <div className="flex h-screen w-full max-w-[1920px] mx-auto">
+    <div className="flex h-screen w-full max-w-[1920px] mx-auto" aria-hidden="true">
       <aside className="w-[72px] bg-white border-r border-gray-200 h-full flex-shrink-0">
         <div className="flex flex-col items-center py-4 gap-4">
           {Array.from({ length: 5 }).map((_, i) => (

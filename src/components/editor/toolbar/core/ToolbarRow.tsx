@@ -22,7 +22,7 @@ const ToolbarRow = React.forwardRef<HTMLDivElement, ToolbarRowProps>(
       <div
         ref={ref}
         id={id}
-        className={`flex items-center flex-wrap px-3 py-2 gap-1 ${showBorder ? 'border-t border-gray-200' : ''} ${className}`}
+        className={`flex items-center justify-center gap-1 px-4 py-1.5 bg-[#F9FAFB] overflow-x-auto hide-scrollbar text-gray-600 ${showBorder ? 'border-t border-gray-200' : ''} ${className}`}
       >
         {children}
       </div>
