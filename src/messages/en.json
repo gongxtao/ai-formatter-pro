@@ -141,6 +141,8 @@
     "templatesCta": "Generate My Free {docType}",
     "free": "Free",
     "useTemplate": "Use Template",
+    "clarifyingIntent": "Analyzing your request...",
+    "needMoreInfo": "I need more information to help you create the right document.",
     "docTypes": {
       "document": "Document",
       "businessPlan": "Business Plan",
@@ -171,7 +173,12 @@
     "insertIntoEditor": "Insert into Editor",
     "errorGenerating": "Failed to generate. Please try again.",
     "errorRetry": "Retry",
-    "generationComplete": "Document generated! Opening editor..."
+    "generationComplete": "Document generated! Opening editor...",
+    "aiGenerating": "AI is generating content...",
+    "realTimeUpdate": "Content updates in real-time",
+    "clarifyTitle": "AI Document Creator",
+    "clarifySubtitle": "Tell me what you'd like to create",
+    "clarifyPlaceholder": "Type your message..."
   },
   "editor": {
     "save": "Save",

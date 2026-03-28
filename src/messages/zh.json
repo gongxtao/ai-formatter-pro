@@ -141,6 +141,8 @@
     "templatesCta": "生成我的免费 {docType}",
     "free": "免费",
     "useTemplate": "使用模板",
+    "clarifyingIntent": "正在分析您的请求...",
+    "needMoreInfo": "我需要更多信息来帮您创建合适的文档。",
     "docTypes": {
       "document": "文档",
       "businessPlan": "商业计划",
@@ -171,7 +173,12 @@
     "insertIntoEditor": "插入编辑器",
     "errorGenerating": "生成失败，请重试。",
     "errorRetry": "重试",
-    "generationComplete": "文档已生成！正在打开编辑器..."
+    "generationComplete": "文档已生成！正在打开编辑器...",
+    "aiGenerating": "AI 正在生成内容...",
+    "realTimeUpdate": "内容实时更新中",
+    "clarifyTitle": "AI 文档创建器",
+    "clarifySubtitle": "告诉我您想创建什么",
+    "clarifyPlaceholder": "输入您的消息..."
   },
   "editor": {
     "save": "保存",
