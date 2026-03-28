@@ -15,6 +15,17 @@ export interface IntentClassificationResult {
  */
 export type GenerateSSEEventType = 'status' | 'content' | 'completion' | 'done' | 'error' | 'clarification_needed';
 
+/**
+ * SSE event for generate API.
+ * Extends StreamEvent from ai.ts with clarify-specific fields:
+ * - sessionId: Links to ClarifySession for multi-round conversations
+ * - question: AI's clarification question when needsClarification=true
+ *
+ * Relationship to StreamEvent:
+ * - StreamEvent (ai.ts): Core SSE types for standard generation flow
+ * - GenerateSSEEvent (this file): Extended for clarify flow with additional fields
+ * - When clarification_needed, client should redirect to /dashboard/ai-chat/[sessionId]
+ */
 export interface GenerateSSEEvent {
   type: GenerateSSEEventType;
   data: string;
@@ -25,24 +36,26 @@ export interface GenerateSSEEvent {
 
 /**
  * Clarify session stored in memory
+ * Note: createdAt uses ISO string format for JSON serialization compatibility
  */
 export interface ClarifySession {
   id: string;
   originalPrompt: string;
   messages: ClarifyMessage[];
-  createdAt: Date;
+  createdAt: string;
   determinedCategory?: string;
 }
 
 /**
  * Message in clarify chat
+ * Note: timestamp uses ISO string format for JSON serialization compatibility
  */
 export interface ClarifyMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   quickReplies?: string[];
-  timestamp: Date;
+  timestamp: string;
 }
 
 /**
