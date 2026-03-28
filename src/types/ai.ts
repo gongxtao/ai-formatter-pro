@@ -21,7 +21,7 @@ export interface GenerationRequest {
 }
 
 export interface StreamEvent {
-  type: 'content' | 'status' | 'completion' | 'done' | 'error';
+  type: 'content' | 'status' | 'completion' | 'done' | 'error' | 'clarification_needed';
   data: string;
   percentage?: number;
 }

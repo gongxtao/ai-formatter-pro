@@ -9,6 +9,7 @@ export function useAIGeneration() {
   const router = useRouter();
   const setPendingEditorContent = useDashboardStore((s) => s.setPendingEditorContent);
   const setIsGenerating = useDashboardStore((s) => s.setIsGenerating);
+  const setGenerationSessionId = useDashboardStore((s) => s.setGenerationSessionId);
 
   const [isGenerating, setIsGeneratingLocal] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
@@ -71,7 +72,7 @@ export function useAIGeneration() {
             if (!trimmed || !trimmed.startsWith('data: ')) continue;
 
             try {
-              const event: StreamEvent = JSON.parse(trimmed.slice(6));
+              const event = JSON.parse(trimmed.slice(6)) as StreamEvent & { sessionId?: string; question?: string };
 
               switch (event.type) {
                 case 'status':
@@ -92,6 +93,13 @@ export function useAIGeneration() {
                   break;
                 case 'error':
                   throw new Error(event.data);
+                case 'clarification_needed':
+                  // Store session ID and navigate to clarify chat
+                  setGenerationSessionId(event.sessionId ?? null);
+                  setIsGeneratingLocal(false);
+                  setIsGenerating(false);
+                  router.push(`/dashboard/ai-chat/${event.sessionId}`);
+                  return; // Stop processing stream
               }
             } catch (e) {
               if (e instanceof Error && e.message !== 'Unexpected end of JSON input') {
@@ -112,7 +120,7 @@ export function useAIGeneration() {
         setIsGenerating(false);
       }
     },
-    [router, setPendingEditorContent, setIsGenerating],
+    [router, setPendingEditorContent, setIsGenerating, setGenerationSessionId],
   );
 
   return { generate, isGenerating, generatedContent, progress, statusMessage, error };
