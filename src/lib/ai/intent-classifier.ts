@@ -4,13 +4,13 @@ import { streamChatCompletion } from '@/lib/ai/openrouter-client';
 import { PROMPT_TEMPLATES } from '@/config/prompt-templates';
 import type { IntentClassificationResult } from '@/types/clarify';
 
-const INTENT_CLASSIFICATION_PROMPT = `You are a document type classifier. Analyze the user's request and determine the most appropriate document type.
+const CONFIDENCE_THRESHOLD = 0.7;
+
+const INTENT_CLASSIFICATION_SYSTEM = `You are a document type classifier. Analyze the user's request and determine the most appropriate document type.
 
 Available types: ${Object.keys(PROMPT_TEMPLATES).join(', ')}
 
-User request: "{{PROMPT_PLACEHOLDER}}"
-
-If you can confidently determine the type (confidence > 0.7), respond with JSON:
+If you can confidently determine the type (confidence > ${CONFIDENCE_THRESHOLD}), respond with JSON:
 { "type": "resume", "confidence": 0.9 }
 
 If the request is too vague or could match multiple types, respond with:
@@ -22,13 +22,17 @@ Respond ONLY with the JSON object, no other text.`;
  * Classify user intent from their prompt
  */
 export async function classifyIntent(prompt: string): Promise<IntentClassificationResult> {
-  const systemPrompt = INTENT_CLASSIFICATION_PROMPT.replace('{{PROMPT_PLACEHOLDER}}', prompt);
+  // Validate input
+  if (!prompt?.trim()) {
+    return { needsClarification: true };
+  }
 
   try {
     const generator = await streamChatCompletion({
       model: 'openai/gpt-4o-mini', // Use fast model for classification
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: INTENT_CLASSIFICATION_SYSTEM },
+        { role: 'user', content: prompt },
       ],
     });
 
