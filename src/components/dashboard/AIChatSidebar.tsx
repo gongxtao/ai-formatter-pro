@@ -3,13 +3,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useChatStore } from '@/stores/useChatStore';
+import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useAIChat } from '@/hooks/useAIChat';
 import { ChatStream } from '@/components/ai/ChatStream';
 import { getUserId } from '@/lib/utils/user-id';
 
 export function AIChatSidebar() {
   const t = useTranslations('editor');
-  const tAi = useTranslations('ai');
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -18,7 +18,17 @@ export function AIChatSidebar() {
   const streamingContent = useChatStore((s) => s.streamingContent);
   const isLoading = useChatStore((s) => s.isLoading);
 
-  const { sendMessage, insertIntoEditor } = useAIChat({ conversationId });
+  const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
+  const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
+
+  const { sendMessage } = useAIChat({
+    conversationId,
+    templateId: selectedTemplateId,
+    onChunk: (html: string) => {
+      // Real-time update to editor
+      setCurrentEditorHtml(html);
+    },
+  });
 
   // Initialize with greeting if empty
   useEffect(() => {
@@ -79,13 +89,6 @@ export function AIChatSidebar() {
     }
   }, [messages, streamingContent]);
 
-  const handleInsert = useCallback(
-    (content: string) => {
-      insertIntoEditor(content);
-    },
-    [insertIntoEditor],
-  );
-
   // Find the currently streaming message
   const streamingMessage = messages.findLast((m) => m.isStreaming);
 
@@ -131,24 +134,6 @@ export function AIChatSidebar() {
             </div>
           </div>
         ))}
-
-        {/* Insert button after last non-streaming assistant message */}
-        {messages.length > 0 &&
-          !streamingMessage &&
-          !isLoading &&
-          messages[messages.length - 1].role === 'assistant' && (
-            <div className="flex justify-start">
-              <button
-                onClick={() => handleInsert(messages[messages.length - 1].content)}
-                className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
-              >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                {tAi('insertIntoEditor')}
-              </button>
-            </div>
-          )}
       </div>
 
       {/* Input */}

@@ -8,6 +8,8 @@ import type { StreamEvent } from '@/types/ai';
 interface UseAIChatOptions {
   conversationId?: string | null;
   category?: string;
+  templateId?: string | null;
+  onChunk?: (html: string) => void;
 }
 
 export function useAIChat(options?: UseAIChatOptions) {
@@ -72,6 +74,7 @@ export function useAIChat(options?: UseAIChatOptions) {
             message,
             contextHtml: sendOptions?.contextHtml,
             category: options?.category,
+            templateId: options?.templateId,
           }),
           signal: abortController.signal,
         });
@@ -104,6 +107,9 @@ export function useAIChat(options?: UseAIChatOptions) {
               switch (event.type) {
                 case 'content':
                   appendStreamingContent(event.data);
+                  // Call onChunk callback with current content
+                  const currentContent = useChatStore.getState().streamingContent + event.data;
+                  options?.onChunk?.(currentContent);
                   break;
                 case 'status':
                   // Optional: could show status in UI

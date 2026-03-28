@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { buildChatMessages } from '@/lib/ai/prompt-builder';
+import { buildChatMessagesWithTemplate } from '@/lib/ai/prompt-builder';
 import { streamChatCompletion } from '@/lib/ai/openrouter-client';
 import { createSSEStream, sendSSEContent, sendSSEError, sendSSEStatus } from '@/lib/ai/sse-helper';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
@@ -10,7 +10,7 @@ export const maxDuration = 60;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { conversationId, message, contextHtml, model, category } = body;
+    const { conversationId, message, contextHtml, model, category, templateId } = body;
 
     if (!conversationId || !message) {
       return new Response(JSON.stringify({ error: 'conversationId and message are required' }), {
@@ -38,6 +38,23 @@ export async function POST(request: NextRequest) {
       content: m.content,
     }));
 
+    // Load template HTML if templateId provided
+    let templateHtml: string | undefined;
+
+    if (templateId) {
+      try {
+        const templateRes = await fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/templates?id=${templateId}`
+        );
+        if (templateRes.ok) {
+          const templateData = await templateRes.json();
+          templateHtml = templateData.html;
+        }
+      } catch (e) {
+        console.error('Failed to load template:', e);
+      }
+    }
+
     // Persist user message
     await supabase.from('ai_messages').insert({
       conversation_id: conversationId,
@@ -56,8 +73,9 @@ export async function POST(request: NextRequest) {
 
         sendSSEStatus(controller!, 'Thinking...', 10);
 
-        const { model: selectedModel, messages } = buildChatMessages({
+        const { model: selectedModel, messages } = buildChatMessagesWithTemplate({
           category,
+          templateHtml,
           contextHtml,
           history,
           userMessage: message,
