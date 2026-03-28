@@ -397,8 +397,37 @@ body: JSON.stringify({
    - 生成内容符合模板结构
    - 用户确认后内容正确插入编辑器
 
-## Open Questions
+## Decisions
 
-1. 中间对话页面的会话数据是否需要持久化？（当前设计为内存存储）
-2. 如果用户在中间对话页面刷新浏览器，如何处理？
-3. 模板结构信息如何传递给 AI？（直接传 HTML 还是提取结构特征？）
+1. **会话数据持久化**：不持久化，使用内存存储。用户刷新中间对话页面会丢失对话。
+2. **模板信息传递**：直接传模板 HTML 给 AI，不提取结构特征。
+3. **needsClarification 处理**：在 SSE 流中发送 `clarification_needed` 事件。
+
+### SSE 事件格式
+
+```typescript
+// 新增事件类型
+interface ClarificationEvent {
+  type: 'clarification_needed';
+  sessionId: string;
+  question: string;
+}
+```
+
+### 客户端处理逻辑
+
+```typescript
+switch (event.type) {
+  case 'clarification_needed':
+    setGenerationSessionId(event.sessionId);
+    router.push(`/dashboard/ai-chat/${event.sessionId}`);
+    return; // 停止处理流
+  case 'status':
+    setStatusMessage(event.data);
+    break;
+  case 'content':
+    accumulated += event.data;
+    break;
+  // ...
+}
+```
