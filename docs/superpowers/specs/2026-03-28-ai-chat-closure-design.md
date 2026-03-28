@@ -126,7 +126,69 @@ interface DashboardState {
 
 ### API Changes
 
+---
+
 #### `/api/ai/generate` 修改
+
+**请求：**
+```typescript
+interface GenerateRequest {
+  category?: string;  // 改为可选
+  prompt: string;
+  topic?: string;
+  industry?: string;
+  model?: string;
+}
+```
+
+**逻辑流程：**
+```
+1. 接收请求
+2. 如果 category 有值 → 直接生成（现有逻辑）
+3. 如果 category 为空：
+   a. 调用 LLM 进行"意图分类"
+   b. LLM 返回：
+      - 推断的类型（如果能推断）
+      - needsClarification=true（如果不能推断）
+   c. 如果能推断 → 使用推断的类型生成
+   d. 如果不能推断 → 返回 clarification_needed 事件
+```
+
+**意图分类 Prompt：**
+```typescript
+const INTENT_CLASSIFICATION_PROMPT = `
+You are a document type classifier. Analyze the user's request and determine the most appropriate document type.
+
+Available types: ${Object.keys(PROMPT_TEMPLATES).join(', ')}
+
+User request: "${prompt}"
+
+If you can confidently determine the type, respond with JSON:
+{ "type": "resume", "confidence": 0.9 }
+
+If the request is too vague or could match multiple types, respond with:
+{ "needsClarification": true, "possibleTypes": ["resume", "coverLetter", "letter"] }
+
+Respond ONLY with the JSON object, no other text.
+`;
+```
+
+**SSE 事件流：**
+```
+情况 A：能推断类型
+→ { type: 'status', data: 'Analyzing request...', percentage: 10 }
+→ { type: 'status', data: 'Detected document type: resume', percentage: 20 }
+→ { type: 'content', data: '<h1>...' }  // 开始生成
+→ { type: 'completion', data: '<html>...' }
+→ { type: 'done', data: '' }
+
+情况 B：不能推断类型
+→ { type: 'status', data: 'Analyzing request...', percentage: 10 }
+→ { type: 'clarification_needed', sessionId: 'xxx', question: 'What type of document?' }
+// 流结束
+```
+
+---
 
 **请求：**
 ```typescript
@@ -192,19 +254,179 @@ interface ClarifyResponse {
 }
 ```
 
+**逻辑流程：**
+```
+1. 接收请求（sessionId + message）
+2. 从内存获取会话上下文（用户原始 prompt + 历史对话）
+3. 调用 LLM 进行对话
+4. LLM 返回结构化响应：
+   a. 如果还需要更多信息 → type: continue + quickReplies
+   b. 如果信息足够 → type: complete + html
+5. 如果 complete，返回 HTML 并结束会话
+```
+
+**System Prompt：**
+```typescript
+const CLARIFY_SYSTEM_PROMPT = `
+You are a helpful document creation assistant. Your goal is to help users create documents.
+
+First, determine what type of document the user wants to create.
+Available types: resume, coverLetter, letter, report, proposal, businessPlan, contract, etc.
+
+If you need more information to determine the document type, ask a clear question.
+When asking, provide relevant options as quick replies.
+
+When you have enough information, respond with JSON:
+{
+  "type": "complete",
+  "category": "resume",
+  "summary": "Brief summary of what you'll generate"
+}
+
+When you need more info:
+{
+  "type": "continue",
+  "content": "What type of document would you like to create?",
+  "quickReplies": ["Resume", "Cover Letter", "Report", "Letter"]
+}
+
+Always respond with valid JSON only.
+`;
+```
+
+**会话存储（内存）：**
+```typescript
+// 简单的内存存储
+const clarifySessions = new Map<string, {
+  originalPrompt: string;
+  messages: Array<{ role: string; content: string }>;
+  createdAt: Date;
+}>();
+
+// 过期清理（5分钟后自动删除）
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, session] of clarifySessions) {
+    if (now - session.createdAt.getTime() > 5 * 60 * 1000) {
+      clarifySessions.delete(id);
+    }
+  }
+}, 60 * 1000);
+```
+
+---
+
 #### `/api/ai/chat` 修改
 
 **请求新增参数：**
 ```typescript
 interface ChatRequest {
-  // ...existing
-  templateId?: string;  // 新增：模板 ID
+  conversationId: string;
+  message: string;
+  contextHtml?: string;    // 现有：编辑器当前内容
+  category?: string;       // 现有：文档类型
+  templateId?: string;     // 新增：模板 ID
 }
 ```
 
 **逻辑修改：**
-1. 如果 `templateId` 有值 → 从 API 获取模板结构 → 加入 system prompt
-2. 如果 `templateId` 为空 → 使用现有逻辑
+```
+1. 接收请求
+2. 如果 templateId 有值：
+   a. 从 /api/templates?id=xxx 获取模板 HTML
+   b. 提取模板结构特征（或直接使用 HTML）
+   c. 构建 System Prompt 包含模板信息
+3. 如果 templateId 为空：
+   a. 使用 contextHtml 推断文档类型
+   b. 如果能推断 → 使用对应类型的 prompt
+   c. 如果不能推断 → 使用通用编辑 prompt
+4. 调用 LLM 生成（流式）
+5. 流式返回内容
+```
+
+**System Prompt 构建（有模板时）：**
+```typescript
+function buildChatSystemPrompt(templateHtml: string, category?: string): string {
+  const basePrompt = getPromptTemplate(category ?? 'document');
+
+  return `${basePrompt}
+
+IMPORTANT: The user is working with a template. Here is the template structure:
+
+<template>
+${templateHtml}
+</template>
+
+When generating or editing content:
+1. Maintain the template's structure and styling
+2. Replace placeholder content appropriately
+3. Keep the same HTML elements and layout
+4. Match the template's tone and format
+
+The user's current document content is provided separately.
+`;
+}
+```
+
+**System Prompt 构建（无模板时）：**
+```typescript
+function buildChatSystemPromptNoTemplate(contextHtml?: string, category?: string): string {
+  if (category) {
+    // 有类型但无模板：使用类型对应的 prompt
+    return getPromptTemplate(category);
+  }
+
+  if (contextHtml) {
+    // 有内容但无类型：推断类型
+    return `You are a helpful document editing assistant.
+
+Analyze the user's current document and help them edit or improve it.
+When generating content, match the style and structure of the existing document.
+
+Current document:
+<document>
+${contextHtml}
+</document>
+
+Respond with complete HTML when generating new content.
+`;
+  }
+
+  // 无内容无类型：通用 prompt + 引导用户
+  return `You are a helpful document creation assistant.
+
+The user hasn't started a document yet. Help them by:
+1. Asking what type of document they want to create
+2. Gathering necessary information
+3. Generating a complete document when ready
+
+When generating content, use semantic HTML with inline styles.
+`;
+}
+```
+
+**类型推断逻辑：**
+```typescript
+const TYPE_INFERENCE_PROMPT = `
+Analyze the following document content and determine its type.
+Available types: ${Object.keys(PROMPT_TEMPLATES).join(', ')}
+
+Document content:
+${contextHtml.substring(0, 1000)}
+
+Respond with JSON only:
+{ "type": "resume", "confidence": 0.85 }
+
+If uncertain, use "document" as default.
+`;
+
+async function inferDocumentType(contextHtml: string): Promise<string> {
+  // 调用 LLM 进行类型推断
+  const response = await callLLM(TYPE_INFERENCE_PROMPT);
+  const result = JSON.parse(response);
+  return result.confidence > 0.6 ? result.type : 'document';
+}
+```
 
 ### Component Changes
 
