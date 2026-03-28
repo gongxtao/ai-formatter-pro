@@ -164,6 +164,9 @@ export async function chatCompletionOpenAI(
       stream: false,
       temperature: params.temperature,
       max_tokens: params.max_tokens,
+      extra_body: {
+        enable_thinking: false
+      }
     }),
   });
 
