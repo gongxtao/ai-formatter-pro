@@ -1,4 +1,5 @@
 import type { StreamEvent } from '@/types/ai';
+import type { GenerateSSEEvent } from '@/types/clarify';
 
 export function createSSEStream(): {
   controller: ReadableStreamDefaultController | null;
@@ -51,4 +52,21 @@ export function sendSSECompletion(
 ): void {
   sendSSEEvent(controller, { type: 'completion', data: fullContent, percentage: 100 });
   sendSSEEvent(controller, { type: 'done', data: '', percentage: 100 });
+}
+
+export function sendSSEClarificationNeeded(
+  controller: ReadableStreamDefaultController,
+  sessionId: string,
+  question: string,
+  possibleTypes: string[] = [],
+): void {
+  const event: GenerateSSEEvent = {
+    type: 'clarification_needed',
+    data: question,
+    sessionId,
+    question,
+  };
+  // Note: possibleTypes is not in GenerateSSEEvent, but we include it in the raw event for client use
+  const data = JSON.stringify({ ...event, possibleTypes });
+  controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
 }
