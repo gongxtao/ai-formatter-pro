@@ -46,6 +46,9 @@ interface DashboardState {
 
   currentEditorHtml: string;
   setCurrentEditorHtml: (html: string) => void;
+
+  generationSessionId: string | null;
+  setGenerationSessionId: (id: string | null) => void;
 }
 
 export const useDashboardStore = create<DashboardState>()(
@@ -93,6 +96,9 @@ export const useDashboardStore = create<DashboardState>()(
 
       currentEditorHtml: '',
       setCurrentEditorHtml: (html) => set({ currentEditorHtml: html }),
+
+      generationSessionId: null,
+      setGenerationSessionId: (id) => set({ generationSessionId: id }),
     }),
     {
       name: 'dashboard-storage',
