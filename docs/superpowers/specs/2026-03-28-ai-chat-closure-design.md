@@ -65,26 +65,31 @@ AIChatSidebar 读取 selectedTemplateId
     ↓
 ┌─────────────────────────────────────────────────────┐
 │ 有 selectedTemplateId                                │
-│   → 获取模板结构信息                                   │
+│   → 获取模板 HTML                                      │
 │   → 传递给 AI 作为上下文                               │
-│   → AI 基于模板结构生成内容                             │
+│   → AI 基于模板样式生成内容                             │
 └─────────────────────────────────────────────────────┘
     ↓
 ┌─────────────────────────────────────────────────────┐
 │ 无 selectedTemplateId                                │
-│   → 传递编辑器当前内容作为上下文                         │
-│   → AI 根据内容推断文档类型                             │
-│   → 生成符合推断类型的内容                              │
+│   → AI 根据编辑器内容/用户输入推断文档类型              │
+│   → 能推断：使用对应模板样式生成内容                    │
+│   → 不能推断：引导用户提供信息辅助选择模板              │
 └─────────────────────────────────────────────────────┘
     ↓
 用户发送消息
     ↓
-AI 生成完整 HTML
+AI 流式生成 HTML（实时渲染到编辑器）
     ↓
-用户点击 "Insert into Editor" 按钮
+编辑器实时显示 AI 输出过程
     ↓
-setPendingEditorContent → EditorShell 消费并更新编辑器
+生成完成
 ```
+
+**关键体验改进：**
+- AI 生成内容时**实时流式渲染**到编辑器，用户可以看到输出过程
+- 不需要用户点击"插入"按钮，减少操作步骤
+- 避免"系统卡住"的错觉，提升用户体验
 
 ## Technical Design
 
@@ -251,27 +256,41 @@ export default function AIChatPage({ params }) {
 **改动：**
 1. 读取 `selectedTemplateId`
 2. 发送消息时传递 `templateId`
+3. **删除 "Insert into Editor" 按钮**
+4. **实时流式渲染**：AI 生成的内容实时更新到编辑器
 
 ```typescript
 const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
+const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
 
 const { sendMessage } = useAIChat({
   conversationId,
   templateId: selectedTemplateId,  // 新增
+  onChunk: (html: string) => {
+    // 实时更新编辑器内容
+    setCurrentEditorHtml(html);
+  },
 });
 ```
+
+**实时渲染逻辑：**
+- AI 返回的每个 chunk 累积成完整 HTML
+- 每次收到 chunk 后立即调用 `setCurrentEditorHtml`
+- EditorShell 监听 `currentEditorHtml` 变化并重新渲染
 
 #### useAIChat Hook
 
 **改动：**
 1. 新增 `templateId` 参数
-2. 发送到 API
+2. 新增 `onChunk` 回调，用于实时更新编辑器
+3. 发送到 API
 
 ```typescript
 interface UseAIChatOptions {
   conversationId?: string | null;
   category?: string;
   templateId?: string | null;  // 新增
+  onChunk?: (accumulatedHtml: string) => void;  // 新增：实时更新回调
 }
 
 // sendMessage 时传递 templateId
@@ -282,6 +301,12 @@ body: JSON.stringify({
   category: options?.category,
   templateId: options?.templateId,  // 新增
 }),
+
+// 处理流式响应时
+case 'content':
+  accumulated += event.data;
+  onChunk?.(accumulated);  // 实时回调
+  break;
 ```
 
 ### Data Flow Diagrams
@@ -345,17 +370,17 @@ body: JSON.stringify({
 │  │  Read:             │    │   ┌──────────────────────┐    │    │
 │  │  selectedTemplateId│    │   │  Document Content    │    │    │
 │  │                    │    │   │                      │    │    │
-│  │  Send message with │    │   │  (HTML)              │    │    │
+│  │  Send message with │    │   │  (实时流式更新)       │    │    │
 │  │  templateId        │    │   │                      │    │    │
 │  │       │            │    │   └──────────────────────┘    │    │
 │  │       ▼            │    │             ▲                 │    │
 │  │  /api/ai/chat      │    │             │                 │    │
-│  │       │            │    │   Insert HTML Content         │    │
+│  │  (SSE Stream)      │    │   实时渲染 AI 输出            │    │
+│  │       │            │    │             │                 │    │
 │  │       ▼            │    │             │                 │    │
-│  │  AI generates HTML │    │             │                 │    │
-│  │       │            │    └─────────────┼─────────────────┘    │
-│  │       ▼            │                  │                      │
-│  │  "Insert" button   │──────────────────┘                      │
+│  │  AI 流式生成 HTML  │──────────────────┘                 │    │
+│  │  每个 chunk 实时   │                                      │    │
+│  │  更新编辑器内容    │                                      │    │
 │  │                    │                                         │
 │  └────────────────────┘                                         │
 │                                                                  │
@@ -393,9 +418,10 @@ body: JSON.stringify({
    - 中间对话完成后 → 跳转 Editor 并显示生成内容
 
 2. **Editor AIChatSidebar**
-   - AI 感知当前模板类型
-   - 生成内容符合模板结构
-   - 用户确认后内容正确插入编辑器
+   - AI 感知当前模板类型（通过 selectedTemplateId）
+   - 无模板时，AI 能根据上下文推断文档类型并使用对应模板样式
+   - **实时流式渲染**：AI 生成内容实时显示在编辑器中
+   - 用户能看到 AI 正在输出的过程，体验流畅
 
 ## Decisions
 
