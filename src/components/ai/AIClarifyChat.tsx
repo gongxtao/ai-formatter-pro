@@ -131,7 +131,7 @@ export function AIClarifyChat({ sessionId }: AIClarifyChatProps) {
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-4" aria-live="polite" aria-label="Chat messages">
         <div className="max-w-3xl mx-auto space-y-4">
           {messages.map((msg) => (
             <div
@@ -168,7 +168,7 @@ export function AIClarifyChat({ sessionId }: AIClarifyChatProps) {
 
           {/* Loading indicator */}
           {isLoading && (
-            <div className="flex justify-start">
+            <div className="flex justify-start" role="status" aria-label="AI is thinking">
               <div className="bg-white text-gray-800 shadow-sm rounded-2xl rounded-bl-md px-4 py-3">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -192,6 +192,7 @@ export function AIClarifyChat({ sessionId }: AIClarifyChatProps) {
               onKeyDown={handleKeyDown}
               placeholder="Type your message..."
               disabled={isLoading}
+              aria-label="Message input"
               className="flex-1 px-4 py-3 bg-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#2B00FF]/20 disabled:opacity-50"
             />
             <button
