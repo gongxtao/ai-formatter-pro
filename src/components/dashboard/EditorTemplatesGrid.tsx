@@ -40,11 +40,7 @@ export function EditorTemplatesGrid() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto pt-8 pb-20 px-8 text-left bg-white">
-      <h2 className="text-[28px] font-bold text-gray-900 mb-6 tracking-tight">
-        {tDash('templatesTitle', { docType: docTypeLabel })}
-      </h2>
-
+    <div className="flex-1 overflow-y-auto pb-20 px-8 text-left bg-[#FAFAFA]">
       <TemplateFilterBar />
 
       <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6">

@@ -177,6 +177,7 @@
     "save": "保存",
     "download": "下载",
     "backToTemplates": "返回模板",
+    "backToEditor": "返回编辑器",
     "title": "编辑器",
     "untitled": "未命名文档",
     "startFromScratch": "从零开始",
@@ -187,7 +188,8 @@
     "docTypePanelTitle": "文档",
     "searchPlaceholder": "你想创建什么？",
     "askAiToEdit": "让 AI 编辑",
-    "exporting": "导出中..."
+    "exporting": "导出中...",
+    "loadingTemplate": "正在加载模板..."
   },
   "history": {
     "title": "历史记录",

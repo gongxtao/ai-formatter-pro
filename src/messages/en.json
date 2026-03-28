@@ -177,6 +177,7 @@
     "save": "Save",
     "download": "Download",
     "backToTemplates": "Back to Templates",
+    "backToEditor": "Back to Editor",
     "title": "Editor",
     "untitled": "Untitled Document",
     "startFromScratch": "Start from Scratch",
@@ -187,7 +188,8 @@
     "docTypePanelTitle": "Document",
     "searchPlaceholder": "What are you creating?",
     "askAiToEdit": "Ask AI to Edit",
-    "exporting": "Exporting..."
+    "exporting": "Exporting...",
+    "loadingTemplate": "Loading template..."
   },
   "history": {
     "title": "History",

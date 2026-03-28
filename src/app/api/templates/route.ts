@@ -26,18 +26,28 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Template not found' }, { status: 404 });
       }
 
-      // Fetch HTML content from html_url
+      // Fetch HTML content from html_url with caching
       let htmlContent = '';
       if (data.html_url) {
         try {
-          const htmlRes = await fetch(data.html_url);
+          // Cache for 1 hour at CDN/edge level
+          const htmlRes = await fetch(data.html_url, {
+            next: { revalidate: 3600 },
+          });
           if (htmlRes.ok) htmlContent = await htmlRes.text();
         } catch {
           // html_url fetch failed, return empty content
         }
       }
 
-      return NextResponse.json({ template: data, html: htmlContent });
+      return NextResponse.json(
+        { template: data, html: htmlContent },
+        {
+          headers: {
+            'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+          },
+        }
+      );
     }
 
     if (type === 'categories') {
@@ -52,7 +62,14 @@ export async function GET(request: NextRequest) {
       }
 
       const categories = [...new Set(data.map((row: { category: string }) => row.category))];
-      return NextResponse.json({ categories });
+      return NextResponse.json(
+        { categories },
+        {
+          headers: {
+            'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
+          },
+        }
+      );
     }
 
     if (category) {
@@ -68,7 +85,14 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
 
-      return NextResponse.json({ templates: data });
+      return NextResponse.json(
+        { templates: data },
+        {
+          headers: {
+            'Cache-Control': 'public, max-age=300, stale-while-revalidate=3600',
+          },
+        }
+      );
     }
 
     return NextResponse.json({ error: 'Missing type or category parameter' }, { status: 400 });

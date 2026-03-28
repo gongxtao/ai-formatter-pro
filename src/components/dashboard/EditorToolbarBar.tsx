@@ -6,6 +6,7 @@ import { ExportDropdown } from './ExportDropdown';
 interface EditorToolbarBarProps {
   editorView: 'editor' | 'templates';
   onBackToTemplates: () => void;
+  onBackToEditor: () => void;
   docTitle: string;
   isSaving: boolean;
   showSavedIcon: boolean;
@@ -16,6 +17,7 @@ interface EditorToolbarBarProps {
 export function EditorToolbarBar({
   editorView,
   onBackToTemplates,
+  onBackToEditor,
   docTitle,
   isSaving,
   showSavedIcon,
@@ -25,18 +27,18 @@ export function EditorToolbarBar({
   const t = useTranslations('editor');
   const th = useTranslations('history');
 
-  // 模板视图：只显示返回按钮
+  // 模板视图：只显示返回编辑器按钮
   if (editorView === 'templates') {
     return (
       <div className="h-[50px] border-b border-gray-100 flex items-center px-6 flex-shrink-0 bg-white">
         <button
-          onClick={onBackToTemplates}
+          onClick={onBackToEditor}
           className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-primary transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-          {t('backToTemplates')}
+          {t('backToEditor')}
         </button>
       </div>
     );

@@ -15,6 +15,7 @@ export function TemplateCardGrid() {
   const templateSearchQuery = useDashboardStore((s) => s.templateSearchQuery);
   const shuffleTrigger = useDashboardStore((s) => s.shuffleTrigger);
   const setSelectedTemplateId = useDashboardStore((s) => s.setSelectedTemplateId);
+  const setEditorView = useDashboardStore((s) => s.setEditorView);
   const docTypeLabel = t(`docTypes.${activeDocType}` as 'dashboard.docTypes.businessPlan');
   const templates = useTemplatesStore((s) => s.templates);
   const templatesLoading = useTemplatesStore((s) => s.templatesLoading);
@@ -85,6 +86,7 @@ export function TemplateCardGrid() {
         {filteredCards.map((card) => (
           <div key={card.id} onClick={() => {
             setSelectedTemplateId(card.id);
+            setEditorView('editor');
             router.push('/dashboard/editor');
           }} className="contents cursor-pointer">
             <TemplateCard template={card} />

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { NavItem } from '@/types/dashboard';
 
 interface DashboardState {
@@ -40,48 +41,66 @@ interface DashboardState {
   isGenerating: boolean;
   setIsGenerating: (generating: boolean) => void;
 
+  isTemplateLoading: boolean;
+  setIsTemplateLoading: (loading: boolean) => void;
+
   currentEditorHtml: string;
   setCurrentEditorHtml: (html: string) => void;
 }
 
-export const useDashboardStore = create<DashboardState>((set) => ({
-  activeNav: 'document',
-  setActiveNav: (nav) => set({ activeNav: nav }),
+export const useDashboardStore = create<DashboardState>()(
+  persist(
+    (set) => ({
+      activeNav: 'document',
+      setActiveNav: (nav) => set({ activeNav: nav }),
 
-  activeDocType: 'businessPlan',
-  setActiveDocType: (key) => set({ activeDocType: key }),
+      activeDocType: '',
+      setActiveDocType: (key) => set({ activeDocType: key }),
 
-  activeTemplateCategory: 'resume',
-  setActiveTemplateCategory: (key) => set({ activeTemplateCategory: key }),
+      activeTemplateCategory: '',
+      setActiveTemplateCategory: (key) => set({ activeTemplateCategory: key }),
 
-  sidebarSearchQuery: '',
-  setSidebarSearchQuery: (q) => set({ sidebarSearchQuery: q }),
+      sidebarSearchQuery: '',
+      setSidebarSearchQuery: (q) => set({ sidebarSearchQuery: q }),
 
-  templateSearchQuery: '',
-  setTemplateSearchQuery: (q) => set({ templateSearchQuery: q }),
+      templateSearchQuery: '',
+      setTemplateSearchQuery: (q) => set({ templateSearchQuery: q }),
 
-  shuffleTrigger: 0,
-  triggerShuffle: () => set((s) => ({ shuffleTrigger: s.shuffleTrigger + 1 })),
-  selectDocType: (key) => set((s) => ({ activeDocType: key, activeTemplateCategory: key, shuffleTrigger: s.shuffleTrigger + 1 })),
+      shuffleTrigger: 0,
+      triggerShuffle: () => set((s) => ({ shuffleTrigger: s.shuffleTrigger + 1 })),
+      selectDocType: (key) => set((s) => ({ activeDocType: key, activeTemplateCategory: key, shuffleTrigger: s.shuffleTrigger + 1 })),
 
-  activeFilterTag: null,
-  setActiveFilterTag: (tag) => set({ activeFilterTag: tag }),
+      activeFilterTag: null,
+      setActiveFilterTag: (tag) => set({ activeFilterTag: tag }),
 
-  selectedTemplateId: null,
-  setSelectedTemplateId: (id) => set({ selectedTemplateId: id }),
+      selectedTemplateId: null,
+      setSelectedTemplateId: (id) => set({ selectedTemplateId: id }),
 
-  editorView: 'editor',
-  setEditorView: (view) => set({ editorView: view }),
+      editorView: 'templates',
+      setEditorView: (view) => set({ editorView: view }),
 
-  showDocTypesOverlay: false,
-  toggleDocTypesOverlay: () => set((s) => ({ showDocTypesOverlay: !s.showDocTypesOverlay })),
+      showDocTypesOverlay: false,
+      toggleDocTypesOverlay: () => set((s) => ({ showDocTypesOverlay: !s.showDocTypesOverlay })),
 
-  pendingEditorContent: null,
-  setPendingEditorContent: (content) => set({ pendingEditorContent: content }),
+      pendingEditorContent: null,
+      setPendingEditorContent: (content) => set({ pendingEditorContent: content }),
 
-  isGenerating: false,
-  setIsGenerating: (generating) => set({ isGenerating: generating }),
+      isGenerating: false,
+      setIsGenerating: (generating) => set({ isGenerating: generating }),
 
-  currentEditorHtml: '',
-  setCurrentEditorHtml: (html) => set({ currentEditorHtml: html }),
-}));
+      isTemplateLoading: false,
+      setIsTemplateLoading: (loading) => set({ isTemplateLoading: loading }),
+
+      currentEditorHtml: '',
+      setCurrentEditorHtml: (html) => set({ currentEditorHtml: html }),
+    }),
+    {
+      name: 'dashboard-storage',
+      partialize: (state) => ({
+        activeDocType: state.activeDocType,
+        activeTemplateCategory: state.activeTemplateCategory,
+        editorView: state.editorView,
+      }),
+    }
+  )
+);

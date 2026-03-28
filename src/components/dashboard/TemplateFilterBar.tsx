@@ -43,7 +43,7 @@ export function TemplateFilterBar() {
   };
 
   return (
-    <div className="relative mb-8 pb-4 flex items-center sticky top-0 bg-[#FAFAFA] z-40 py-4">
+    <div className="relative mb-2 pb-4 flex items-center sticky top-0 bg-[#FAFAFA] z-30 py-2">
       <div ref={scrollRef} className="flex items-center gap-3 overflow-x-auto hide-scrollbar flex-1 pr-10">
         <div className="relative min-w-[240px] flex-shrink-0">
           <SearchIcon className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />

@@ -37,9 +37,14 @@ export function EditorShell() {
   const pendingEditorContent = useDashboardStore((s) => s.pendingEditorContent);
   const setPendingEditorContent = useDashboardStore((s) => s.setPendingEditorContent);
   const isGenerating = useDashboardStore((s) => s.isGenerating);
+  const isTemplateLoading = useDashboardStore((s) => s.isTemplateLoading);
+  const setIsTemplateLoading = useDashboardStore((s) => s.setIsTemplateLoading);
   const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
   const setSelectedTemplateId = useDashboardStore((s) => s.setSelectedTemplateId);
   const saveDocument = useHistoryStore((s) => s.saveDocument);
+
+  // 确保 templates 数据在页面加载时获取
+  useTemplates();
 
   // Local state
   const [docTitle, setDocTitle] = useState(t('untitled'));
@@ -76,6 +81,10 @@ export function EditorShell() {
 
   const handleBackToTemplates = useCallback(() => {
     setEditorView('templates');
+  }, [setEditorView]);
+
+  const handleBackToEditor = useCallback(() => {
+    setEditorView('editor');
   }, [setEditorView]);
 
   const handleSave = useCallback(() => {
@@ -120,6 +129,7 @@ export function EditorShell() {
   useEffect(() => {
     if (!selectedTemplateId) return;
     const loadTemplate = async () => {
+      setIsTemplateLoading(true);
       try {
         const res = await fetch(`/api/templates?id=${selectedTemplateId}`);
         if (!res.ok) throw new Error('Failed to load template');
@@ -134,10 +144,11 @@ export function EditorShell() {
         console.error('Failed to load template:', e);
       } finally {
         setSelectedTemplateId(null);
+        setIsTemplateLoading(false);
       }
     };
     loadTemplate();
-  }, [selectedTemplateId, setSelectedTemplateId, setCurrentEditorHtml]);
+  }, [selectedTemplateId, setSelectedTemplateId, setCurrentEditorHtml, setIsTemplateLoading]);
 
   // Flush auto-save on unmount
   useEffect(() => {
@@ -179,6 +190,7 @@ export function EditorShell() {
         <EditorToolbarBar
           editorView={editorView}
           onBackToTemplates={handleBackToTemplates}
+          onBackToEditor={handleBackToEditor}
           docTitle={docTitle}
           isSaving={isSaving}
           showSavedIcon={showSavedIcon}
@@ -189,19 +201,29 @@ export function EditorShell() {
         {editorView === 'templates' ? (
           <EditorTemplatesGrid />
         ) : (
-          <EditablePreview
-            selectedFile="editor"
-            content={content}
-            onContentChange={handleContentChange}
-            floatingImages={floatingImages}
-            onFloatingImagesChange={setFloatingImages}
-            isGenerating={isGenerating}
-            initialEditing
-            hideControls
-            hideToolbar
-            previewRef={previewRef}
-            onIframeReady={handleIframeReady}
-          />
+          <div className="relative flex-1">
+            {isTemplateLoading && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                  <span className="text-sm text-gray-600">{t('loadingTemplate')}</span>
+                </div>
+              </div>
+            )}
+            <EditablePreview
+              selectedFile="editor"
+              content={content}
+              onContentChange={handleContentChange}
+              floatingImages={floatingImages}
+              onFloatingImagesChange={setFloatingImages}
+              isGenerating={isGenerating}
+              initialEditing
+              hideControls
+              hideToolbar
+              previewRef={previewRef}
+              onIframeReady={handleIframeReady}
+            />
+          </div>
         )}
       </main>
     </div>
