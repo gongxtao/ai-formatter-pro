@@ -20,6 +20,14 @@ interface DashboardState {
   shuffleTrigger: number;
   triggerShuffle: () => void;
 
+  selectDocType: (key: string) => void;
+
+  activeFilterTag: string | null;
+  setActiveFilterTag: (tag: string | null) => void;
+
+  selectedTemplateId: string | null;
+  setSelectedTemplateId: (id: string | null) => void;
+
   editorView: 'editor' | 'templates';
   setEditorView: (view: 'editor' | 'templates') => void;
 
@@ -54,6 +62,13 @@ export const useDashboardStore = create<DashboardState>((set) => ({
 
   shuffleTrigger: 0,
   triggerShuffle: () => set((s) => ({ shuffleTrigger: s.shuffleTrigger + 1 })),
+  selectDocType: (key) => set((s) => ({ activeDocType: key, activeTemplateCategory: key, shuffleTrigger: s.shuffleTrigger + 1 })),
+
+  activeFilterTag: null,
+  setActiveFilterTag: (tag) => set({ activeFilterTag: tag }),
+
+  selectedTemplateId: null,
+  setSelectedTemplateId: (id) => set({ selectedTemplateId: id }),
 
   editorView: 'editor',
   setEditorView: (view) => set({ editorView: view }),

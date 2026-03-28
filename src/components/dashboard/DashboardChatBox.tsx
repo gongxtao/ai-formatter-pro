@@ -7,8 +7,6 @@ import { useAIGeneration } from '@/hooks/useAIGeneration';
 import { GeneratingIndicator } from '@/components/ai/GeneratingIndicator';
 import { XIcon } from '@/components/landing/icons/XIcon';
 import { PlusIcon } from '@/components/landing/icons/PlusIcon';
-import { ChevronDownIcon } from '@/components/landing/icons/ChevronDownIcon';
-import { WebSearchIcon } from './icons/WebSearchIcon';
 import { DocumentIcon } from './icons/DocumentIcon';
 import { GenerateIcon } from './icons/GenerateIcon';
 
@@ -17,7 +15,6 @@ export function DashboardChatBox() {
   const tAi = useTranslations('ai');
   const activeDocType = useDashboardStore((s) => s.activeDocType);
   const docTypeLabel = t(`docTypes.${activeDocType}` as 'dashboard.docTypes.businessPlan');
-  const [bannerVisible, setBannerVisible] = useState(true);
   const [prompt, setPrompt] = useState('');
 
   const { generate, isGenerating, progress, statusMessage, error } = useAIGeneration();
@@ -32,44 +29,30 @@ export function DashboardChatBox() {
 
   if (isGenerating) {
     return (
-      <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-200 overflow-hidden text-left relative max-w-[840px] mx-auto">
-        <div className="p-8">
-          <GeneratingIndicator progress={progress} statusMessage={statusMessage} />
-        </div>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 max-w-[840px] mx-auto">
+        <GeneratingIndicator progress={progress} statusMessage={statusMessage} />
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-gray-200 overflow-hidden text-left relative max-w-[840px] mx-auto">
-      {bannerVisible && (
-        <div className="bg-[#F8F9FF] px-4 py-3 flex items-center gap-3 border-b border-gray-100">
-          <div className="flex -space-x-1">
-            <div className="w-5 h-5 rounded bg-blue-500 flex items-center justify-center text-[10px] text-white">G</div>
-            <div className="w-5 h-5 rounded bg-green-500 flex items-center justify-center text-[10px] text-white">C</div>
-          </div>
-          <a href="#" className="text-primary text-sm font-medium hover:underline">{t('bannerUpgrade')}</a>
-          <span className="text-gray-500 text-sm">{t('bannerHint')}</span>
-          <button className="ml-auto text-gray-400 hover:text-gray-600" onClick={() => setBannerVisible(false)}>
-            <XIcon className="w-4 h-4" />
+    <div className="max-w-[840px] mx-auto">
+      {error && (
+        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between">
+          <p className="text-sm text-red-600">{tAi('errorGenerating')}</p>
+          <button
+            onClick={handleGenerate}
+            className="text-sm text-red-600 font-medium hover:underline"
+          >
+            {tAi('errorRetry')}
           </button>
         </div>
       )}
 
-      <div className="p-5 pb-4">
-        <div className="flex items-center flex-wrap gap-2 text-[15px] text-gray-700 mb-8">
-          <span>{t('chatTopicTag', { docTypeLower: docTypeLabel.toLowerCase() })}</span>
-          <span className="bg-gray-100 px-3 py-1.5 rounded-md text-gray-400 cursor-text min-w-[80px] inline-block text-center">
-            {t('topic')}
-          </span>
-          <span>in</span>
-          <span className="bg-gray-100 px-3 py-1.5 rounded-md text-gray-400 cursor-text min-w-[80px] inline-block text-center">
-            {t('industry')}
-          </span>
-        </div>
-
-        {/* Prompt input */}
-        <div className="mb-4">
+      {/* Unified chat input container */}
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 flex flex-col gap-4 relative">
+        {/* Top: Text Input */}
+        <div className="w-full pl-1">
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -79,52 +62,55 @@ export function DashboardChatBox() {
                 handleGenerate();
               }
             }}
-            rows={2}
             placeholder={t('searchPlaceholder')}
-            className="w-full resize-none border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none placeholder:text-gray-400"
+            className="w-full bg-transparent outline-none text-gray-700 text-base placeholder:text-gray-400 resize-none min-h-[48px]"
+            rows={2}
           />
         </div>
 
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
-            <p className="text-sm text-red-600">{tAi('errorGenerating')}</p>
-            <button
-              onClick={handleGenerate}
-              className="text-sm text-red-600 font-medium hover:underline"
-            >
-              {tAi('errorRetry')}
-            </button>
-          </div>
-        )}
+        {/* Purple dot on the right side */}
+        <div className="absolute right-6 top-[35%] w-1.5 h-1.5 rounded-full bg-indigo-600"></div>
 
-        <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center gap-2">
-            <button className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50">
-              <PlusIcon className="w-4 h-4" />
+        {/* Bottom: Tools */}
+        <div className="flex items-center justify-between mt-2">
+          <div className="flex items-center gap-5">
+            {/* Plus button */}
+            <button className="text-gray-600 hover:text-gray-900 transition-colors">
+              <PlusIcon className="w-5 h-5" />
             </button>
-            <button className="px-4 py-2 rounded-full border border-gray-200 text-[13px] font-medium text-primary hover:bg-gray-50 flex items-center gap-2">
-              <WebSearchIcon className="w-4 h-4" />
-              {t('webSearch')}
-              <XIcon className="w-3 h-3 text-primary" />
-            </button>
-            <button className="px-4 py-2 rounded-full border border-gray-200 text-[13px] font-medium text-primary hover:bg-gray-50 flex items-center gap-2">
+
+            {/* Document type selector */}
+            <button className="flex items-center gap-1.5 text-blue-600 transition-colors text-sm font-medium">
               <DocumentIcon className="w-4 h-4" />
-              {docTypeLabel}
-              <XIcon className="w-3 h-3 text-primary" />
+              <span>{docTypeLabel}</span>
+              <XIcon className="w-3.5 h-3.5 ml-0.5" />
             </button>
-            <button className="px-4 py-2 rounded-full border border-gray-200 text-[13px] font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
-              {t('lightAi')}
-              <ChevronDownIcon className="w-4 h-4" />
+
+            {/* AI Model selector */}
+            <button className="flex items-center gap-1 text-sm text-gray-700 font-medium hover:text-gray-900 transition-colors">
+              Light AI
+              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-4">
+            {/* Mic button */}
+            <button className="text-gray-500 hover:text-gray-700 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+            </button>
+            
+            {/* Generate button */}
             <button
               onClick={handleGenerate}
               disabled={!prompt.trim()}
-              className="px-6 py-2.5 rounded-full bg-primary text-white text-[15px] font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#2B00FF] hover:bg-blue-700 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <GenerateIcon className="w-4 h-4" />
-              {t('generate')}
+              <span>{t('generate')}</span>
             </button>
           </div>
         </div>

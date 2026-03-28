@@ -23,14 +23,9 @@ interface MiniNavProps {
 export function MiniNav({ onNavigate }: MiniNavProps) {
   const t = useTranslations('dashboard');
   const activeNav = useDashboardStore((s) => s.activeNav);
-  const setActiveNav = useDashboardStore((s) => s.setActiveNav);
 
   const handleClick = (key: NavItem) => {
-    if (onNavigate) {
-      onNavigate(key);
-    } else {
-      setActiveNav(key);
-    }
+    onNavigate?.(key);
   };
 
   return (

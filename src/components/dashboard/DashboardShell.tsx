@@ -33,8 +33,7 @@ export function DashboardShell() {
 
       <main className="flex-1 min-w-0 bg-white relative h-screen flex flex-col">
         <ContentHeader />
-        {activeNav === 'home' && <HomeView />}
-        {activeNav === 'document' && <HomeView />}
+        {(activeNav === 'home' || activeNav === 'document') && <HomeView />}
         {activeNav === 'templates' && <TemplatesView />}
         {activeNav === 'history' && <HistoryView />}
       </main>

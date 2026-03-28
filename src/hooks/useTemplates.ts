@@ -22,10 +22,10 @@ export function useTemplates() {
 
   // Fetch categories on mount
   useEffect(() => {
-    if (categories.length === 0 && !categoriesLoading) {
+    if (categories.length === 0 && !categoriesLoading && !error) {
       fetchCategories();
     }
-  }, [categories.length, categoriesLoading, fetchCategories]);
+  }, [categories.length, categoriesLoading, error, fetchCategories]);
 
   // Initialize activeDocType with first category after categories load
   useEffect(() => {

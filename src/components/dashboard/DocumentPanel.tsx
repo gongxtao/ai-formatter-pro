@@ -9,8 +9,7 @@ import { SearchIcon } from '@/components/landing/icons/SearchIcon';
 export function DocumentPanel() {
   const t = useTranslations('dashboard');
   const activeDocType = useDashboardStore((s) => s.activeDocType);
-  const setActiveDocType = useDashboardStore((s) => s.setActiveDocType);
-  const triggerShuffle = useDashboardStore((s) => s.triggerShuffle);
+  const selectDocType = useDashboardStore((s) => s.selectDocType);
   const sidebarSearchQuery = useDashboardStore((s) => s.sidebarSearchQuery);
   const setSidebarSearchQuery = useDashboardStore((s) => s.setSidebarSearchQuery);
   const categories = useTemplatesStore((s) => s.categories);
@@ -54,10 +53,7 @@ export function DocumentPanel() {
                   key={cat}
                   label={cat}
                   active={activeDocType === cat}
-                  onClick={() => {
-                    setActiveDocType(cat);
-                    triggerShuffle();
-                  }}
+                  onClick={() => selectDocType(cat)}
                 />
               ))}
             </div>

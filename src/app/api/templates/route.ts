@@ -8,6 +8,37 @@ export async function GET(request: NextRequest) {
 
     const type = searchParams.get('type');
     const category = searchParams.get('category');
+    const id = searchParams.get('id');
+
+    // Fetch single template by ID with HTML content
+    if (id) {
+      const { data, error } = await supabase
+        .from('templates')
+        .select('*')
+        .eq('id', id)
+        .eq('is_active', true)
+        .single();
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+      if (!data) {
+        return NextResponse.json({ error: 'Template not found' }, { status: 404 });
+      }
+
+      // Fetch HTML content from html_url
+      let htmlContent = '';
+      if (data.html_url) {
+        try {
+          const htmlRes = await fetch(data.html_url);
+          if (htmlRes.ok) htmlContent = await htmlRes.text();
+        } catch {
+          // html_url fetch failed, return empty content
+        }
+      }
+
+      return NextResponse.json({ template: data, html: htmlContent });
+    }
 
     if (type === 'categories') {
       const { data, error } = await supabase

@@ -37,6 +37,8 @@ export function EditorShell() {
   const pendingEditorContent = useDashboardStore((s) => s.pendingEditorContent);
   const setPendingEditorContent = useDashboardStore((s) => s.setPendingEditorContent);
   const isGenerating = useDashboardStore((s) => s.isGenerating);
+  const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
+  const setSelectedTemplateId = useDashboardStore((s) => s.setSelectedTemplateId);
   const saveDocument = useHistoryStore((s) => s.saveDocument);
 
   // Local state
@@ -113,6 +115,29 @@ export function EditorShell() {
       setPendingEditorContent(null);
     }
   }, [pendingEditorContent, setPendingEditorContent, setCurrentEditorHtml]);
+
+  // Load template HTML when a template is selected from the dashboard or templates grid
+  useEffect(() => {
+    if (!selectedTemplateId) return;
+    const loadTemplate = async () => {
+      try {
+        const res = await fetch(`/api/templates?id=${selectedTemplateId}`);
+        if (!res.ok) throw new Error('Failed to load template');
+        const data = await res.json();
+        if (data.html) {
+          setContent(data.html);
+          setCurrentEditorHtml(data.html);
+          autoSaveRef.current.schedule(data.html);
+          if (data.template?.name) setDocTitle(data.template.name);
+        }
+      } catch (e) {
+        console.error('Failed to load template:', e);
+      } finally {
+        setSelectedTemplateId(null);
+      }
+    };
+    loadTemplate();
+  }, [selectedTemplateId, setSelectedTemplateId, setCurrentEditorHtml]);
 
   // Flush auto-save on unmount
   useEffect(() => {

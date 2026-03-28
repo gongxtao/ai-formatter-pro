@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useTemplatesStore } from '@/stores/useTemplatesStore';
@@ -10,14 +11,29 @@ export function EditorTemplatesGrid() {
   const t = useTranslations('editor');
   const tDash = useTranslations('dashboard');
   const activeDocType = useDashboardStore((s) => s.activeDocType);
+  const activeFilterTag = useDashboardStore((s) => s.activeFilterTag);
+  const templateSearchQuery = useDashboardStore((s) => s.templateSearchQuery);
   const setEditorView = useDashboardStore((s) => s.setEditorView);
+  const setSelectedTemplateId = useDashboardStore((s) => s.setSelectedTemplateId);
   const templates = useTemplatesStore((s) => s.templates);
   const templatesLoading = useTemplatesStore((s) => s.templatesLoading);
   const docTypeLabel = tDash(`docTypes.${activeDocType}` as 'dashboard.docTypes.businessPlan');
 
-  const handleUseTemplate = () => {
-    setEditorView('editor');
-  };
+  const filteredTemplates = useMemo(() => {
+    let result = templates;
+    if (activeFilterTag) {
+      result = result.filter((tpl) => tpl.subcategory === activeFilterTag);
+    }
+    if (templateSearchQuery.trim()) {
+      const q = templateSearchQuery.toLowerCase();
+      result = result.filter((tpl) =>
+        tpl.name.toLowerCase().includes(q) ||
+        tpl.description?.toLowerCase().includes(q) ||
+        tpl.subcategory?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [templates, activeFilterTag, templateSearchQuery]);
 
   const handleStartFromScratch = () => {
     setEditorView('editor');
@@ -58,8 +74,11 @@ export function EditorTemplatesGrid() {
             </div>
           ))
         ) : (
-          templates.map((card) => (
-            <div key={card.id} onClick={handleUseTemplate}>
+          filteredTemplates.map((card) => (
+            <div key={card.id} onClick={() => {
+              setSelectedTemplateId(card.id);
+              setEditorView('editor');
+            }}>
               <TemplateCard template={card} />
             </div>
           ))

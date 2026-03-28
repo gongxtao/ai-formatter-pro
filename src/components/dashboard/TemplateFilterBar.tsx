@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useTemplatesStore } from '@/stores/useTemplatesStore';
@@ -11,13 +11,30 @@ export function TemplateFilterBar() {
   const t = useTranslations('dashboard');
   const templateSearchQuery = useDashboardStore((s) => s.templateSearchQuery);
   const setTemplateSearchQuery = useDashboardStore((s) => s.setTemplateSearchQuery);
+  const activeFilterTag = useDashboardStore((s) => s.activeFilterTag);
+  const setActiveFilterTag = useDashboardStore((s) => s.setActiveFilterTag);
   const templates = useTemplatesStore((s) => s.templates);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
 
   const filters = useMemo(() => {
-    const allTags = templates.flatMap((tpl) => tpl.tags ?? []);
-    return [...new Set(allTags)];
+    const subcategories = templates
+      .map((tpl) => tpl.subcategory)
+      .filter((v): v is string => !!v);
+    return [...new Set(subcategories)];
   }, [templates]);
+
+  const checkOverflow = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setShowScrollBtn(el.scrollWidth > el.clientWidth);
+  }, []);
+
+  useEffect(() => {
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [checkOverflow, filters]);
 
   const handleScroll = () => {
     if (scrollRef.current) {
@@ -28,7 +45,7 @@ export function TemplateFilterBar() {
   return (
     <div className="relative mb-8 pb-4 flex items-center sticky top-0 bg-[#FAFAFA] z-40 py-4">
       <div ref={scrollRef} className="flex items-center gap-3 overflow-x-auto hide-scrollbar flex-1 pr-10">
-        <div className="relative min-w-[240px]">
+        <div className="relative min-w-[240px] flex-shrink-0">
           <SearchIcon className="w-4 h-4 absolute left-3.5 top-2.5 text-gray-400" />
           <input
             type="text"
@@ -38,11 +55,12 @@ export function TemplateFilterBar() {
             className="w-full bg-white border border-gray-200 rounded-full py-2 pl-10 pr-4 text-sm focus:ring-1 focus:ring-primary outline-none"
           />
         </div>
-        {filters.map((f, i) => (
+        {filters.map((f) => (
           <button
             key={f}
-            className={`whitespace-nowrap font-medium px-2 ${
-              i === 0
+            onClick={() => setActiveFilterTag(activeFilterTag === f ? null : f)}
+            className={`whitespace-nowrap font-medium px-2 flex-shrink-0 ${
+              activeFilterTag === f
                 ? 'px-5 py-2 bg-blue-50 text-primary rounded-full text-sm'
                 : 'text-[15px] text-gray-600 hover:text-gray-900'
             }`}
@@ -52,14 +70,16 @@ export function TemplateFilterBar() {
         ))}
       </div>
 
-      <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-gradient-to-l from-white via-white to-transparent pl-8 pb-4">
-        <button
-          onClick={handleScroll}
-          className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-100 text-gray-400 hover:text-gray-900 z-10"
-        >
-          <ScrollRightIcon className="w-5 h-5" />
-        </button>
-      </div>
+      {showScrollBtn && (
+        <div className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-gradient-to-l from-white via-white to-transparent pl-8 pb-4">
+          <button
+            onClick={handleScroll}
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-100 text-gray-400 hover:text-gray-900 z-10"
+          >
+            <ScrollRightIcon className="w-5 h-5" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
