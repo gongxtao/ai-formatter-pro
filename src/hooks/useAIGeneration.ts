@@ -72,7 +72,7 @@ export function useAIGeneration() {
             if (!trimmed || !trimmed.startsWith('data: ')) continue;
 
             try {
-              const event = JSON.parse(trimmed.slice(6)) as StreamEvent & { sessionId?: string; question?: string };
+              const event: StreamEvent = JSON.parse(trimmed.slice(6));
 
               switch (event.type) {
                 case 'status':
@@ -94,8 +94,11 @@ export function useAIGeneration() {
                 case 'error':
                   throw new Error(event.data);
                 case 'clarification_needed':
+                  if (!event.sessionId) {
+                    throw new Error('clarification_needed event missing sessionId');
+                  }
                   // Store session ID and navigate to clarify chat
-                  setGenerationSessionId(event.sessionId ?? null);
+                  setGenerationSessionId(event.sessionId);
                   setIsGeneratingLocal(false);
                   setIsGenerating(false);
                   router.push(`/dashboard/ai-chat/${event.sessionId}`);

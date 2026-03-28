@@ -24,4 +24,6 @@ export interface StreamEvent {
   type: 'content' | 'status' | 'completion' | 'done' | 'error' | 'clarification_needed';
   data: string;
   percentage?: number;
+  sessionId?: string;  // For clarification_needed
+  question?: string;   // For clarification_needed
 }
