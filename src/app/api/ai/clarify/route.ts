@@ -36,9 +36,18 @@ IMPORTANT: Always respond with valid JSON only. No markdown, no code blocks.`;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { sessionId, message } = body as { sessionId: string; message: string };
 
-    if (!sessionId || !message) {
+    // Runtime validation
+    if (!body || typeof body !== 'object') {
+      return new Response(
+        JSON.stringify({ error: 'Invalid request body' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { sessionId, message } = body;
+
+    if (!sessionId || typeof sessionId !== 'string' || !message || typeof message !== 'string') {
       return new Response(
         JSON.stringify({ error: 'sessionId and message are required' }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -132,6 +141,8 @@ export async function POST(request: NextRequest) {
  * Parse clarify response from LLM
  */
 function parseClarifyResponse(response: string): ClarifyResponse {
+  const validTypes = Object.keys(PROMPT_TEMPLATES);
+
   try {
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
@@ -142,7 +153,14 @@ function parseClarifyResponse(response: string): ClarifyResponse {
       };
     }
 
-    return JSON.parse(jsonMatch[0]) as ClarifyResponse;
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    // Validate category if present
+    if (parsed.type === 'complete' && parsed.category && !validTypes.includes(parsed.category)) {
+      parsed.category = 'document'; // fallback to generic
+    }
+
+    return parsed as ClarifyResponse;
   } catch {
     return {
       type: 'continue',
@@ -179,6 +197,8 @@ async function generateDocument(category: string, session: { originalPrompt: str
   for await (const chunk of generator) {
     if (chunk.type === 'delta') {
       html += chunk.data;
+    } else if (chunk.type === 'error') {
+      throw new Error(`Document generation failed: ${chunk.data}`);
     }
   }
 
