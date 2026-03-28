@@ -65,8 +65,7 @@ export function sendSSEClarificationNeeded(
     data: question,
     sessionId,
     question,
+    possibleTypes,
   };
-  // Note: possibleTypes is not in GenerateSSEEvent, but we include it in the raw event for client use
-  const data = JSON.stringify({ ...event, possibleTypes });
-  controller.enqueue(new TextEncoder().encode(`data: ${data}\n\n`));
+  controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify(event)}\n\n`));
 }

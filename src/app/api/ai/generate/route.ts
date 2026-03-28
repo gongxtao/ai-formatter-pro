@@ -57,7 +57,8 @@ export async function POST(request: NextRequest) {
     // Category provided, proceed directly
     return generateWithCategory(category, prompt, topic, industry, model);
 
-  } catch {
+  } catch (error) {
+    console.error('Generate API error:', error);
     return new Response(JSON.stringify({ error: 'Invalid request body' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },

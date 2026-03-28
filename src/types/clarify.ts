@@ -32,6 +32,7 @@ export interface GenerateSSEEvent {
   percentage?: number;
   sessionId?: string;
   question?: string;
+  possibleTypes?: string[]; // Added for clarification_needed event
 }
 
 /**
