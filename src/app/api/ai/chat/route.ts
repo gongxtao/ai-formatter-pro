@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { buildChatMessagesWithTemplate } from '@/lib/ai/prompt-builder';
-import { streamChatCompletion } from '@/lib/ai/openrouter-client';
+import { streamChatCompletion } from '@/lib/ai/llm-client';
 import { createSSEStream, sendSSEContent, sendSSEError, sendSSEStatus } from '@/lib/ai/sse-helper';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
 

@@ -2,7 +2,7 @@
 
 import { NextRequest } from 'next/server';
 import { getSession, addMessage, deleteSession, setSessionCategory } from '@/lib/ai/clarify-session-store';
-import { streamChatCompletion } from '@/lib/ai/openrouter-client';
+import { streamChatCompletion } from '@/lib/ai/llm-client';
 import { PROMPT_TEMPLATES, getPromptTemplate } from '@/config/prompt-templates';
 import type { ClarifyResponse } from '@/types/clarify';
 

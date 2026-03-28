@@ -1,6 +1,6 @@
 // src/lib/ai/intent-classifier.ts
 
-import { streamChatCompletion } from '@/lib/ai/openrouter-client';
+import { streamChatCompletion } from '@/lib/ai/llm-client';
 import { PROMPT_TEMPLATES } from '@/config/prompt-templates';
 import type { IntentClassificationResult } from '@/types/clarify';
 

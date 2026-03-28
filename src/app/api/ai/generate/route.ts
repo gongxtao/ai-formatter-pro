@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { buildGenerationMessages } from '@/lib/ai/prompt-builder';
-import { streamChatCompletion } from '@/lib/ai/openrouter-client';
+import { streamChatCompletion } from '@/lib/ai/llm-client';
 import { createSSEStream, sendSSEStatus, sendSSEContent, sendSSECompletion, sendSSEError, sendSSEClarificationNeeded } from '@/lib/ai/sse-helper';
 import { classifyIntent } from '@/lib/ai/intent-classifier';
 import { createSession } from '@/lib/ai/clarify-session-store';
