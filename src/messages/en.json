@@ -132,6 +132,7 @@
     "webSearch": "Web Search",
     "lightAi": "Light AI",
     "generate": "Generate",
+    "selectDocType": "Select document type",
     "bannerUpgrade": "Upgrade",
     "bannerHint": "for best quality, speed, and full control.",
     "templatesTitle": "Free {docType} Templates",

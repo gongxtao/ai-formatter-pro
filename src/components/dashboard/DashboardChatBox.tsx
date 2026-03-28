@@ -14,8 +14,12 @@ export function DashboardChatBox() {
   const t = useTranslations('dashboard');
   const tAi = useTranslations('ai');
   const activeDocType = useDashboardStore((s) => s.activeDocType);
-  const docTypeLabel = t(`docTypes.${activeDocType}` as 'dashboard.docTypes.businessPlan');
+  const setActiveDocType = useDashboardStore((s) => s.setActiveDocType);
   const [prompt, setPrompt] = useState('');
+
+  const handleClearDocType = () => {
+    setActiveDocType('');
+  };
 
   const { generate, isGenerating, progress, statusMessage, error } = useAIGeneration();
 
@@ -68,9 +72,6 @@ export function DashboardChatBox() {
           />
         </div>
 
-        {/* Purple dot on the right side */}
-        <div className="absolute right-6 top-[35%] w-1.5 h-1.5 rounded-full bg-indigo-600"></div>
-
         {/* Bottom: Tools */}
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-5">
@@ -80,28 +81,26 @@ export function DashboardChatBox() {
             </button>
 
             {/* Document type selector */}
-            <button className="flex items-center gap-1.5 text-blue-600 transition-colors text-sm font-medium">
-              <DocumentIcon className="w-4 h-4" />
-              <span>{docTypeLabel}</span>
-              <XIcon className="w-3.5 h-3.5 ml-0.5" />
-            </button>
-
-            {/* AI Model selector */}
-            <button className="flex items-center gap-1 text-sm text-gray-700 font-medium hover:text-gray-900 transition-colors">
-              Light AI
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+            {activeDocType ? (
+              <button className="flex items-center gap-1.5 text-blue-600 transition-colors text-sm font-medium">
+                <DocumentIcon className="w-4 h-4" />
+                <span>{activeDocType}</span>
+                <span onClick={(e) => { e.stopPropagation(); handleClearDocType(); }} className="cursor-pointer">
+                  <XIcon className="w-3.5 h-3.5 ml-0.5" />
+                </span>
+              </button>
+            ) : (
+              <button className="flex items-center gap-1.5 text-gray-500 hover:text-gray-700 transition-colors text-sm font-medium">
+                <DocumentIcon className="w-4 h-4" />
+                <span>{t('selectDocType')}</span>
+                <svg className="w-3.5 h-3.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
-            {/* Mic button */}
-            <button className="text-gray-500 hover:text-gray-700 transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-            </button>
             
             {/* Generate button */}
             <button

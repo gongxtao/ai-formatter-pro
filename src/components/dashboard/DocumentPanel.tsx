@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useTemplatesStore } from '@/stores/useTemplatesStore';
@@ -15,9 +16,21 @@ export function DocumentPanel() {
   const categories = useTemplatesStore((s) => s.categories);
   const categoriesLoading = useTemplatesStore((s) => s.categoriesLoading);
 
-  const filtered = categories.filter((cat) =>
-    cat.toLowerCase().includes(sidebarSearchQuery.toLowerCase())
-  );
+  // Filter and reorder: selected category first
+  const filtered = useMemo(() => {
+    const result = categories.filter((cat) =>
+      cat.toLowerCase().includes(sidebarSearchQuery.toLowerCase())
+    );
+    if (!activeDocType || !result.includes(activeDocType)) {
+      return result;
+    }
+    // Move active category to first position
+    const activeIndex = result.indexOf(activeDocType);
+    const reordered = [...result];
+    reordered.splice(activeIndex, 1);
+    reordered.unshift(activeDocType);
+    return reordered;
+  }, [categories, sidebarSearchQuery, activeDocType]);
 
   return (
     <div className="flex flex-col h-full w-full absolute inset-0 bg-white">

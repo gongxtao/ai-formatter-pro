@@ -132,6 +132,7 @@
     "webSearch": "网络搜索",
     "lightAi": "轻量 AI",
     "generate": "生成",
+    "selectDocType": "选择文档类型",
     "bannerUpgrade": "升级",
     "bannerHint": "获取最佳质量、速度和完整控制。",
     "templatesTitle": "免费 {docType} 模板",
