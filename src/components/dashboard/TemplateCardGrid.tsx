@@ -1,11 +1,30 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useTemplatesStore } from '@/stores/useTemplatesStore';
 import { TemplateCard } from './TemplateCard';
+import type { Template } from '@/types/dashboard';
+
+// Maximum templates to keep in memory (5 pages × 20 items)
+const MAX_TEMPLATES = 100;
+
+// Memoized template card wrapper to prevent unnecessary re-renders
+const MemoizedTemplateCard = memo(function MemoizedTemplateCard({
+  template,
+  onClick
+}: {
+  template: Template;
+  onClick: () => void;
+}) {
+  return (
+    <div onClick={onClick} className="contents cursor-pointer">
+      <TemplateCard template={template} />
+    </div>
+  );
+});
 
 export function TemplateCardGrid() {
   const router = useRouter();
@@ -15,7 +34,6 @@ export function TemplateCardGrid() {
   const shuffleTrigger = useDashboardStore((s) => s.shuffleTrigger);
   const setSelectedTemplateId = useDashboardStore((s) => s.setSelectedTemplateId);
   const setEditorView = useDashboardStore((s) => s.setEditorView);
-  const docTypeLabel = t(`docTypes.${activeDocType}` as 'dashboard.docTypes.businessPlan');
 
   const templates = useTemplatesStore((s) => s.templates);
   const templatesLoading = useTemplatesStore((s) => s.templatesLoading);
@@ -29,9 +47,16 @@ export function TemplateCardGrid() {
   const [fading, setFading] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
+  // Limit cards to MAX_TEMPLATES to prevent memory issues
   useEffect(() => {
-    setCards(templates);
+    setCards(templates.slice(0, MAX_TEMPLATES));
   }, [templates]);
+
+  const handleCardClick = useCallback((templateId: string) => {
+    setSelectedTemplateId(templateId);
+    setEditorView('editor');
+    router.push('/dashboard/editor');
+  }, [setSelectedTemplateId, setEditorView, router]);
 
   const shuffleCards = useCallback(() => {
     setFading(true);
@@ -52,23 +77,34 @@ export function TemplateCardGrid() {
     if (shuffleTrigger > 0) shuffleCards();
   }, [shuffleTrigger, shuffleCards]);
 
+  // Check if we've reached the max limit
+  const hasReachedMaxLimit = templates.length >= MAX_TEMPLATES;
+  const canLoadMore = pagination.hasMore && !hasReachedMaxLimit;
+
   // Infinite scroll: observe load more trigger
   useEffect(() => {
     const el = loadMoreRef.current;
-    if (!el || !pagination.hasMore || isLoadingMore) return;
+    if (!el || !canLoadMore || isLoadingMore) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && pagination.hasMore && !isLoadingMore) {
+        if (entries[0].isIntersecting && canLoadMore && !isLoadingMore) {
           loadMoreTemplates(activeCategory);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: '100px' }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [pagination.hasMore, isLoadingMore, loadMoreTemplates, activeCategory]);
+  }, [canLoadMore, isLoadingMore, loadMoreTemplates, activeCategory]);
+
+  // Manual load more when max limit reached
+  const handleManualLoadMore = useCallback(() => {
+    // Clear old templates and reset pagination to load fresh
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    loadMoreTemplates(activeCategory);
+  }, [loadMoreTemplates, activeCategory]);
 
   if (templatesLoading) {
     return (
@@ -90,26 +126,37 @@ export function TemplateCardGrid() {
     <div>
       <div className={`grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-6 transition-opacity duration-300 ${fading ? 'opacity-0' : 'opacity-100'}`}>
         {cards.map((card) => (
-          <div key={card.id} onClick={() => {
-            setSelectedTemplateId(card.id);
-            setEditorView('editor');
-            router.push('/dashboard/editor');
-          }} className="contents cursor-pointer">
-            <TemplateCard template={card} />
-          </div>
+          <MemoizedTemplateCard
+            key={card.id}
+            template={card}
+            onClick={() => handleCardClick(card.id)}
+          />
         ))}
 
         {/* Load more trigger (infinite scroll sentinel) */}
         <div ref={loadMoreRef} className="col-span-full flex justify-center py-4">
           {isLoadingMore ? (
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          ) : pagination.hasMore ? (
+          ) : canLoadMore ? (
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <div className="w-4 h-4 border-2 border-gray-300 border-t-transparent rounded-full animate-spin" />
               <span>Loading more...</span>
             </div>
           ) : null}
         </div>
+
+        {/* Max limit reached - show manual load more button */}
+        {hasReachedMaxLimit && pagination.hasMore && (
+          <div className="col-span-full flex flex-col items-center justify-center py-6 gap-3">
+            <p className="text-sm text-gray-500">Loaded {MAX_TEMPLATES} templates</p>
+            <button
+              onClick={handleManualLoadMore}
+              className="px-6 py-2 bg-primary text-white rounded-full text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Load More Templates
+            </button>
+          </div>
+        )}
 
         {/* End of list indicator */}
         {!pagination.hasMore && cards.length > 0 && (

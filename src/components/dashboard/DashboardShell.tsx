@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react';
 import { useDashboardStore } from '@/stores/useDashboardStore';
+import { useTemplatesStore } from '@/stores/useTemplatesStore';
 import { MiniNav } from './MiniNav';
 import { SecondarySidebar } from './SecondarySidebar';
 import { ContentHeader } from './ContentHeader';
@@ -13,13 +14,29 @@ import type { NavItem } from '@/types/dashboard';
 export function DashboardShell() {
   const activeNav = useDashboardStore((s) => s.activeNav);
   const setActiveNav = useDashboardStore((s) => s.setActiveNav);
+  const setActiveFilterTag = useDashboardStore((s) => s.setActiveFilterTag);
+  const setActiveDocType = useDashboardStore((s) => s.setActiveDocType);
+  const setActiveTemplateCategory = useDashboardStore((s) => s.setActiveTemplateCategory);
+  const categories = useTemplatesStore((s) => s.categories);
+  const resetTemplates = useTemplatesStore((s) => s.resetTemplates);
   const isSidebarExpanded = activeNav === 'document' || activeNav === 'templates';
 
   const handleNav = useCallback(
     (key: NavItem) => {
       setActiveNav(key);
+
+      // Reset filters and select first category when navigating to home
+      if (key === 'home') {
+        setActiveFilterTag(null);
+        resetTemplates();
+        // Reset to first category
+        if (categories.length > 0) {
+          setActiveDocType(categories[0]);
+          setActiveTemplateCategory(categories[0]);
+        }
+      }
     },
-    [setActiveNav],
+    [setActiveNav, setActiveFilterTag, setActiveDocType, setActiveTemplateCategory, resetTemplates, categories],
   );
 
   return (

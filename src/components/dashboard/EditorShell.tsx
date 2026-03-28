@@ -72,7 +72,8 @@ export function EditorShell() {
           router.push('/dashboard');
           break;
         case 'history':
-          // Already in editor
+          setActiveNav('history');
+          router.push('/dashboard');
           break;
       }
     },
