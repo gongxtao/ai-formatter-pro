@@ -57,6 +57,9 @@ export async function classifyIntent(prompt: string): Promise<IntentClassificati
  * Parse classification result from LLM response
  */
 function parseClassificationResult(response: string): IntentClassificationResult {
+  const validTypes = Object.keys(PROMPT_TEMPLATES);
+  const isValidType = (t: string): boolean => validTypes.includes(t);
+
   try {
     // Try to extract JSON from the response
     const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -68,13 +71,19 @@ function parseClassificationResult(response: string): IntentClassificationResult
 
     // Validate the result
     if (parsed.needsClarification) {
+      const validPossibleTypes = (parsed.possibleTypes || []).filter(isValidType);
       return {
         needsClarification: true,
-        possibleTypes: parsed.possibleTypes || [],
+        possibleTypes: validPossibleTypes.length > 0 ? validPossibleTypes : [],
       };
     }
 
     if (parsed.type && typeof parsed.confidence === 'number') {
+      // Validate the type is valid
+      if (!isValidType(parsed.type)) {
+        return { needsClarification: true };
+      }
+
       // If confidence is high enough, return the type
       if (parsed.confidence >= 0.7) {
         return { type: parsed.type, confidence: parsed.confidence };
@@ -82,7 +91,7 @@ function parseClassificationResult(response: string): IntentClassificationResult
       // Otherwise, need clarification
       return {
         needsClarification: true,
-        possibleTypes: [parsed.type],
+        possibleTypes: [parsed.type], // The single type is already validated
       };
     }
 
