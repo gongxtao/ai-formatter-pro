@@ -165,7 +165,6 @@ interface GenerateResponse {
 interface ClarifyRequest {
   sessionId: string;
   message: string;
-  selectedCategory?: string;  // 用户从列表选择的类型
 }
 ```
 
@@ -173,9 +172,23 @@ interface ClarifyRequest {
 ```typescript
 interface ClarifyResponse {
   type: 'continue' | 'complete';
-  question?: string;        // 如果需要继续对话
-  recommendedCategories?: string[];  // AI 推荐的类型
-  html?: string;            // 如果对话完成
+
+  // continue 时
+  content?: string;              // AI 回复内容
+  quickReplies?: string[];       // 内联按钮选项
+
+  // complete 时
+  html?: string;                 // 生成的 HTML
+  category?: string;             // 确定的文档类型
+}
+```
+
+**示例响应：**
+```json
+{
+  "type": "continue",
+  "content": "What type of document do you want to create?",
+  "quickReplies": ["Resume", "Contract", "Report", "Letter"]
 }
 ```
 
@@ -229,27 +242,38 @@ export default function AIChatPage({ params }) {
   const { sessionId } = params;
 
   return (
-    <div className="flex h-screen">
-      {/* 对话区域 */}
+    <div className="h-screen">
+      {/* 全屏对话界面 */}
       <AIClarifyChat sessionId={sessionId} />
-
-      {/* 文档类型选择列表 */}
-      <DocumentTypeSelector />
     </div>
   );
 }
 ```
 
 **AIClarifyChat 组件功能：**
-1. 显示对话历史
-2. 发送消息到 `/api/ai/clarify`
-3. 显示 AI 推荐的文档类型
-4. 对话完成后跳转 Editor
+1. 全屏对话界面
+2. 显示对话历史
+3. **A2UI 支持**：渲染 AI 消息中的内联按钮（Quick Replies）
+4. 用户点击按钮 → 自动发送消息
+5. 发送消息到 `/api/ai/clarify`
+6. 对话完成后跳转 Editor
 
-**DocumentTypeSelector 组件功能：**
-1. 显示所有文档类型
-2. 用户点击选择
-3. 发送选择到 `/api/ai/clarify`
+**A2UI 消息格式：**
+```typescript
+interface ClarifyMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  quickReplies?: string[];  // 内联按钮选项
+}
+
+// 示例
+{
+  role: 'assistant',
+  content: 'What type of document do you want to create?',
+  quickReplies: ['Resume', 'Contract', 'Report', 'Letter']
+}
+```
 
 #### AIChatSidebar
 
@@ -337,26 +361,36 @@ case 'content':
 #### AI Clarify Chat Flow
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│                     AI Clarify Chat Page                           │
+│                     AI Clarify Chat Page (A2UI)                    │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
-│  ┌──────────────────────┐    ┌────────────────────────────────┐  │
-│  │   Chat Interface     │    │   Document Type Selector       │  │
-│  │                      │    │                                │  │
-│  │  AI: "What type of   │    │  ┌──────┐ ┌──────┐ ┌──────┐  │  │
-│  │  document do you     │    │  │Resume│ │Contract│ │Report│  │  │
-│  │  want to create?"    │    │  └──────┘ └──────┘ └──────┘  │  │
-│  │                      │    │                                │  │
-│  │  User: "A resume"    │    └────────────────────────────────┘  │
-│  │                      │                                        │
-│  │  AI: "Great! I'll    │                                        │
-│  │  generate a resume   │    ┌────────────────────────────────┐  │
-│  │  for you..."         │    │   Complete → Navigate to       │  │
-│  │                      │    │   Editor with generated HTML   │  │
-│  └──────────────────────┘    └────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────────┐ │
+│  │   Full-screen Chat Interface                                  │ │
+│  │                                                               │ │
+│  │  AI: "What type of document do you want to create?"          │ │
+│  │                                                               │ │
+│  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐                │ │
+│  │  │ Resume │ │Contract│ │ Report │ │ Letter │  ← 内联按钮    │ │
+│  │  └────────┘ └────────┘ └────────┘ └────────┘                │ │
+│  │                                                               │ │
+│  │  User: *clicks Resume*                                        │ │
+│  │                                                               │ │
+│  │  AI: "Great! I'll generate a resume for you. What's your    │ │
+│  │       name and work experience?"                              │ │
+│  │                                                               │ │
+│  │  User: "My name is John, I'm a software engineer..."         │ │
+│  │                                                               │ │
+│  │  AI: *generating resume...* → Navigate to Editor             │ │
+│  │                                                               │ │
+│  └──────────────────────────────────────────────────────────────┘ │
 │                                                                    │
 └────────────────────────────────────────────────────────────────────┘
 ```
+
+**A2UI 机制：**
+- AI 消息可以包含内联按钮（Quick Replies）
+- 用户点击按钮后，自动发送对应消息
+- 对话流程自然，不中断
 
 #### Editor AI Chat Flow
 ```
