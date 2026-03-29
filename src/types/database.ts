@@ -65,3 +65,17 @@ export interface AIMessageMetadata {
   generation_id?: string;
   stream_duration_ms?: number;
 }
+
+export interface TemplateCategory {
+  id: string;
+  category: string;
+  name: string;
+  name_en: string | null;
+  description: string | null;
+  system_prompt: string;
+  icon: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

@@ -4,8 +4,16 @@
  * Intent classification result from /api/ai/generate
  */
 export interface IntentClassificationResult {
+  // New fields for template matching
+  readyToGenerate: boolean;
+  category?: string;
+  confidence: number;
+  reason?: 'unclear_intent' | 'insufficient_content' | 'unknown_type';
+  suggestedQuestion?: string;
+  quickReplies?: string[];
+
+  // Legacy fields for backward compatibility
   type?: string;
-  confidence?: number;
   needsClarification?: boolean;
   possibleTypes?: string[];
 }
