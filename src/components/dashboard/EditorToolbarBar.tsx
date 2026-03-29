@@ -12,6 +12,7 @@ interface EditorToolbarBarProps {
   showSavedIcon: boolean;
   handleSave: () => void;
   editorToolbar: React.ReactNode;
+  isGenerating?: boolean;
 }
 
 export function EditorToolbarBar({
@@ -23,6 +24,7 @@ export function EditorToolbarBar({
   showSavedIcon,
   handleSave,
   editorToolbar,
+  isGenerating = false,
 }: EditorToolbarBarProps) {
   const t = useTranslations('editor');
   const th = useTranslations('history');
@@ -52,7 +54,8 @@ export function EditorToolbarBar({
         <div className="flex items-center gap-4">
           <button
             onClick={onBackToTemplates}
-            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-primary transition-colors"
+            disabled={isGenerating}
+            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -64,8 +67,8 @@ export function EditorToolbarBar({
         <div className="flex items-center gap-3">
           <button
             onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50"
+            disabled={isSaving || isGenerating}
+            className="flex items-center gap-1.5 px-4 py-1.5 bg-primary text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSaving ? (
               <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -83,7 +86,7 @@ export function EditorToolbarBar({
             )}
             {t('save')}
           </button>
-          <ExportDropdown docTitle={docTitle || t('untitled')} />
+          <ExportDropdown docTitle={docTitle || t('untitled')} disabled={isGenerating} />
         </div>
       </header>
 

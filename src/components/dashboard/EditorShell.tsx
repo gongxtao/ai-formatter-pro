@@ -279,6 +279,7 @@ export function EditorShell() {
           showSavedIcon={showSavedIcon}
           handleSave={handleSave}
           editorToolbar={editorToolbar}
+          isGenerating={isGenerating}
         />
 
         {editorView === 'templates' ? (

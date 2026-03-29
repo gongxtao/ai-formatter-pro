@@ -24,6 +24,7 @@ export function useAIChat(options?: UseAIChatOptions) {
   } = useChatStore();
 
   const setPendingEditorContent = useDashboardStore((s) => s.setPendingEditorContent);
+  const setIsGenerating = useDashboardStore((s) => s.setIsGenerating);
 
   const [isLoading, setIsLoadingLocal] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +75,11 @@ export function useAIChat(options?: UseAIChatOptions) {
       setIsLoadingLocal(true);
       setStreamingContent('');
       setError(null);
+
+      // Set generating state for auto-generate mode (document generation)
+      if (isAutoGenerate) {
+        setIsGenerating(true);
+      }
 
       try {
         const response = await fetch('/api/ai/chat', {
@@ -140,15 +146,21 @@ export function useAIChat(options?: UseAIChatOptions) {
         }
 
         finalizeStreaming();
+
+        // Reset generating state after successful completion
+        if (isAutoGenerate) {
+          setIsGenerating(false);
+        }
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
         setError(err instanceof Error ? err.message : 'Chat failed');
+        setIsGenerating(false);
       } finally {
         setIsLoading(false);
         setIsLoadingLocal(false);
       }
     },
-    [options?.conversationId, options?.category, options?.templateId, addMessage, setIsLoading, setStreamingContent, appendStreamingContent, finalizeStreaming],
+    [options?.conversationId, options?.category, options?.templateId, addMessage, setIsLoading, setStreamingContent, appendStreamingContent, finalizeStreaming, setIsGenerating],
   );
 
   const insertIntoEditor = useCallback(

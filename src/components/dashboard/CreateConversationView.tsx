@@ -184,6 +184,12 @@ export function CreateConversationView({
                   content: finalContent,
                 });
 
+                // Set the document type for templates grid
+                if (event.category) {
+                  setActiveDocType(event.category);
+                  setActiveTemplateCategory(event.category);
+                }
+
                 setGenerateParams({
                   conversationId,
                   category: event.category,

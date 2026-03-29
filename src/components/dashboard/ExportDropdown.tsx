@@ -9,6 +9,7 @@ import type { ExportFormat } from '@/lib/export/types';
 
 interface ExportDropdownProps {
   docTitle: string;
+  disabled?: boolean;
 }
 
 const formats: { key: ExportFormat; label: string; color: string }[] = [
@@ -17,7 +18,7 @@ const formats: { key: ExportFormat; label: string; color: string }[] = [
   { key: 'html', label: 'HTML', color: 'text-orange-500' },
 ];
 
-export function ExportDropdown({ docTitle }: ExportDropdownProps) {
+export function ExportDropdown({ docTitle, disabled = false }: ExportDropdownProps) {
   const t = useTranslations('editor');
   const th = useTranslations('history');
   const { isExporting, exportDocument } = useExport();
@@ -92,10 +93,10 @@ export function ExportDropdown({ docTitle }: ExportDropdownProps) {
           setIsOpen(!isOpen);
           setActiveIndex(-1);
         }}
-        disabled={isExporting}
+        disabled={isExporting || disabled}
         aria-haspopup="true"
         aria-expanded={isOpen}
-        className="px-4 py-1.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50"
+        className="px-4 py-1.5 text-sm font-medium text-white bg-primary hover:bg-primary-hover rounded-lg transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isExporting ? (
           <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">

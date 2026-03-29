@@ -11,10 +11,12 @@ import { getUserId } from '@/lib/utils/user-id';
 
 export function AIChatSidebar() {
   const t = useTranslations('editor');
+  const ta = useTranslations('ai');
   const searchParams = useSearchParams();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoGenerateTriggeredRef = useRef(false);
+  const isAutoGeneratingRef = useRef(false);
 
   // URL params for smart template matching flow
   const urlConversationId = searchParams.get('conversationId');
@@ -31,6 +33,7 @@ export function AIChatSidebar() {
   const generateParams = useDashboardStore((s) => s.generateParams);
   const currentEditorHtml = useDashboardStore((s) => s.currentEditorHtml);
   const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
+  const isGenerating = useDashboardStore((s) => s.isGenerating);
 
   // Determine the effective template ID (URL param > store > generateParams)
   const effectiveTemplateId = urlTemplateId || selectedTemplateId || generateParams.templateId;
@@ -92,6 +95,7 @@ export function AIChatSidebar() {
     // Check if we should auto-generate
     if (autoGen && convId && conversationId === convId && messages.length > 0 && !isLoading) {
       autoGenerateTriggeredRef.current = true;
+      isAutoGeneratingRef.current = true;
 
       // Find the last user message to use as the generation prompt
       const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
@@ -115,6 +119,13 @@ export function AIChatSidebar() {
     currentEditorHtml,
     effectiveTemplateId,
   ]);
+
+  // Reset auto-generating ref when generation completes
+  useEffect(() => {
+    if (!isGenerating && isAutoGeneratingRef.current) {
+      isAutoGeneratingRef.current = false;
+    }
+  }, [isGenerating]);
 
   const handleSend = useCallback(() => {
     const text = input.trim();
@@ -163,29 +174,44 @@ export function AIChatSidebar() {
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
+        {messages.map((msg) => {
+          // During auto-generation, show a simple generating message instead of document content
+          const isAutoGenMessage = msg.isStreaming && isAutoGeneratingRef.current;
+
+          return (
             <div
-              className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                msg.role === 'user'
-                  ? 'bg-primary text-white rounded-br-md'
-                  : 'bg-gray-100 text-gray-800 rounded-bl-md prose prose-sm prose-gray max-w-none [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5 [&_p]:mb-2 [&_ul]:my-1 [&_li]:mb-0.5'
-              }`}
+              key={msg.id}
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              {msg.isStreaming ? (
-                <ChatStream
-                  content={streamingMessage ? streamingContent : msg.content}
-                  isStreaming={msg.isStreaming}
-                />
-              ) : (
-                <span dangerouslySetInnerHTML={{ __html: msg.content }} />
-              )}
+              <div
+                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                  msg.role === 'user'
+                    ? 'bg-primary text-white rounded-br-md'
+                    : 'bg-gray-100 text-gray-800 rounded-bl-md prose prose-sm prose-gray max-w-none [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5 [&_p]:mb-2 [&_ul]:my-1 [&_li]:mb-0.5'
+                }`}
+              >
+                {isAutoGenMessage ? (
+                  // Show generating animation during document generation
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span className="text-gray-600">{ta('generating')}</span>
+                  </div>
+                ) : msg.isStreaming ? (
+                  <ChatStream
+                    content={streamingMessage ? streamingContent : msg.content}
+                    isStreaming={msg.isStreaming}
+                  />
+                ) : (
+                  <span dangerouslySetInnerHTML={{ __html: msg.content }} />
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Input */}
