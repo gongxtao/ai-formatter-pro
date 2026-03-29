@@ -33,25 +33,38 @@ const INTENT_CLASSIFICATION_SYSTEM = `You are an intent classifier for a documen
 
 Available document types: ${VALID_TYPES.join(', ')}
 
-Analyze the user's input and respond with a JSON object. Consider:
+Analyze the conversation and the latest user input. Respond with a JSON object.
+
+**IMPORTANT: You will receive the full conversation history. The last message is the user's latest input.**
+
+Consider:
 
 1. **Intent Detection**: Is the user trying to generate a document?
-   - Look for keywords like: "generate", "create", "write", "make", "help me with", "I need a"
-   - Even vague requests like "I want a resume" or "business plan" indicate document generation intent
+   - Look for keywords like: "生成", "创建", "写", "帮我", "generate", "create", "write", "make", "help me with", "I need a"
+   - Even vague requests like "I want a resume" or "帮我写份简历" indicate document generation intent
+   - If the user confirms they want a specific document type in the conversation, intent is clear
 
 2. **Content Sufficiency**: Has the user provided enough information to generate?
-   - Sufficient: Specific details, requirements, or context (e.g., "Create a resume for a software engineer with 5 years experience in React and TypeScript")
-   - Insufficient: Just a type name without context (e.g., just "resume" or "I need a business plan")
-   - Even a brief description of what they want is usually sufficient
+   - Sufficient: The user has specified a document type AND given some context (even minimal)
+   - If user says "帮我生成一份简历" or "生成一份商业计划" - this IS sufficient, set readyToGenerate: true
+   - If user asks clarifying questions or provides more details - intent is still clear
+   - Only insufficient if the user hasn't specified any document type at all
 
 3. **Type Detection**: What type of document does the user want?
    - Match against available types: ${VALID_TYPES.join(', ')}
-   - If unclear, suggest the most likely type
+   - Common mappings:
+     - "简历" → resume
+     - "商业计划" → businessPlan
+     - "报告" → report
+     - "提案" → proposal
+     - "白皮书" → whitePaper
+     - "求职信" → coverLetter
+     - "手册" → manual
 
 Response format:
 {
-  "readyToGenerate": boolean,  // true if intent is clear AND content is sufficient
-  "category": "type" | null,   // detected or confirmed document type
+  "readyToGenerate": boolean,  // true if intent is clear AND type is detected
+  "category": "type" | null,   // detected document type (use English key like "resume", "businessPlan")
   "confidence": 0.0-1.0,       // confidence in the classification
   "reason": null | "unclear_intent" | "insufficient_content" | "unknown_type",
   "suggestedQuestion": "question to ask if clarification needed" | null,
@@ -59,11 +72,10 @@ Response format:
 }
 
 Guidelines:
-- If user explicitly mentions a document type with ANY context/details, set readyToGenerate: true
-- If category is already provided (mentioned in the prompt), trust it and focus on content sufficiency
-- Be lenient: if there's any meaningful content beyond just the type name, consider it sufficient
-- suggestedQuestion should help gather missing information
-- quickReplies should offer 2-3 relevant options
+- Be AGGRESSIVE in detecting readyToGenerate - if user mentions any document type, set it to true
+- If user says "生成X" or "帮我写X" where X is a document type, readyToGenerate: true
+- If conversation shows user confirmed they want a specific document, readyToGenerate: true
+- Only set readyToGenerate: false if you truly cannot determine what document type they want
 
 Respond ONLY with the JSON object, no other text.`;
 

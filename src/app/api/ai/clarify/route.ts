@@ -48,8 +48,24 @@ export async function POST(request: NextRequest) {
       try {
         sendSSEStatus(controller!, 'Analyzing...', 10);
 
-        // Save user message to database
+        // Load conversation history
+        let historyMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
         if (conversationId) {
+          const { data: dbMessages } = await supabase
+            .from('ai_messages')
+            .select('role, content')
+            .eq('conversation_id', conversationId)
+            .order('created_at', { ascending: true })
+            .limit(20);
+
+          if (dbMessages) {
+            historyMessages = dbMessages.map((m) => ({
+              role: m.role as 'user' | 'assistant',
+              content: m.content,
+            }));
+          }
+
+          // Save user message to database
           await supabase.from('ai_messages').insert({
             conversation_id: conversationId,
             role: 'user',
@@ -58,8 +74,13 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Classify intent
-        const intentResult = await classifyIntent(message);
+        // Combine history with current message for intent classification
+        const fullConversationText = historyMessages
+          .map((m) => `${m.role === 'user' ? '用户' : 'AI'}: ${m.content}`)
+          .join('\n') + `\n用户: ${message}`;
+
+        // Classify intent with full context
+        const intentResult = await classifyIntent(fullConversationText);
 
         if (intentResult.readyToGenerate && intentResult.category) {
           // Intent is clear - match template and return ready_to_generate
@@ -90,13 +111,25 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        // Need more clarification - stream LLM response
+        // Need more clarification - stream LLM response with conversation history
+        const llmMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+          { role: 'system', content: CLARIFY_SYSTEM_PROMPT },
+        ];
+
+        // Add conversation history
+        for (const msg of historyMessages) {
+          llmMessages.push({
+            role: msg.role,
+            content: msg.content,
+          });
+        }
+
+        // Add current message
+        llmMessages.push({ role: 'user', content: message });
+
         const generator = await streamChatCompletion({
           model: getDefaultModel(),
-          messages: [
-            { role: 'system', content: CLARIFY_SYSTEM_PROMPT },
-            { role: 'user', content: message },
-          ],
+          messages: llmMessages,
         });
 
         let fullResponse = '';
@@ -119,10 +152,10 @@ export async function POST(request: NextRequest) {
               });
             }
 
+            // Just signal continue, don't send the content again
+            // Client already has all content from streaming
             sendSSEEvent(controller!, {
               type: 'continue',
-              data: fullResponse,
-              content: fullResponse,
             });
           } else if (chunk.type === 'error') {
             sendSSEError(controller!, chunk.data);
