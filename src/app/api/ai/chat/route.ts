@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { buildChatMessagesWithTemplate } from '@/lib/ai/prompt-builder';
+import { buildChatMessagesWithTemplateStyle } from '@/lib/ai/prompt-builder';
 import { streamChatCompletion } from '@/lib/ai/llm-client';
 import { createSSEStream, sendSSEContent, sendSSEError, sendSSEStatus } from '@/lib/ai/sse-helper';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
@@ -10,7 +10,7 @@ export const maxDuration = 60;
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { conversationId, message, contextHtml, model, category, templateId } = body;
+    const { conversationId, message, contextHtml, model, category, templateId, autoGenerate } = body;
 
     if (!conversationId || !message) {
       return new Response(JSON.stringify({ error: 'conversationId and message are required' }), {
@@ -73,13 +73,14 @@ export async function POST(request: NextRequest) {
 
         sendSSEStatus(controller!, 'Thinking...', 10);
 
-        const { model: selectedModel, messages } = buildChatMessagesWithTemplate({
-          category,
+        const { model: selectedModel, messages } = await buildChatMessagesWithTemplateStyle({
+          category: category || 'document',
           templateHtml,
           contextHtml,
           history,
           userMessage: message,
           model,
+          isAutoGenerate: autoGenerate,
         });
 
         sendSSEStatus(controller!, 'Generating response...', 30);
