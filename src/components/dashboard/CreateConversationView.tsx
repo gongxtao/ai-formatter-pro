@@ -206,6 +206,7 @@ export function CreateConversationView({
                     content: accumulatedContent,
                   });
                   setStreamingContent('');
+                  accumulatedContent = ''; // Clear to prevent fallback from adding again
                 }
               }
 
