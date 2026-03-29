@@ -8,6 +8,7 @@ import {
   sendSSEError,
 } from '@/lib/ai/sse-helper';
 import { getDefaultModel } from '@/lib/ai/llm-client';
+import { randomUUID } from 'crypto';
 
 export const runtime = 'edge';
 export const maxDuration = 60;
@@ -104,10 +105,13 @@ export async function POST(request: NextRequest) {
 async function createConversation(category?: string | null): Promise<string> {
   const supabase = createServerSupabaseClient();
 
+  // Generate a UUID for anonymous users (database requires non-null user_id)
+  const anonymousUserId = `anon_${randomUUID()}`;
+
   const { data, error } = await supabase
     .from('ai_conversations')
     .insert({
-      user_id: null, // Anonymous users for now
+      user_id: anonymousUserId,
       category: category || null,
       title: 'New Document',
       model: getDefaultModel(),

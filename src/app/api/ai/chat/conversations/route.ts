@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
 import { getDefaultModel } from '@/lib/ai/llm-client';
+import { randomUUID } from 'crypto';
 
 export async function GET() {
   try {
@@ -26,11 +27,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { category, title, model, userId } = body;
 
+    // Generate anonymous user ID if not provided (database requires non-null user_id)
+    const effectiveUserId = userId ?? `anon_${randomUUID()}`;
+
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('ai_conversations')
       .insert({
-        user_id: userId ?? null,
+        user_id: effectiveUserId,
         category: category ?? null,
         title: title ?? 'New Conversation',
         model: model ?? getDefaultModel(),
