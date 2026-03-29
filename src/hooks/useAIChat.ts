@@ -29,6 +29,10 @@ export function useAIChat(options?: UseAIChatOptions) {
   const [error, setError] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
+  const onChunkRef = useRef(options?.onChunk);
+
+  // Keep onChunkRef up to date
+  onChunkRef.current = options?.onChunk;
 
   const sendMessage = useCallback(
     async (message: string, sendOptions?: { contextHtml?: string }) => {
@@ -88,6 +92,7 @@ export function useAIChat(options?: UseAIChatOptions) {
 
         const decoder = new TextDecoder();
         let buffer = '';
+        let accumulatedHtml = ''; // Local accumulation for onChunk callback
 
         while (true) {
           const { done, value } = await reader.read();
@@ -106,10 +111,10 @@ export function useAIChat(options?: UseAIChatOptions) {
 
               switch (event.type) {
                 case 'content':
+                  accumulatedHtml += event.data;
                   appendStreamingContent(event.data);
-                  // Call onChunk callback with current content
-                  const currentContent = useChatStore.getState().streamingContent + event.data;
-                  options?.onChunk?.(currentContent);
+                  // Call onChunk callback with accumulated HTML for real-time editor update
+                  onChunkRef.current?.(accumulatedHtml);
                   break;
                 case 'status':
                   // Optional: could show status in UI

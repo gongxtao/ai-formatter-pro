@@ -19,6 +19,7 @@ export function AIChatSidebar() {
   const isLoading = useChatStore((s) => s.isLoading);
 
   const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
+  const currentEditorHtml = useDashboardStore((s) => s.currentEditorHtml);
   const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
 
   const { sendMessage } = useAIChat({
@@ -69,8 +70,9 @@ export function AIChatSidebar() {
     const text = input.trim();
     if (!text || isLoading) return;
     setInput('');
-    sendMessage(text);
-  }, [input, isLoading, sendMessage]);
+    // Pass current editor content as context for AI to edit/improve
+    sendMessage(text, { contextHtml: currentEditorHtml });
+  }, [input, isLoading, sendMessage, currentEditorHtml]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

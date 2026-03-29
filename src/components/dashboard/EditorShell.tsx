@@ -126,6 +126,15 @@ export function EditorShell() {
     }
   }, [pendingEditorContent, setPendingEditorContent, setCurrentEditorHtml]);
 
+  // Sync currentEditorHtml from store to local content (for AI chat streaming)
+  // Only update when different to avoid loops
+  useEffect(() => {
+    if (currentEditorHtml && currentEditorHtml !== content) {
+      setContent(currentEditorHtml);
+      autoSaveRef.current.schedule(currentEditorHtml);
+    }
+  }, [currentEditorHtml]);
+
   // Load template HTML when a template is selected from the dashboard or templates grid
   useEffect(() => {
     if (!selectedTemplateId) return;
