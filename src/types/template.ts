@@ -42,14 +42,4 @@ export interface TemplateMatchResponse {
   score: number;
 }
 
-/**
- * Intent classification result
- */
-export interface IntentClassificationResult {
-  readyToGenerate: boolean;
-  category?: string;
-  confidence: number;
-  reason?: 'unclear_intent' | 'insufficient_content' | 'unknown_type';
-  suggestedQuestion?: string;
-  quickReplies?: string[];
-}
+// Note: IntentClassificationResult is defined in ./clarify.ts with legacy field support
