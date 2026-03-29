@@ -49,6 +49,16 @@ interface DashboardState {
 
   generationSessionId: string | null;
   setGenerationSessionId: (id: string | null) => void;
+
+  // New fields for generation flow
+  generateParams: {
+    conversationId: string | null;
+    category: string | null;
+    templateId: string | null;
+    shouldAutoGenerate: boolean;
+  };
+  setGenerateParams: (params: Partial<DashboardState['generateParams']>) => void;
+  clearGenerateParams: () => void;
 }
 
 export const useDashboardStore = create<DashboardState>()(
@@ -99,6 +109,26 @@ export const useDashboardStore = create<DashboardState>()(
 
       generationSessionId: null,
       setGenerationSessionId: (id) => set({ generationSessionId: id }),
+
+      generateParams: {
+        conversationId: null,
+        category: null,
+        templateId: null,
+        shouldAutoGenerate: false,
+      },
+      setGenerateParams: (params) =>
+        set((state) => ({
+          generateParams: { ...state.generateParams, ...params },
+        })),
+      clearGenerateParams: () =>
+        set({
+          generateParams: {
+            conversationId: null,
+            category: null,
+            templateId: null,
+            shouldAutoGenerate: false,
+          },
+        }),
     }),
     {
       name: 'dashboard-storage',
