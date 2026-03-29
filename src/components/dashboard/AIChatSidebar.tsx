@@ -120,7 +120,7 @@ export function AIChatSidebar() {
               className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                 msg.role === 'user'
                   ? 'bg-primary text-white rounded-br-md'
-                  : 'bg-gray-100 text-gray-800 rounded-bl-md'
+                  : 'bg-gray-100 text-gray-800 rounded-bl-md prose prose-sm prose-gray max-w-none [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5 [&_p]:mb-2 [&_ul]:my-1 [&_li]:mb-0.5'
               }`}
             >
               {msg.isStreaming ? (

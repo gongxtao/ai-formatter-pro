@@ -29,7 +29,7 @@ export async function classifyIntent(prompt: string): Promise<IntentClassificati
 
   try {
     const generator = await streamChatCompletion({
-      model: 'openai/gpt-4o-mini', // Use fast model for classification
+      model: 'kimi-k2.5', // Use fast model for classification
       messages: [
         { role: 'system', content: INTENT_CLASSIFICATION_SYSTEM },
         { role: 'user', content: prompt },

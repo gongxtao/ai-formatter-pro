@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     // Call LLM
     const generator = await streamChatCompletion({
-      model: 'openai/gpt-4o-mini',
+      model: 'kimi-k2.5',
       messages,
     });
 
@@ -188,7 +188,7 @@ async function generateDocument(category: string, session: { originalPrompt: str
   ];
 
   const generator = await streamChatCompletion({
-    model: 'openai/gpt-4o',
+    model: 'kimi-k2.5',
     messages,
   });
 

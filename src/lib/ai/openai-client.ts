@@ -10,8 +10,8 @@
  * - OPENAI_MODEL: Model to use (default: gpt-4o)
  */
 
-const DEFAULT_OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
-const DEFAULT_MODEL = 'gpt-4o';
+const DEFAULT_OPENAI_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+const DEFAULT_MODEL = 'kimi-k2.5';
 
 interface ChatCompletionParams {
   model?: string;
