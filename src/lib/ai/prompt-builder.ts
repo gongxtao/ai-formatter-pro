@@ -1,6 +1,43 @@
-import { getPromptTemplate } from '@/config/prompt-templates';
 import { DEFAULT_MODEL } from '@/config/ai-models';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
+
+/**
+ * Default system prompt used when category is not found in database
+ */
+const DEFAULT_SYSTEM_PROMPT = `You are a professional document writer. Generate a well-structured document as valid HTML5 only (no markdown fences, no backticks). Use semantic elements: <h1>, <h2>, <h3>, <p>, <ul>, <ol>, <li>, <table>, <thead>, <tbody>, <tr>, <th>, <td>, <blockquote>, <strong>, <em>. Use inline styles for basic formatting (font-size, color, margin). Output ONLY the HTML content, no explanations.`;
+
+/**
+ * Valid document types - must match categories in template_categories table
+ */
+export const VALID_DOCUMENT_TYPES = [
+  'document',
+  'businessPlan',
+  'report',
+  'manual',
+  'caseStudy',
+  'ebook',
+  'whitePaper',
+  'marketResearch',
+  'researchPaper',
+  'proposal',
+  'budget',
+  'todoList',
+  'resume',
+  'coverLetter',
+  'letter',
+  'meetingMinutes',
+  'writer',
+  'policy',
+  'payslip',
+  'companyProfile',
+];
+
+/**
+ * Check if a category is a valid document type
+ */
+export function isValidDocumentType(category: string): boolean {
+  return VALID_DOCUMENT_TYPES.includes(category);
+}
 
 interface GenerationParams {
   category: string;
@@ -14,7 +51,9 @@ export function buildGenerationMessages(params: GenerationParams): {
   model: string;
   messages: Array<{ role: string; content: string }>;
 } {
-  const systemPrompt = getPromptTemplate(params.category);
+  // Note: This synchronous function uses the default prompt.
+  // For database-fetched prompts, use buildGenerationMessagesAsync
+  const systemPrompt = DEFAULT_SYSTEM_PROMPT;
 
   let userContent = params.prompt;
   if (params.topic) {
@@ -48,7 +87,7 @@ export function buildChatMessages(params: ChatParams): {
   const systemParts: string[] = [];
 
   if (params.category) {
-    systemParts.push(getPromptTemplate(params.category));
+    systemParts.push(DEFAULT_SYSTEM_PROMPT);
   } else {
     systemParts.push(
       `You are a helpful AI writing assistant. Help users edit and improve their documents.
@@ -103,7 +142,7 @@ export function buildChatMessagesWithTemplate(params: ChatWithTemplateParams): {
 
   // Base prompt based on category or default
   if (params.category) {
-    systemParts.push(getPromptTemplate(params.category));
+    systemParts.push(DEFAULT_SYSTEM_PROMPT);
   } else {
     systemParts.push(
       `You are a helpful AI writing assistant. Help users edit and improve their documents.
@@ -177,8 +216,8 @@ export async function getSystemPrompt(category: string): Promise<string> {
     .single();
 
   if (error || !data) {
-    console.warn('getSystemPrompt: falling back to hardcoded prompt for category:', category, error?.message);
-    return getPromptTemplate(category);
+    console.warn('getSystemPrompt: falling back to default prompt for category:', category, error?.message);
+    return DEFAULT_SYSTEM_PROMPT;
   }
 
   return data.system_prompt;

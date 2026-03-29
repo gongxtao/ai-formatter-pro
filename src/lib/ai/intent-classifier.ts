@@ -1,39 +1,104 @@
 // src/lib/ai/intent-classifier.ts
 
 import { streamChatCompletion } from '@/lib/ai/llm-client';
-import { PROMPT_TEMPLATES } from '@/config/prompt-templates';
+import { VALID_DOCUMENT_TYPES } from '@/lib/ai/prompt-builder';
 import type { IntentClassificationResult } from '@/types/clarify';
 
-const CONFIDENCE_THRESHOLD = 0.7;
+const VALID_TYPES = VALID_DOCUMENT_TYPES;
 
-const INTENT_CLASSIFICATION_SYSTEM = `You are a document type classifier. Analyze the user's request and determine the most appropriate document type.
+/**
+ * Get default classification result
+ * If category is provided and valid, assume user already selected a type
+ */
+export function getDefaultResult(category?: string | null): IntentClassificationResult {
+  const isValidCategory = category && VALID_TYPES.includes(category);
 
-Available types: ${Object.keys(PROMPT_TEMPLATES).join(', ')}
+  if (isValidCategory) {
+    return {
+      readyToGenerate: false, // Still need to check content sufficiency
+      category: category,
+      confidence: 0.5,
+      reason: 'insufficient_content',
+    };
+  }
 
-If you can confidently determine the type (confidence > ${CONFIDENCE_THRESHOLD}), respond with JSON:
-{ "type": "resume", "confidence": 0.9 }
+  return {
+    readyToGenerate: false,
+    confidence: 0,
+    reason: 'unknown_type',
+  };
+}
 
-If the request is too vague or could match multiple types, respond with:
-{ "needsClarification": true, "possibleTypes": ["resume", "coverLetter", "letter"] }
+const INTENT_CLASSIFICATION_SYSTEM = `You are an intent classifier for a document generation system. Your job is to determine if the user wants to generate a document and if they have provided enough information.
+
+Available document types: ${VALID_TYPES.join(', ')}
+
+Analyze the user's input and respond with a JSON object. Consider:
+
+1. **Intent Detection**: Is the user trying to generate a document?
+   - Look for keywords like: "generate", "create", "write", "make", "help me with", "I need a"
+   - Even vague requests like "I want a resume" or "business plan" indicate document generation intent
+
+2. **Content Sufficiency**: Has the user provided enough information to generate?
+   - Sufficient: Specific details, requirements, or context (e.g., "Create a resume for a software engineer with 5 years experience in React and TypeScript")
+   - Insufficient: Just a type name without context (e.g., just "resume" or "I need a business plan")
+   - Even a brief description of what they want is usually sufficient
+
+3. **Type Detection**: What type of document does the user want?
+   - Match against available types: ${VALID_TYPES.join(', ')}
+   - If unclear, suggest the most likely type
+
+Response format:
+{
+  "readyToGenerate": boolean,  // true if intent is clear AND content is sufficient
+  "category": "type" | null,   // detected or confirmed document type
+  "confidence": 0.0-1.0,       // confidence in the classification
+  "reason": null | "unclear_intent" | "insufficient_content" | "unknown_type",
+  "suggestedQuestion": "question to ask if clarification needed" | null,
+  "quickReplies": ["option1", "option2"] | null
+}
+
+Guidelines:
+- If user explicitly mentions a document type with ANY context/details, set readyToGenerate: true
+- If category is already provided (mentioned in the prompt), trust it and focus on content sufficiency
+- Be lenient: if there's any meaningful content beyond just the type name, consider it sufficient
+- suggestedQuestion should help gather missing information
+- quickReplies should offer 2-3 relevant options
 
 Respond ONLY with the JSON object, no other text.`;
 
 /**
  * Classify user intent from their prompt
+ * @param prompt - User's input text
+ * @param category - Optional pre-selected category (if user already chose a type)
  */
-export async function classifyIntent(prompt: string): Promise<IntentClassificationResult> {
+export async function classifyIntent(
+  prompt: string,
+  category?: string | null,
+): Promise<IntentClassificationResult> {
   // Validate input
   if (!prompt?.trim()) {
-    return { needsClarification: true };
+    return {
+      readyToGenerate: false,
+      confidence: 0,
+      reason: 'insufficient_content',
+      suggestedQuestion: 'Please describe what document you would like to generate.',
+    };
   }
+
+  // If category is provided and valid, include it in the context
+  const categoryContext = category && VALID_TYPES.includes(category)
+    ? `\n\nNote: The user has already selected the document type "${category}". Trust this selection and focus on whether the provided content is sufficient to generate the document.`
+    : '';
 
   try {
     const generator = await streamChatCompletion({
       model: 'kimi-k2.5', // Use fast model for classification
       messages: [
-        { role: 'system', content: INTENT_CLASSIFICATION_SYSTEM },
+        { role: 'system', content: INTENT_CLASSIFICATION_SYSTEM + categoryContext },
         { role: 'user', content: prompt },
       ],
+      temperature: 0.3, // Lower temperature for more consistent classification
     });
 
     let accumulated = '';
@@ -43,65 +108,96 @@ export async function classifyIntent(prompt: string): Promise<IntentClassificati
         accumulated += chunk.data;
       } else if (chunk.type === 'error') {
         console.error('Intent classification error:', chunk.data);
-        return { needsClarification: true };
+        return getDefaultResult(category);
       }
     }
 
     // Parse the JSON response
-    const result = parseClassificationResult(accumulated);
+    const result = parseClassificationResult(accumulated, category);
     return result;
 
   } catch (error) {
     console.error('Intent classification failed:', error);
-    return { needsClarification: true };
+    return getDefaultResult(category);
   }
 }
 
 /**
  * Parse classification result from LLM response
  */
-function parseClassificationResult(response: string): IntentClassificationResult {
-  const validTypes = Object.keys(PROMPT_TEMPLATES);
-  const isValidType = (t: string): boolean => validTypes.includes(t);
+function parseClassificationResult(
+  response: string,
+  providedCategory?: string | null,
+): IntentClassificationResult {
+  const isValidType = (t: string): boolean => VALID_TYPES.includes(t);
 
   try {
     // Try to extract JSON from the response
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      return { needsClarification: true };
+      return getDefaultResult(providedCategory);
     }
 
-    const parsed = JSON.parse(jsonMatch[0]) as IntentClassificationResult;
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      readyToGenerate?: boolean;
+      category?: string | null;
+      confidence?: number;
+      reason?: 'unclear_intent' | 'insufficient_content' | 'unknown_type' | null;
+      suggestedQuestion?: string | null;
+      quickReplies?: string[] | null;
+    };
 
-    // Validate the result
-    if (parsed.needsClarification) {
-      const validPossibleTypes = (parsed.possibleTypes || []).filter(isValidType);
-      return {
-        needsClarification: true,
-        possibleTypes: validPossibleTypes.length > 0 ? validPossibleTypes : [],
-      };
+    // Build the result
+    const result: IntentClassificationResult = {
+      readyToGenerate: parsed.readyToGenerate ?? false,
+      confidence: parsed.confidence ?? 0.5,
+    };
+
+    // Handle category
+    if (providedCategory && isValidType(providedCategory)) {
+      // Trust the provided category
+      result.category = providedCategory;
+    } else if (parsed.category && isValidType(parsed.category)) {
+      result.category = parsed.category;
     }
 
-    if (parsed.type && typeof parsed.confidence === 'number') {
-      // Validate the type is valid
-      if (!isValidType(parsed.type)) {
-        return { needsClarification: true };
+    // Handle reason
+    if (parsed.reason) {
+      result.reason = parsed.reason;
+    } else if (!result.readyToGenerate) {
+      // Infer reason if not ready
+      if (!result.category) {
+        result.reason = 'unknown_type';
+      } else {
+        result.reason = 'insufficient_content';
       }
-
-      // If confidence is high enough, return the type
-      if (parsed.confidence >= 0.7) {
-        return { type: parsed.type, confidence: parsed.confidence };
-      }
-      // Otherwise, need clarification
-      return {
-        needsClarification: true,
-        possibleTypes: [parsed.type], // The single type is already validated
-      };
     }
 
-    return { needsClarification: true };
+    // Handle suggested question
+    if (parsed.suggestedQuestion) {
+      result.suggestedQuestion = parsed.suggestedQuestion;
+    }
 
-  } catch {
-    return { needsClarification: true };
+    // Handle quick replies
+    if (parsed.quickReplies && Array.isArray(parsed.quickReplies)) {
+      result.quickReplies = parsed.quickReplies.slice(0, 4); // Limit to 4 quick replies
+    }
+
+    // Add legacy fields for backward compatibility
+    if (result.category) {
+      result.type = result.category;
+    }
+    if (!result.readyToGenerate) {
+      result.needsClarification = true;
+      if (result.category) {
+        result.possibleTypes = [result.category];
+      }
+    }
+
+    return result;
+
+  } catch (parseError) {
+    console.error('Failed to parse classification result:', parseError);
+    return getDefaultResult(providedCategory);
   }
 }
