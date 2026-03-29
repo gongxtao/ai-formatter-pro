@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
 import { getDefaultModel } from '@/lib/ai/llm-client';
-import { randomUUID } from 'crypto';
 
 export async function GET() {
   try {
@@ -28,7 +27,8 @@ export async function POST(request: NextRequest) {
     const { category, title, model, userId } = body;
 
     // Generate anonymous user ID if not provided (database requires non-null user_id)
-    const effectiveUserId = userId ?? `anon_${randomUUID()}`;
+    // Use Web Crypto API (available in edge runtime)
+    const effectiveUserId = userId ?? `anon_${crypto.randomUUID()}`;
 
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
