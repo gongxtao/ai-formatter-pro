@@ -21,7 +21,7 @@ export interface GenerationRequest {
 }
 
 export interface StreamEvent {
-  type: 'content' | 'status' | 'completion' | 'done' | 'error' | 'clarification_needed' | 'ready_to_generate';
+  type: 'content' | 'status' | 'completion' | 'done' | 'error' | 'clarification_needed' | 'ready_to_generate' | 'continue';
   data: string;
   percentage?: number;
   sessionId?: string;  // For clarification_needed
@@ -32,4 +32,5 @@ export interface StreamEvent {
   templateId?: string; // For ready_to_generate
   message?: string; // For clarification_needed
   quickReplies?: string[]; // For clarification_needed
+  content?: string; // For continue
 }

@@ -140,31 +140,67 @@ export function CreateConversationView({
           }),
         });
 
-        const data = await response.json();
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('No response body');
 
-        if (data.type === 'ready_to_generate') {
-          // Intent is clear - navigate to editor
-          addMessage({
-            id: `assistant-${Date.now()}`,
-            role: 'assistant',
-            content: t('generatingDocument'),
-          });
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-          setGenerateParams({
-            conversationId,
-            category: data.category,
-            templateId: data.templateId,
-            shouldAutoGenerate: true,
-          });
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-          router.push('/dashboard/editor');
-        } else {
-          // Continue conversation
-          addMessage({
-            id: `assistant-${Date.now()}`,
-            role: 'assistant',
-            content: data.content,
-          });
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() ?? '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || !trimmed.startsWith('data: ')) continue;
+
+            try {
+              const event = JSON.parse(trimmed.slice(6));
+
+              if (event.type === 'ready_to_generate') {
+                // Intent is clear - navigate to editor
+                addMessage({
+                  id: `assistant-${Date.now()}`,
+                  role: 'assistant',
+                  content: event.data || t('generatingDocument'),
+                });
+
+                setGenerateParams({
+                  conversationId,
+                  category: event.category,
+                  templateId: event.templateId,
+                  shouldAutoGenerate: true,
+                });
+
+                setIsLoading(false);
+                router.push('/dashboard/editor');
+                return;
+              }
+
+              if (event.type === 'continue') {
+                // Continue conversation
+                addMessage({
+                  id: `assistant-${Date.now()}`,
+                  role: 'assistant',
+                  content: event.content || event.data || '',
+                });
+              }
+
+              if (event.type === 'error') {
+                addMessage({
+                  id: `assistant-${Date.now()}`,
+                  role: 'assistant',
+                  content: event.data || t('errorOccurred'),
+                });
+              }
+            } catch {
+              // Ignore parse errors
+            }
+          }
         }
       } catch (error) {
         console.error('Clarify error:', error);

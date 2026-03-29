@@ -1,9 +1,16 @@
 // src/app/api/ai/clarify/route.ts
 
 import { NextRequest, NextResponse } from 'next/server';
-import { chatCompletion } from '@/lib/ai/llm-client';
+import { streamChatCompletion } from '@/lib/ai/llm-client';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
 import { classifyIntent } from '@/lib/ai/intent-classifier';
+import {
+  createSSEStream,
+  sendSSEStatus,
+  sendSSEEvent,
+  sendSSEError,
+} from '@/lib/ai/sse-helper';
+import { getDefaultModel } from '@/lib/ai/llm-client';
 
 export const runtime = 'edge';
 export const maxDuration = 60;
@@ -12,7 +19,7 @@ const CLARIFY_SYSTEM_PROMPT = `You are a helpful document creation assistant. He
 
 Available document types: document, businessPlan, report, manual, caseStudy, ebook, whitePaper, marketResearch, researchPaper, proposal, budget, todoList, resume, coverLetter, letter, meetingMinutes, writer, policy, payslip, companyProfile
 
-When the user clarifies their intent, respond with JSON ONLY:
+When the user clarifies their intent and you can determine the document type, respond with JSON ONLY:
 {
   "type": "intent_clear",
   "category": "resume",
@@ -28,77 +35,176 @@ When you need more information, respond conversationally:
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient();
     const body = await request.json();
     const { sessionId, conversationId, message } = body;
-    // sessionId is kept for backward compatibility but not used in new flow
 
     if (!message) {
       return NextResponse.json({ error: 'message is required' }, { status: 400 });
     }
 
-    // If conversationId provided, save message to database
-    if (conversationId) {
-      const { error } = await supabase.from('ai_messages').insert({
-        conversation_id: conversationId,
-        role: 'user',
-        content: message,
-        content_type: 'text',
-      });
-      if (error) {
-        console.error('Failed to save user message:', error.message);
-      }
-    }
+    const { controller, stream } = createSSEStream();
 
-    // Classify intent with the new message
-    const intentResult = await classifyIntent(message);
+    (async () => {
+      const supabase = createServerSupabaseClient();
 
-    if (intentResult.readyToGenerate && intentResult.category) {
-      // Intent is clear - return ready_to_generate
-      const templateMatch = await matchTemplate(intentResult.category, message);
+      try {
+        sendSSEStatus(controller!, 'Analyzing your message...', 10);
 
-      // Save assistant message
-      if (conversationId) {
-        const { error } = await supabase.from('ai_messages').insert({
-          conversation_id: conversationId,
-          role: 'assistant',
-          content: `好的，我将为你生成${intentResult.category}文档...`,
-          content_type: 'text',
-          metadata: { category: intentResult.category },
-        });
-        if (error) {
-          console.error('Failed to save assistant message:', error.message);
+        // If conversationId provided, save message to database
+        if (conversationId) {
+          await supabase.from('ai_messages').insert({
+            conversation_id: conversationId,
+            role: 'user',
+            content: message,
+            content_type: 'text',
+          });
         }
+
+        // Classify intent with the new message
+        const intentResult = await classifyIntent(message);
+
+        if (intentResult.readyToGenerate && intentResult.category) {
+          // Intent is clear - match template and return ready_to_generate
+          sendSSEStatus(controller!, 'Matching template...', 50);
+          const templateMatch = await matchTemplate(intentResult.category, message);
+
+          // Save assistant message
+          const aiContent = `好的，我将为你生成${getCategoryDisplayName(intentResult.category)}文档...`;
+          if (conversationId) {
+            await supabase.from('ai_messages').insert({
+              conversation_id: conversationId,
+              role: 'assistant',
+              content: aiContent,
+              content_type: 'text',
+              metadata: { category: intentResult.category },
+            });
+          }
+
+          sendSSEEvent(controller!, {
+            type: 'ready_to_generate',
+            conversationId,
+            category: intentResult.category,
+            templateId: templateMatch?.template?.id,
+            data: aiContent,
+          });
+          controller!.close();
+          return;
+        }
+
+        // Need more clarification - use streaming LLM for conversational response
+        sendSSEStatus(controller!, 'Thinking...', 30);
+
+        const generator = await streamChatCompletion({
+          model: getDefaultModel(),
+          messages: [
+            { role: 'system', content: CLARIFY_SYSTEM_PROMPT },
+            { role: 'user', content: message },
+          ],
+        });
+
+        let fullResponse = '';
+
+        for await (const chunk of generator) {
+          if (chunk.type === 'delta') {
+            fullResponse += chunk.data;
+            // Stream content to client in real-time
+            sendSSEEvent(controller!, {
+              type: 'content',
+              data: chunk.data,
+            });
+          } else if (chunk.type === 'error') {
+            sendSSEError(controller!, chunk.data);
+            controller!.close();
+            return;
+          }
+        }
+
+        // Parse the complete response to determine next action
+        const jsonMatch = fullResponse.match(/\{[\s\S]*\}/);
+
+        if (jsonMatch) {
+          try {
+            const parsed = JSON.parse(jsonMatch[0]);
+
+            if (parsed.type === 'intent_clear' && parsed.category) {
+              // LLM determined intent is clear - match template
+              const templateMatch = await matchTemplate(parsed.category, message);
+
+              // Save assistant message
+              if (conversationId) {
+                await supabase.from('ai_messages').insert({
+                  conversation_id: conversationId,
+                  role: 'assistant',
+                  content: parsed.summary || fullResponse,
+                  content_type: 'text',
+                  metadata: { category: parsed.category },
+                });
+              }
+
+              sendSSEEvent(controller!, {
+                type: 'ready_to_generate',
+                conversationId,
+                category: parsed.category,
+                templateId: templateMatch?.template?.id,
+                data: parsed.summary || '好的，我来为你生成文档。',
+              });
+              controller!.close();
+              return;
+            }
+
+            // Continue conversation
+            if (conversationId) {
+              await supabase.from('ai_messages').insert({
+                conversation_id: conversationId,
+                role: 'assistant',
+                content: parsed.content || fullResponse,
+                content_type: 'text',
+                metadata: { quickReplies: parsed.quickReplies },
+              });
+            }
+
+            sendSSEEvent(controller!, {
+              type: 'continue',
+              data: parsed.content || fullResponse,
+              content: parsed.content || fullResponse,
+              quickReplies: parsed.quickReplies,
+            });
+            controller!.close();
+            return;
+          } catch {
+            // JSON parse failed, treat as plain text
+          }
+        }
+
+        // No valid JSON found - save and continue with plain text
+        if (conversationId) {
+          await supabase.from('ai_messages').insert({
+            conversation_id: conversationId,
+            role: 'assistant',
+            content: fullResponse,
+            content_type: 'text',
+          });
+        }
+
+        sendSSEEvent(controller!, {
+          type: 'continue',
+          data: fullResponse,
+          content: fullResponse,
+        });
+        controller!.close();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Clarify failed';
+        sendSSEError(controller!, errorMessage);
+        controller!.close();
       }
+    })();
 
-      return NextResponse.json({
-        type: 'ready_to_generate',
-        conversationId,
-        category: intentResult.category,
-        templateId: templateMatch?.template?.id,
-      });
-    }
-
-    // Need more clarification - use LLM for conversational response
-    const response = await getClarificationResponse(message);
-
-    // Save assistant message
-    if (conversationId) {
-      const { error } = await supabase.from('ai_messages').insert({
-        conversation_id: conversationId,
-        role: 'assistant',
-        content: response.content || '',
-        content_type: 'text',
-        metadata: { quickReplies: response.quickReplies },
-      });
-      if (error) {
-        console.error('Failed to save assistant message:', error.message);
-      }
-    }
-
-    return NextResponse.json({
-      type: 'continue',
-      ...response,
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Clarify failed';
@@ -106,45 +212,16 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function getClarificationResponse(userMessage: string): Promise<{
-  content: string;
-  quickReplies?: string[];
-}> {
-  try {
-    const responseText = await chatCompletion({
-      model: 'kimi-k2.5',
-      messages: [
-        { role: 'system', content: CLARIFY_SYSTEM_PROMPT },
-        { role: 'user', content: userMessage },
-      ],
-    });
-
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return {
-        content: '你想创建什么类型的文档？',
-        quickReplies: ['简历', '求职信', '报告', '商业计划'],
-      };
-    }
-
-    const parsed = JSON.parse(jsonMatch[0]);
-
-    if (parsed.type === 'intent_clear') {
-      return {
-        content: parsed.summary || '好的，我来为你生成文档。',
-      };
-    }
-
-    return {
-      content: parsed.content || '你想创建什么类型的文档？',
-      quickReplies: parsed.quickReplies,
-    };
-  } catch {
-    return {
-      content: '你想创建什么类型的文档？',
-      quickReplies: ['简历', '求职信', '报告', '商业计划'],
-    };
-  }
+function getCategoryDisplayName(category: string): string {
+  const names: Record<string, string> = {
+    resume: '简历',
+    coverLetter: '求职信',
+    report: '报告',
+    businessPlan: '商业计划',
+    proposal: '提案',
+    document: '文档',
+  };
+  return names[category] || category;
 }
 
 async function matchTemplate(category: string, userPrompt: string) {
