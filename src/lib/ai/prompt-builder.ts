@@ -1,5 +1,6 @@
 import { getPromptTemplate } from '@/config/prompt-templates';
 import { DEFAULT_MODEL } from '@/config/ai-models';
+import { createServerSupabaseClient } from '@/lib/db/supabase-server';
 
 interface GenerationParams {
   category: string;
@@ -154,6 +155,116 @@ ${params.contextHtml}
   }
 
   // Add current user message
+  messages.push({ role: 'user', content: params.userMessage });
+
+  return {
+    model: params.model ?? DEFAULT_MODEL,
+    messages,
+  };
+}
+
+/**
+ * Get system prompt from database by category
+ */
+export async function getSystemPrompt(category: string): Promise<string> {
+  const supabase = createServerSupabaseClient();
+
+  const { data, error } = await supabase
+    .from('template_categories')
+    .select('system_prompt')
+    .eq('category', category)
+    .eq('is_active', true)
+    .single();
+
+  if (error || !data) {
+    // Fallback to default
+    return getPromptTemplate(category);
+  }
+
+  return data.system_prompt;
+}
+
+/**
+ * Build generation messages with database-fetched system prompt
+ */
+export async function buildGenerationMessagesAsync(params: GenerationParams): Promise<{
+  model: string;
+  messages: Array<{ role: string; content: string }>;
+}> {
+  const systemPrompt = await getSystemPrompt(params.category);
+
+  let userContent = params.prompt;
+  if (params.topic) {
+    userContent = `Topic: ${params.topic}\n\n${userContent}`;
+  }
+  if (params.industry) {
+    userContent = `Industry: ${params.industry}\n\n${userContent}`;
+  }
+
+  return {
+    model: params.model ?? DEFAULT_MODEL,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userContent },
+    ],
+  };
+}
+
+/**
+ * Build chat messages with template style injection
+ */
+export async function buildChatMessagesWithTemplateStyle(params: {
+  category: string;
+  templateHtml?: string;
+  contextHtml?: string;
+  history: Array<{ role: string; content: string }>;
+  userMessage: string;
+  model?: string;
+  isAutoGenerate?: boolean;
+}): Promise<{
+  model: string;
+  messages: Array<{ role: string; content: string }>;
+}> {
+  const systemPrompt = await getSystemPrompt(params.category);
+
+  const systemParts: string[] = [systemPrompt];
+
+  // Inject template style for first generation
+  if (params.isAutoGenerate && params.templateHtml) {
+    systemParts.push(`
+
+IMPORTANT: Generate content that matches this template's style and structure:
+
+<template_structure>
+${params.templateHtml.substring(0, 2000)}
+</template_structure>
+
+Maintain the template's:
+1. Heading hierarchy and formatting
+2. Section structure
+3. Overall style and tone`);
+  }
+
+  // Add current document context
+  if (params.contextHtml) {
+    systemParts.push(`
+
+Current document content for reference:
+<context>
+${params.contextHtml}
+</context>`);
+  }
+
+  const messages: Array<{ role: string; content: string }> = [
+    { role: 'system', content: systemParts.join('\n') },
+  ];
+
+  // Add history
+  for (const msg of params.history) {
+    messages.push({ role: msg.role, content: msg.content });
+  }
+
+  // Add user message
   messages.push({ role: 'user', content: params.userMessage });
 
   return {
