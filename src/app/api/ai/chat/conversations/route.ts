@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/db/supabase-server';
+import { createServerSupabaseClient, getEffectiveUserId } from '@/lib/db/supabase-server';
 import { getDefaultModel } from '@/lib/ai/llm-client';
 
 export async function GET() {
@@ -26,16 +26,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { category, title, model, userId } = body;
 
-    // Generate anonymous user ID if not provided (database requires non-null user_id)
-    // Use Web Crypto API (available in edge runtime)
-    // Note: user_id column is UUID type, so no prefix allowed
-    const effectiveUserId = userId ?? crypto.randomUUID();
-
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('ai_conversations')
       .insert({
-        user_id: effectiveUserId,
+        user_id: getEffectiveUserId(userId),
         category: category ?? null,
         title: title ?? 'New Conversation',
         model: model ?? getDefaultModel(),

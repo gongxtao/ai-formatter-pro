@@ -6,3 +6,11 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 export function createServerSupabaseClient() {
   return createClient(supabaseUrl, supabaseServiceKey);
 }
+
+/**
+ * Get effective user ID for database operations
+ * Returns provided userId or generates a new anonymous UUID
+ */
+export function getEffectiveUserId(userId?: string | null): string {
+  return userId ?? crypto.randomUUID();
+}

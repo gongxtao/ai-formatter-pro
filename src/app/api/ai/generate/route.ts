@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { classifyIntent } from '@/lib/ai/intent-classifier';
-import { createServerSupabaseClient } from '@/lib/db/supabase-server';
+import { createServerSupabaseClient, getEffectiveUserId } from '@/lib/db/supabase-server';
 import {
   createSSEStream,
   sendSSEStatus,
@@ -104,15 +104,10 @@ export async function POST(request: NextRequest) {
 async function createConversation(category?: string | null): Promise<string> {
   const supabase = createServerSupabaseClient();
 
-  // Generate a UUID for anonymous users (database requires non-null user_id)
-  // Use Web Crypto API (available in edge runtime)
-  // Note: user_id column is UUID type, so no prefix allowed
-  const anonymousUserId = crypto.randomUUID();
-
   const { data, error } = await supabase
     .from('ai_conversations')
     .insert({
-      user_id: anonymousUserId,
+      user_id: getEffectiveUserId(),
       category: category || null,
       title: 'New Document',
       model: getDefaultModel(),
