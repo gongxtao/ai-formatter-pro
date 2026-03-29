@@ -28,8 +28,10 @@ When you need more information, respond conversationally:
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createServerSupabaseClient();
     const body = await request.json();
     const { sessionId, conversationId, message } = body;
+    // sessionId is kept for backward compatibility but not used in new flow
 
     if (!message) {
       return NextResponse.json({ error: 'message is required' }, { status: 400 });
@@ -37,13 +39,15 @@ export async function POST(request: NextRequest) {
 
     // If conversationId provided, save message to database
     if (conversationId) {
-      const supabase = createServerSupabaseClient();
-      await supabase.from('ai_messages').insert({
+      const { error } = await supabase.from('ai_messages').insert({
         conversation_id: conversationId,
         role: 'user',
         content: message,
         content_type: 'text',
       });
+      if (error) {
+        console.error('Failed to save user message:', error.message);
+      }
     }
 
     // Classify intent with the new message
@@ -55,14 +59,16 @@ export async function POST(request: NextRequest) {
 
       // Save assistant message
       if (conversationId) {
-        const supabase = createServerSupabaseClient();
-        await supabase.from('ai_messages').insert({
+        const { error } = await supabase.from('ai_messages').insert({
           conversation_id: conversationId,
           role: 'assistant',
           content: `好的，我将为你生成${intentResult.category}文档...`,
           content_type: 'text',
           metadata: { category: intentResult.category },
         });
+        if (error) {
+          console.error('Failed to save assistant message:', error.message);
+        }
       }
 
       return NextResponse.json({
@@ -78,14 +84,16 @@ export async function POST(request: NextRequest) {
 
     // Save assistant message
     if (conversationId) {
-      const supabase = createServerSupabaseClient();
-      await supabase.from('ai_messages').insert({
+      const { error } = await supabase.from('ai_messages').insert({
         conversation_id: conversationId,
         role: 'assistant',
         content: response.content || '',
         content_type: 'text',
         metadata: { quickReplies: response.quickReplies },
       });
+      if (error) {
+        console.error('Failed to save assistant message:', error.message);
+      }
     }
 
     return NextResponse.json({
