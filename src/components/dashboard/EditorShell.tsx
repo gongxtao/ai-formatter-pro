@@ -45,7 +45,8 @@ export function EditorShell() {
   const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
   const pendingEditorContent = useDashboardStore((s) => s.pendingEditorContent);
   const setPendingEditorContent = useDashboardStore((s) => s.setPendingEditorContent);
-  const isGenerating = useDashboardStore((s) => s.isGenerating);
+  const storeIsGenerating = useDashboardStore((s) => s.isGenerating);
+  const setIsGenerating = useDashboardStore((s) => s.setIsGenerating);
   const isTemplateLoading = useDashboardStore((s) => s.isTemplateLoading);
   const setIsTemplateLoading = useDashboardStore((s) => s.setIsTemplateLoading);
   const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
@@ -57,6 +58,14 @@ export function EditorShell() {
   // Chat store for initializing conversation
   const initConversation = useChatStore((s) => s.initConversation);
   const setConversationId = useChatStore((s) => s.setConversationId);
+  const clearMessages = useChatStore((s) => s.clearMessages);
+
+  // Track loaded conversation to avoid reloading
+  const loadedConversationRef = useRef<string | null>(null);
+
+  // Derive isGenerating from URL params or store
+  // When navigating with generate=1, we're in generating mode until the store says otherwise
+  const isGenerating = shouldAutoGenerate || storeIsGenerating;
 
   // 确保 templates 数据在页面加载时获取
   useTemplates();
@@ -191,9 +200,37 @@ export function EditorShell() {
 
     if (!conversationId) return;
 
+    // Skip if we've already loaded this conversation
+    if (loadedConversationRef.current === conversationId) return;
+    loadedConversationRef.current = conversationId;
+
+    // Clear old content when loading a new conversation
+    setContent('');
+    setCurrentEditorHtml('');
+    clearMessages();
+
     const loadConversation = async () => {
       try {
         const res = await fetch(`/api/ai/chat/conversations/${conversationId}`);
+
+        // Handle 404 gracefully - conversation might not exist yet
+        if (res.status === 404) {
+          // Just set the conversation ID, the messages will be loaded later
+          setConversationId(conversationId);
+
+          // Set category if provided
+          if (category) {
+            setActiveDocType(category);
+          }
+
+          // Set template ID if provided
+          if (templateId) {
+            setSelectedTemplateId(templateId);
+          }
+
+          return;
+        }
+
         if (!res.ok) throw new Error('Failed to load conversation');
 
         const data = await res.json();
@@ -216,7 +253,7 @@ export function EditorShell() {
         }
       } catch (e) {
         console.error('Failed to load conversation:', e);
-        toast('Failed to load conversation', 'error');
+        // Don't show toast for expected cases
       }
     };
 
@@ -237,6 +274,8 @@ export function EditorShell() {
     setActiveDocType,
     setSelectedTemplateId,
     clearGenerateParams,
+    clearMessages,
+    setCurrentEditorHtml,
     toast,
   ]);
 

@@ -114,8 +114,9 @@ export function useAIGeneration() {
                 case 'ready_to_generate':
                   // Server has matched a template, navigate to editor with params
                   if (event.conversationId && event.category) {
+                    // Keep isGenerating true - the editor will handle the actual generation
+                    // and reset isGenerating when complete
                     setIsGeneratingLocal(false);
-                    setIsGenerating(false);
                     // Store params for EditorShell to pick up
                     setGenerateParams({
                       conversationId: event.conversationId,
