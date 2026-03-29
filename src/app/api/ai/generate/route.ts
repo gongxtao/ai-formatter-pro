@@ -106,7 +106,8 @@ async function createConversation(category?: string | null): Promise<string> {
 
   // Generate a UUID for anonymous users (database requires non-null user_id)
   // Use Web Crypto API (available in edge runtime)
-  const anonymousUserId = `anon_${crypto.randomUUID()}`;
+  // Note: user_id column is UUID type, so no prefix allowed
+  const anonymousUserId = crypto.randomUUID();
 
   const { data, error } = await supabase
     .from('ai_conversations')
@@ -120,8 +121,8 @@ async function createConversation(category?: string | null): Promise<string> {
     .single();
 
   if (error) {
-    console.error('Failed to create conversation:', error);
-    throw new Error('Failed to create conversation');
+    console.error('[createConversation] Error:', error);
+    throw new Error(`Failed to create conversation: ${error.message}`);
   }
 
   return data.id;

@@ -28,7 +28,8 @@ export async function POST(request: NextRequest) {
 
     // Generate anonymous user ID if not provided (database requires non-null user_id)
     // Use Web Crypto API (available in edge runtime)
-    const effectiveUserId = userId ?? `anon_${crypto.randomUUID()}`;
+    // Note: user_id column is UUID type, so no prefix allowed
+    const effectiveUserId = userId ?? crypto.randomUUID();
 
     const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
