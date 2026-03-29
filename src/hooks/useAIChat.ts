@@ -35,7 +35,10 @@ export function useAIChat(options?: UseAIChatOptions) {
   onChunkRef.current = options?.onChunk;
 
   const sendMessage = useCallback(
-    async (message: string, sendOptions?: { contextHtml?: string }) => {
+    async (
+      message: string,
+      sendOptions?: { contextHtml?: string; autoGenerate?: boolean; templateId?: string | null }
+    ) => {
       if (!message.trim()) return;
 
       abortRef.current?.abort();
@@ -49,12 +52,15 @@ export function useAIChat(options?: UseAIChatOptions) {
         return;
       }
 
-      // Add user message
-      addMessage({
-        id: `user-${Date.now()}`,
-        role: 'user',
-        content: message,
-      });
+      // Add user message (skip if autoGenerate - message already exists in history)
+      const isAutoGenerate = sendOptions?.autoGenerate;
+      if (!isAutoGenerate) {
+        addMessage({
+          id: `user-${Date.now()}`,
+          role: 'user',
+          content: message,
+        });
+      }
 
       // Add placeholder assistant message
       addMessage({
@@ -78,7 +84,8 @@ export function useAIChat(options?: UseAIChatOptions) {
             message,
             contextHtml: sendOptions?.contextHtml,
             category: options?.category,
-            templateId: options?.templateId,
+            templateId: sendOptions?.templateId ?? options?.templateId,
+            autoGenerate: isAutoGenerate,
           }),
           signal: abortController.signal,
         });
@@ -141,7 +148,7 @@ export function useAIChat(options?: UseAIChatOptions) {
         setIsLoadingLocal(false);
       }
     },
-    [options?.conversationId, options?.category, addMessage, setIsLoading, setStreamingContent, appendStreamingContent, finalizeStreaming],
+    [options?.conversationId, options?.category, options?.templateId, addMessage, setIsLoading, setStreamingContent, appendStreamingContent, finalizeStreaming],
   );
 
   const insertIntoEditor = useCallback(

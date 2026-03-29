@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useChatStore } from '@/stores/useChatStore';
 import { useDashboardStore } from '@/stores/useDashboardStore';
@@ -10,8 +11,16 @@ import { getUserId } from '@/lib/utils/user-id';
 
 export function AIChatSidebar() {
   const t = useTranslations('editor');
+  const searchParams = useSearchParams();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const autoGenerateTriggeredRef = useRef(false);
+
+  // URL params for smart template matching flow
+  const urlConversationId = searchParams.get('conversationId');
+  const urlCategory = searchParams.get('category');
+  const urlTemplateId = searchParams.get('templateId');
+  const shouldAutoGenerate = searchParams.get('generate') === '1';
 
   const conversationId = useChatStore((s) => s.conversationId);
   const messages = useChatStore((s) => s.messages);
@@ -19,12 +28,18 @@ export function AIChatSidebar() {
   const isLoading = useChatStore((s) => s.isLoading);
 
   const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
+  const generateParams = useDashboardStore((s) => s.generateParams);
   const currentEditorHtml = useDashboardStore((s) => s.currentEditorHtml);
   const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
 
+  // Determine the effective template ID (URL param > store > generateParams)
+  const effectiveTemplateId = urlTemplateId || selectedTemplateId || generateParams.templateId;
+  const effectiveCategory = urlCategory || generateParams.category;
+
   const { sendMessage } = useAIChat({
     conversationId,
-    templateId: selectedTemplateId,
+    category: effectiveCategory ?? undefined,
+    templateId: effectiveTemplateId,
     onChunk: (html: string) => {
       // Real-time update to editor
       setCurrentEditorHtml(html);
@@ -65,6 +80,41 @@ export function AIChatSidebar() {
         });
     }
   }, []);
+
+  // Auto-generate when navigating from smart template matching flow
+  useEffect(() => {
+    const autoGen = shouldAutoGenerate || generateParams.shouldAutoGenerate;
+    const convId = urlConversationId || generateParams.conversationId;
+
+    // Only trigger once per session
+    if (autoGenerateTriggeredRef.current) return;
+
+    // Check if we should auto-generate
+    if (autoGen && convId && conversationId === convId && messages.length > 0 && !isLoading) {
+      autoGenerateTriggeredRef.current = true;
+
+      // Find the last user message to use as the generation prompt
+      const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
+      if (lastUserMessage?.content) {
+        // Trigger generation
+        sendMessage(lastUserMessage.content, {
+          contextHtml: currentEditorHtml,
+          autoGenerate: true,
+          templateId: effectiveTemplateId,
+        });
+      }
+    }
+  }, [
+    shouldAutoGenerate,
+    generateParams,
+    urlConversationId,
+    conversationId,
+    messages,
+    isLoading,
+    sendMessage,
+    currentEditorHtml,
+    effectiveTemplateId,
+  ]);
 
   const handleSend = useCallback(() => {
     const text = input.trim();

@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, type RefObject } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useHistoryStore } from '@/stores/useHistoryStore';
+import { useChatStore } from '@/stores/useChatStore';
 import { useToast } from '@/components/ui/Toast';
 import { useTranslations } from 'next-intl';
 import { MiniNav } from './MiniNav';
@@ -21,9 +22,16 @@ import { useTemplates } from '@/hooks/useTemplates';
 
 export function EditorShell() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations('editor');
   const th = useTranslations('history');
   const { toast } = useToast();
+
+  // URL params for smart template matching flow
+  const urlConversationId = searchParams.get('conversationId');
+  const urlCategory = searchParams.get('category');
+  const urlTemplateId = searchParams.get('templateId');
+  const shouldAutoGenerate = searchParams.get('generate') === '1';
 
   // Store
   const editorView = useDashboardStore((s) => s.editorView);
@@ -32,6 +40,7 @@ export function EditorShell() {
   const toggleDocTypesOverlay = useDashboardStore((s) => s.toggleDocTypesOverlay);
   const setEditorView = useDashboardStore((s) => s.setEditorView);
   const activeDocType = useDashboardStore((s) => s.activeDocType);
+  const setActiveDocType = useDashboardStore((s) => s.setActiveDocType);
   const currentEditorHtml = useDashboardStore((s) => s.currentEditorHtml);
   const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
   const pendingEditorContent = useDashboardStore((s) => s.pendingEditorContent);
@@ -41,7 +50,13 @@ export function EditorShell() {
   const setIsTemplateLoading = useDashboardStore((s) => s.setIsTemplateLoading);
   const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
   const setSelectedTemplateId = useDashboardStore((s) => s.setSelectedTemplateId);
+  const generateParams = useDashboardStore((s) => s.generateParams);
+  const clearGenerateParams = useDashboardStore((s) => s.clearGenerateParams);
   const saveDocument = useHistoryStore((s) => s.saveDocument);
+
+  // Chat store for initializing conversation
+  const initConversation = useChatStore((s) => s.initConversation);
+  const setConversationId = useChatStore((s) => s.setConversationId);
 
   // 确保 templates 数据在页面加载时获取
   useTemplates();
@@ -166,6 +181,64 @@ export function EditorShell() {
       autoSaveRef.current.flush();
     };
   }, []);
+
+  // Load conversation history from API when navigating with conversationId param
+  // This supports the smart template matching flow where user is redirected from /dashboard/create
+  useEffect(() => {
+    const conversationId = urlConversationId || generateParams.conversationId;
+    const category = urlCategory || generateParams.category;
+    const templateId = urlTemplateId || generateParams.templateId;
+
+    if (!conversationId) return;
+
+    const loadConversation = async () => {
+      try {
+        const res = await fetch(`/api/ai/chat/conversations/${conversationId}`);
+        if (!res.ok) throw new Error('Failed to load conversation');
+
+        const data = await res.json();
+        if (data.messages && Array.isArray(data.messages)) {
+          // Initialize chat store with conversation history
+          initConversation(conversationId, data.messages);
+        } else {
+          // No messages yet, just set conversation ID
+          setConversationId(conversationId);
+        }
+
+        // Set category if provided
+        if (category) {
+          setActiveDocType(category);
+        }
+
+        // Set template ID if provided (will be picked up by AIChatSidebar)
+        if (templateId) {
+          setSelectedTemplateId(templateId);
+        }
+      } catch (e) {
+        console.error('Failed to load conversation:', e);
+        toast('Failed to load conversation', 'error');
+      }
+    };
+
+    loadConversation();
+
+    // Clear generate params after use
+    if (generateParams.conversationId) {
+      clearGenerateParams();
+    }
+  }, [
+    urlConversationId,
+    urlCategory,
+    urlTemplateId,
+    shouldAutoGenerate,
+    generateParams,
+    initConversation,
+    setConversationId,
+    setActiveDocType,
+    setSelectedTemplateId,
+    clearGenerateParams,
+    toast,
+  ]);
 
   // Render EditorToolbar only when iframeRef is ready
   const editorToolbar = iframeRef ? (

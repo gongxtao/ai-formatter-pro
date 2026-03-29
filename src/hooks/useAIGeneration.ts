@@ -10,6 +10,7 @@ export function useAIGeneration() {
   const setPendingEditorContent = useDashboardStore((s) => s.setPendingEditorContent);
   const setIsGenerating = useDashboardStore((s) => s.setIsGenerating);
   const setGenerationSessionId = useDashboardStore((s) => s.setGenerationSessionId);
+  const setGenerateParams = useDashboardStore((s) => s.setGenerateParams);
 
   const [isGenerating, setIsGeneratingLocal] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
@@ -94,15 +95,40 @@ export function useAIGeneration() {
                 case 'error':
                   throw new Error(event.data);
                 case 'clarification_needed':
-                  if (!event.sessionId) {
-                    throw new Error('clarification_needed event missing sessionId');
+                  // Navigate to create page with conversation ID for clarification
+                  if (event.conversationId) {
+                    setIsGeneratingLocal(false);
+                    setIsGenerating(false);
+                    router.push(`/dashboard/create?conversationId=${event.conversationId}`);
+                    return;
                   }
-                  // Store session ID and navigate to clarify chat
-                  setGenerationSessionId(event.sessionId);
-                  setIsGeneratingLocal(false);
-                  setIsGenerating(false);
-                  router.push(`/dashboard/ai-chat/${event.sessionId}`);
-                  return; // Stop processing stream
+                  // Fallback to legacy sessionId-based route
+                  if (event.sessionId) {
+                    setGenerationSessionId(event.sessionId);
+                    setIsGeneratingLocal(false);
+                    setIsGenerating(false);
+                    router.push(`/dashboard/create?sessionId=${event.sessionId}`);
+                    return;
+                  }
+                  throw new Error('clarification_needed event missing conversationId/sessionId');
+                case 'ready_to_generate':
+                  // Server has matched a template, navigate to editor with params
+                  if (event.conversationId && event.category) {
+                    setIsGeneratingLocal(false);
+                    setIsGenerating(false);
+                    // Store params for EditorShell to pick up
+                    setGenerateParams({
+                      conversationId: event.conversationId,
+                      category: event.category,
+                      templateId: event.templateId ?? null,
+                      shouldAutoGenerate: true,
+                    });
+                    router.push(
+                      `/dashboard/editor?conversationId=${event.conversationId}&category=${event.category}${event.templateId ? `&templateId=${event.templateId}` : ''}&generate=1`
+                    );
+                    return;
+                  }
+                  throw new Error('ready_to_generate event missing required fields');
               }
             } catch (e) {
               if (e instanceof Error && e.message !== 'Unexpected end of JSON input') {
@@ -123,7 +149,7 @@ export function useAIGeneration() {
         setIsGenerating(false);
       }
     },
-    [router, setPendingEditorContent, setIsGenerating, setGenerationSessionId],
+    [router, setPendingEditorContent, setIsGenerating, setGenerationSessionId, setGenerateParams],
   );
 
   return { generate, isGenerating, generatedContent, progress, statusMessage, error };
