@@ -143,6 +143,12 @@
     "useTemplate": "Use Template",
     "clarifyingIntent": "Analyzing your request...",
     "needMoreInfo": "I need more information to help you create the right document.",
+    "createDocument": "Create Document",
+    "describeDocument": "Describe the document you want to create, and I'll help you choose the right template...",
+    "describeDocumentPlaceholder": "Describe the document you want to create...",
+    "thinking": "Thinking...",
+    "generatingDocument": "Okay, I'll generate the document for you...",
+    "errorOccurred": "Sorry, something went wrong. Please try again.",
     "docTypes": {
       "document": "Document",
       "businessPlan": "Business Plan",

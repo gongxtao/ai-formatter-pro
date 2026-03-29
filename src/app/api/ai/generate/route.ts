@@ -32,16 +32,23 @@ export async function POST(request: NextRequest) {
         const intentResult = await classifyIntent(prompt, category);
 
         if (!intentResult.readyToGenerate) {
-          // Need clarification - create conversation and return
+          // Need clarification - create conversation and save messages
           const conversationId = await createConversation(
             intentResult.category || category
           );
 
+          // Save user message
+          await saveUserMessage(conversationId, prompt, intentResult.category || category);
+
+          // Save AI clarification message
+          const aiMessage = intentResult.suggestedQuestion || 'What type of document would you like to create?';
+          await saveAssistantMessage(conversationId, aiMessage, intentResult.quickReplies);
+
           sendSSEEvent(controller!, {
             type: 'clarification_needed',
             conversationId,
-            data: intentResult.suggestedQuestion || 'What type of document would you like to create?',
-            message: intentResult.suggestedQuestion || 'What type of document would you like to create?',
+            data: aiMessage,
+            message: aiMessage,
             quickReplies: intentResult.quickReplies || [
               'Resume',
               'Cover Letter',
@@ -143,6 +150,30 @@ async function saveUserMessage(
 
   if (error) {
     console.error('Failed to save user message:', error);
+    // Don't throw - this is not critical
+  }
+}
+
+/**
+ * Save assistant message to Supabase
+ */
+async function saveAssistantMessage(
+  conversationId: string,
+  content: string,
+  quickReplies?: string[] | null
+): Promise<void> {
+  const supabase = createServerSupabaseClient();
+
+  const { error } = await supabase.from('ai_messages').insert({
+    conversation_id: conversationId,
+    role: 'assistant',
+    content,
+    content_type: 'text',
+    metadata: { quickReplies: quickReplies || null },
+  });
+
+  if (error) {
+    console.error('Failed to save assistant message:', error);
     // Don't throw - this is not critical
   }
 }

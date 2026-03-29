@@ -5,7 +5,10 @@ import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useChatStore } from '@/stores/useChatStore';
 import { useDashboardStore } from '@/stores/useDashboardStore';
+import { useTemplatesStore } from '@/stores/useTemplatesStore';
+import { MiniNav } from './MiniNav';
 import { getUserId } from '@/lib/utils/user-id';
+import type { NavItem } from '@/types/dashboard';
 
 interface CreateConversationViewProps {
   initialConversationId?: string;
@@ -30,7 +33,33 @@ export function CreateConversationView({
   const setMessages = useChatStore((s) => s.setMessages);
   const addMessage = useChatStore((s) => s.addMessage);
 
+  const setActiveNav = useDashboardStore((s) => s.setActiveNav);
+  const setActiveFilterTag = useDashboardStore((s) => s.setActiveFilterTag);
+  const setActiveDocType = useDashboardStore((s) => s.setActiveDocType);
+  const setActiveTemplateCategory = useDashboardStore((s) => s.setActiveTemplateCategory);
   const setGenerateParams = useDashboardStore((s) => s.setGenerateParams);
+  const categories = useTemplatesStore((s) => s.categories);
+  const resetTemplates = useTemplatesStore((s) => s.resetTemplates);
+
+  // Handle navigation from MiniNav
+  const handleNav = useCallback(
+    (key: NavItem) => {
+      setActiveNav(key);
+
+      if (key === 'home') {
+        setActiveFilterTag(null);
+        resetTemplates();
+        if (categories.length > 0) {
+          setActiveDocType(categories[0]);
+          setActiveTemplateCategory(categories[0]);
+        }
+        router.push('/dashboard');
+      } else {
+        router.push(`/dashboard?view=${key}`);
+      }
+    },
+    [setActiveNav, setActiveFilterTag, setActiveDocType, setActiveTemplateCategory, resetTemplates, categories, router]
+  );
 
   // Initialize conversation
   useEffect(() => {
@@ -118,7 +147,7 @@ export function CreateConversationView({
           addMessage({
             id: `assistant-${Date.now()}`,
             role: 'assistant',
-            content: `好的，我将为你生成文档...`,
+            content: t('generatingDocument'),
           });
 
           setGenerateParams({
@@ -142,13 +171,13 @@ export function CreateConversationView({
         addMessage({
           id: `assistant-${Date.now()}`,
           role: 'assistant',
-          content: '抱歉，出了点问题。请重试。',
+          content: t('errorOccurred'),
         });
       } finally {
         setIsLoading(false);
       }
     },
-    [input, isLoading, conversationId, addMessage, setGenerateParams, router]
+    [input, isLoading, conversationId, addMessage, setGenerateParams, router, t]
   );
 
   const handleKeyDown = useCallback(
@@ -170,20 +199,21 @@ export function CreateConversationView({
 
   return (
     <div className="flex h-screen w-full max-w-[1920px] mx-auto">
-      {/* MiniNav placeholder */}
-      <aside className="w-[72px] bg-white border-r border-gray-200 h-full flex-shrink-0" />
+      <aside className="w-[72px] bg-white border-r border-gray-200 h-full flex-shrink-0">
+        <MiniNav onNavigate={handleNav} />
+      </aside>
 
       {/* Main chat area */}
       <div className="flex-1 flex flex-col max-w-2xl mx-auto py-8">
         <h1 className="text-2xl font-semibold text-gray-900 mb-8 px-4">
-          创建文档
+          {t('createDocument')}
         </h1>
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 space-y-4">
           {messages.length === 0 && !isLoading && (
             <div className="text-center text-gray-500 py-8">
-              <p>描述你想创建的文档，我会帮你选择合适的模板...</p>
+              <p>{t('describeDocument')}</p>
             </div>
           )}
           {messages.map((msg) => (
@@ -205,7 +235,7 @@ export function CreateConversationView({
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md px-4 py-3 text-sm">
-                <span className="animate-pulse">思考中...</span>
+                <span className="animate-pulse">{t('thinking')}</span>
               </div>
             </div>
           )}
@@ -218,7 +248,7 @@ export function CreateConversationView({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="描述你想创建的文档..."
+              placeholder={t('describeDocumentPlaceholder')}
               rows={2}
               disabled={isLoading}
               className="w-full resize-none border border-gray-200 rounded-xl px-4 py-3 pr-12 text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none placeholder:text-gray-400 disabled:opacity-50"

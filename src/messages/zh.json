@@ -143,6 +143,12 @@
     "useTemplate": "使用模板",
     "clarifyingIntent": "正在分析您的请求...",
     "needMoreInfo": "我需要更多信息来帮您创建合适的文档。",
+    "createDocument": "创建文档",
+    "describeDocument": "描述你想创建的文档，我会帮你选择合适的模板...",
+    "describeDocumentPlaceholder": "描述你想创建的文档...",
+    "thinking": "思考中...",
+    "generatingDocument": "好的，我将为你生成文档...",
+    "errorOccurred": "抱歉，出了点问题。请重试。",
     "docTypes": {
       "document": "文档",
       "businessPlan": "商业计划",

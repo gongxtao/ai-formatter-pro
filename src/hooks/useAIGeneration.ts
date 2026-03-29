@@ -95,11 +95,11 @@ export function useAIGeneration() {
                 case 'error':
                   throw new Error(event.data);
                 case 'clarification_needed':
-                  // Navigate to create page with conversation ID for clarification
+                  // Navigate to create page with conversation ID and original prompt
                   if (event.conversationId) {
                     setIsGeneratingLocal(false);
                     setIsGenerating(false);
-                    router.push(`/dashboard/create?conversationId=${event.conversationId}`);
+                    router.push(`/dashboard/create?conversationId=${event.conversationId}&message=${encodeURIComponent(params.prompt)}`);
                     return;
                   }
                   // Fallback to legacy sessionId-based route
@@ -107,7 +107,7 @@ export function useAIGeneration() {
                     setGenerationSessionId(event.sessionId);
                     setIsGeneratingLocal(false);
                     setIsGenerating(false);
-                    router.push(`/dashboard/create?sessionId=${event.sessionId}`);
+                    router.push(`/dashboard/create?sessionId=${event.sessionId}&message=${encodeURIComponent(params.prompt)}`);
                     return;
                   }
                   throw new Error('clarification_needed event missing conversationId/sessionId');
