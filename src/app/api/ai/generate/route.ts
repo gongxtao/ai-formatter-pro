@@ -7,7 +7,7 @@ import {
   sendSSEEvent,
   sendSSEError,
 } from '@/lib/ai/sse-helper';
-import { DEFAULT_MODEL } from '@/config/ai-models';
+import { getDefaultModel } from '@/lib/ai/llm-client';
 
 export const runtime = 'edge';
 export const maxDuration = 60;
@@ -110,7 +110,7 @@ async function createConversation(category?: string | null): Promise<string> {
       user_id: null, // Anonymous users for now
       category: category || null,
       title: 'New Document',
-      model: DEFAULT_MODEL,
+      model: getDefaultModel(),
     })
     .select('id')
     .single();

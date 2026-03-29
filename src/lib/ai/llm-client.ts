@@ -41,6 +41,18 @@ export function getLLMProvider(): LLMProvider {
 }
 
 /**
+ * Get the default model for the current provider
+ * - OpenAI direct mode: uses OPENAI_MODEL env or 'kimi-k2.5'
+ * - OpenRouter mode: uses 'openai/gpt-4o'
+ */
+export function getDefaultModel(): string {
+  if (isOpenAIDirectMode()) {
+    return getOpenAIModel();
+  }
+  return 'openai/gpt-4o';
+}
+
+/**
  * Get the effective model name
  * For OpenAI direct mode, can override with OPENAI_MODEL env var
  */

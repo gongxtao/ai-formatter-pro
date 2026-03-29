@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
-import { DEFAULT_MODEL } from '@/config/ai-models';
+import { getDefaultModel } from '@/lib/ai/llm-client';
 
 export async function GET() {
   try {
@@ -33,7 +33,8 @@ export async function POST(request: NextRequest) {
         user_id: userId ?? null,
         category: category ?? null,
         title: title ?? 'New Conversation',
-        model: model ?? DEFAULT_MODEL,
+        model: model ?? getDefaultModel(),
+
       })
       .select()
       .single();

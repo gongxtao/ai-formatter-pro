@@ -1,4 +1,4 @@
-import { DEFAULT_MODEL } from '@/config/ai-models';
+import { getDefaultModel } from '@/lib/ai/llm-client';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
 
 /**
@@ -64,7 +64,7 @@ export function buildGenerationMessages(params: GenerationParams): {
   }
 
   return {
-    model: params.model ?? DEFAULT_MODEL,
+    model: params.model ?? getDefaultModel(),
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userContent },
@@ -120,7 +120,7 @@ Use inline styles for formatting.`,
   messages.push({ role: 'user', content: params.userMessage });
 
   return {
-    model: params.model ?? DEFAULT_MODEL,
+    model: params.model ?? getDefaultModel(),
     messages,
   };
 }
@@ -197,7 +197,7 @@ ${params.contextHtml}
   messages.push({ role: 'user', content: params.userMessage });
 
   return {
-    model: params.model ?? DEFAULT_MODEL,
+    model: params.model ?? getDefaultModel(),
     messages,
   };
 }
@@ -241,7 +241,7 @@ export async function buildGenerationMessagesAsync(params: GenerationParams): Pr
   }
 
   return {
-    model: params.model ?? DEFAULT_MODEL,
+    model: params.model ?? getDefaultModel(),
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userContent },
@@ -310,7 +310,7 @@ ${params.contextHtml}
   messages.push({ role: 'user', content: params.userMessage });
 
   return {
-    model: params.model ?? DEFAULT_MODEL,
+    model: params.model ?? getDefaultModel(),
     messages,
   };
 }
