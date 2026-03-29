@@ -61,15 +61,15 @@ export function useAIChat(options?: UseAIChatOptions) {
           role: 'user',
           content: message,
         });
-      }
 
-      // Add placeholder assistant message
-      addMessage({
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: '',
-        isStreaming: true,
-      });
+        // Add placeholder assistant message for normal chat
+        addMessage({
+          id: `assistant-${Date.now()}`,
+          role: 'assistant',
+          content: '',
+          isStreaming: true,
+        });
+      }
 
       setIsLoading(true);
       setIsLoadingLocal(true);
@@ -125,8 +125,11 @@ export function useAIChat(options?: UseAIChatOptions) {
               switch (event.type) {
                 case 'content':
                   accumulatedHtml += event.data;
-                  appendStreamingContent(event.data);
-                  // Call onChunk callback with accumulated HTML for real-time editor update
+                  // For auto-generate, only update editor, not chat
+                  if (!isAutoGenerate) {
+                    appendStreamingContent(event.data);
+                  }
+                  // Always call onChunk callback for real-time editor update
                   onChunkRef.current?.(accumulatedHtml);
                   break;
                 case 'status':
@@ -145,7 +148,10 @@ export function useAIChat(options?: UseAIChatOptions) {
           }
         }
 
-        finalizeStreaming();
+        // Only finalize streaming for normal chat (not auto-generate)
+        if (!isAutoGenerate) {
+          finalizeStreaming();
+        }
 
         // Reset generating state after successful completion
         if (isAutoGenerate) {

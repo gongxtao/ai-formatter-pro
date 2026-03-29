@@ -64,9 +64,24 @@ export function EditorShell() {
   // Track loaded conversation to avoid reloading
   const loadedConversationRef = useRef<string | null>(null);
 
-  // Derive isGenerating from URL params or store
-  // When navigating with generate=1, we're in generating mode until the store says otherwise
-  const isGenerating = shouldAutoGenerate || storeIsGenerating;
+  // Track if we've started generation for this session
+  // Once generation starts, we rely on store's isGenerating state, not URL params
+  const generationStartedRef = useRef(false);
+
+  // Derive isGenerating:
+  // - When first navigating with generate=1, use URL param to show initial state
+  // - Once generation starts, use store's isGenerating state
+  // - If store says generating is false after we started, don't use URL param anymore
+  const isGenerating = generationStartedRef.current
+    ? storeIsGenerating
+    : (shouldAutoGenerate || storeIsGenerating);
+
+  // Update generationStartedRef when store state changes
+  useEffect(() => {
+    if (storeIsGenerating) {
+      generationStartedRef.current = true;
+    }
+  }, [storeIsGenerating]);
 
   // 确保 templates 数据在页面加载时获取
   useTemplates();
