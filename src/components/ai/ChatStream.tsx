@@ -10,7 +10,7 @@ export function ChatStream({ content, isStreaming }: ChatStreamProps) {
 
   return (
     <span>
-      {content}
+      <span dangerouslySetInnerHTML={{ __html: content }} />
       {isStreaming && (
         <span className="inline-block w-1.5 h-4 bg-gray-400 ml-0.5 animate-pulse rounded-sm align-text-bottom" />
       )}

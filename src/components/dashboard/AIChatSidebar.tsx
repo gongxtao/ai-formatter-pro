@@ -129,7 +129,7 @@ export function AIChatSidebar() {
                   isStreaming={msg.isStreaming}
                 />
               ) : (
-                msg.content
+                <span dangerouslySetInnerHTML={{ __html: msg.content }} />
               )}
             </div>
           </div>
