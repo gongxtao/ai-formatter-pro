@@ -24,6 +24,7 @@ export function CreateConversationView({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
 
@@ -122,6 +123,7 @@ export function CreateConversationView({
 
       setInput('');
       setIsLoading(true);
+      setStreamingContent('');
 
       // Add user message to UI
       addMessage({
@@ -145,6 +147,7 @@ export function CreateConversationView({
 
         const decoder = new TextDecoder();
         let buffer = '';
+        let accumulatedContent = '';
 
         while (true) {
           const { done, value } = await reader.read();
@@ -161,12 +164,24 @@ export function CreateConversationView({
             try {
               const event = JSON.parse(trimmed.slice(6));
 
+              if (event.type === 'content') {
+                // Accumulate streaming content
+                accumulatedContent += event.data;
+                setStreamingContent(accumulatedContent);
+              }
+
               if (event.type === 'ready_to_generate') {
-                // Intent is clear - navigate to editor
+                // Intent is clear - finalize streaming message and navigate to editor
+                const finalContent = accumulatedContent || event.data || t('generatingDocument');
+
+                // Clear streaming state first
+                setStreamingContent('');
+
+                // Add final message
                 addMessage({
                   id: `assistant-${Date.now()}`,
                   role: 'assistant',
-                  content: event.data || t('generatingDocument'),
+                  content: finalContent,
                 });
 
                 setGenerateParams({
@@ -182,15 +197,24 @@ export function CreateConversationView({
               }
 
               if (event.type === 'continue') {
-                // Continue conversation
-                addMessage({
-                  id: `assistant-${Date.now()}`,
-                  role: 'assistant',
-                  content: event.content || event.data || '',
-                });
+                // Continue conversation - finalize streaming message
+                const finalContent = accumulatedContent || event.content || event.data || '';
+
+                // Clear streaming state
+                setStreamingContent('');
+
+                // Add final message if we have content
+                if (finalContent) {
+                  addMessage({
+                    id: `assistant-${Date.now()}`,
+                    role: 'assistant',
+                    content: finalContent,
+                  });
+                }
               }
 
               if (event.type === 'error') {
+                setStreamingContent('');
                 addMessage({
                   id: `assistant-${Date.now()}`,
                   role: 'assistant',
@@ -202,8 +226,19 @@ export function CreateConversationView({
             }
           }
         }
+
+        // If we still have streaming content but no final event, add it as a message
+        if (accumulatedContent) {
+          setStreamingContent('');
+          addMessage({
+            id: `assistant-${Date.now()}`,
+            role: 'assistant',
+            content: accumulatedContent,
+          });
+        }
       } catch (error) {
         console.error('Clarify error:', error);
+        setStreamingContent('');
         addMessage({
           id: `assistant-${Date.now()}`,
           role: 'assistant',
@@ -231,7 +266,7 @@ export function CreateConversationView({
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }
-  }, [messages]);
+  }, [messages, streamingContent]);
 
   return (
     <div className="flex h-screen w-full max-w-[1920px] mx-auto">
@@ -247,7 +282,7 @@ export function CreateConversationView({
 
         {/* Messages */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 space-y-4">
-          {messages.length === 0 && !isLoading && (
+          {messages.length === 0 && !isLoading && !streamingContent && (
             <div className="text-center text-gray-500 py-8">
               <p>{t('describeDocument')}</p>
             </div>
@@ -268,7 +303,16 @@ export function CreateConversationView({
               </div>
             </div>
           ))}
-          {isLoading && (
+          {/* Streaming content - show in real-time */}
+          {streamingContent && (
+            <div className="flex justify-start">
+              <div className="max-w-[80%] bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md px-4 py-3 text-sm leading-relaxed">
+                {streamingContent}
+              </div>
+            </div>
+          )}
+          {/* Loading indicator - only show when no streaming content yet */}
+          {isLoading && !streamingContent && (
             <div className="flex justify-start">
               <div className="bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md px-4 py-3 text-sm">
                 <span className="animate-pulse">{t('thinking')}</span>

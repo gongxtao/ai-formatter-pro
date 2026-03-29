@@ -15,23 +15,21 @@ import { getDefaultModel } from '@/lib/ai/llm-client';
 export const runtime = 'edge';
 export const maxDuration = 60;
 
-const CLARIFY_SYSTEM_PROMPT = `You are a helpful document creation assistant. Help users clarify what document they want to create.
+const CLARIFY_SYSTEM_PROMPT = `You are a helpful document creation assistant helping users create documents.
 
 Available document types: document, businessPlan, report, manual, caseStudy, ebook, whitePaper, marketResearch, researchPaper, proposal, budget, todoList, resume, coverLetter, letter, meetingMinutes, writer, policy, payslip, companyProfile
 
-When the user clarifies their intent and you can determine the document type, respond with JSON ONLY:
-{
-  "type": "intent_clear",
-  "category": "resume",
-  "summary": "I'll generate a resume for you"
-}
+Rules:
+1. Respond conversationally and helpfully in the same language as the user
+2. If the user clearly wants a specific document type, confirm and say you'll help create it
+3. If you need more information, ask clarifying questions
+4. Keep responses concise and friendly
 
-When you need more information, respond conversationally:
-{
-  "type": "continue",
-  "content": "What type of document would you like?",
-  "quickReplies": ["简历", "求职信", "报告"]
-}`;
+Examples:
+User: "帮我生成一份简历" → "好的，我将为你生成一份简历。"
+User: "I want a report" → "Sure, I'll create a report for you."
+User: "Create a document" → "What type of document would you like? I can help with resumes, reports, proposals, and more."
+User: "帮我写个东西" → "你想创建什么类型的文档？我可以帮你生成简历、报告、商业计划书等。"`;
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,9 +46,9 @@ export async function POST(request: NextRequest) {
       const supabase = createServerSupabaseClient();
 
       try {
-        sendSSEStatus(controller!, 'Analyzing your message...', 10);
+        sendSSEStatus(controller!, 'Analyzing...', 10);
 
-        // If conversationId provided, save message to database
+        // Save user message to database
         if (conversationId) {
           await supabase.from('ai_messages').insert({
             conversation_id: conversationId,
@@ -60,7 +58,7 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // Classify intent with the new message
+        // Classify intent
         const intentResult = await classifyIntent(message);
 
         if (intentResult.readyToGenerate && intentResult.category) {
@@ -68,8 +66,9 @@ export async function POST(request: NextRequest) {
           sendSSEStatus(controller!, 'Matching template...', 50);
           const templateMatch = await matchTemplate(intentResult.category, message);
 
+          const aiContent = `好的，我将为你生成${getCategoryDisplayName(intentResult.category)}文档。`;
+
           // Save assistant message
-          const aiContent = `好的，我将为你生成${getCategoryDisplayName(intentResult.category)}文档...`;
           if (conversationId) {
             await supabase.from('ai_messages').insert({
               conversation_id: conversationId,
@@ -91,9 +90,7 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        // Need more clarification - use streaming LLM for conversational response
-        sendSSEStatus(controller!, 'Thinking...', 30);
-
+        // Need more clarification - stream LLM response
         const generator = await streamChatCompletion({
           model: getDefaultModel(),
           messages: [
@@ -107,10 +104,25 @@ export async function POST(request: NextRequest) {
         for await (const chunk of generator) {
           if (chunk.type === 'delta') {
             fullResponse += chunk.data;
-            // Stream content to client in real-time
             sendSSEEvent(controller!, {
               type: 'content',
               data: chunk.data,
+            });
+          } else if (chunk.type === 'done') {
+            // Streaming complete - save and finalize
+            if (conversationId && fullResponse) {
+              await supabase.from('ai_messages').insert({
+                conversation_id: conversationId,
+                role: 'assistant',
+                content: fullResponse,
+                content_type: 'text',
+              });
+            }
+
+            sendSSEEvent(controller!, {
+              type: 'continue',
+              data: fullResponse,
+              content: fullResponse,
             });
           } else if (chunk.type === 'error') {
             sendSSEError(controller!, chunk.data);
@@ -119,78 +131,6 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Parse the complete response to determine next action
-        const jsonMatch = fullResponse.match(/\{[\s\S]*\}/);
-
-        if (jsonMatch) {
-          try {
-            const parsed = JSON.parse(jsonMatch[0]);
-
-            if (parsed.type === 'intent_clear' && parsed.category) {
-              // LLM determined intent is clear - match template
-              const templateMatch = await matchTemplate(parsed.category, message);
-
-              // Save assistant message
-              if (conversationId) {
-                await supabase.from('ai_messages').insert({
-                  conversation_id: conversationId,
-                  role: 'assistant',
-                  content: parsed.summary || fullResponse,
-                  content_type: 'text',
-                  metadata: { category: parsed.category },
-                });
-              }
-
-              sendSSEEvent(controller!, {
-                type: 'ready_to_generate',
-                conversationId,
-                category: parsed.category,
-                templateId: templateMatch?.template?.id,
-                data: parsed.summary || '好的，我来为你生成文档。',
-              });
-              controller!.close();
-              return;
-            }
-
-            // Continue conversation
-            if (conversationId) {
-              await supabase.from('ai_messages').insert({
-                conversation_id: conversationId,
-                role: 'assistant',
-                content: parsed.content || fullResponse,
-                content_type: 'text',
-                metadata: { quickReplies: parsed.quickReplies },
-              });
-            }
-
-            sendSSEEvent(controller!, {
-              type: 'continue',
-              data: parsed.content || fullResponse,
-              content: parsed.content || fullResponse,
-              quickReplies: parsed.quickReplies,
-            });
-            controller!.close();
-            return;
-          } catch {
-            // JSON parse failed, treat as plain text
-          }
-        }
-
-        // No valid JSON found - save and continue with plain text
-        if (conversationId) {
-          await supabase.from('ai_messages').insert({
-            conversation_id: conversationId,
-            role: 'assistant',
-            content: fullResponse,
-            content_type: 'text',
-          });
-        }
-
-        sendSSEEvent(controller!, {
-          type: 'continue',
-          data: fullResponse,
-          content: fullResponse,
-        });
         controller!.close();
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Clarify failed';
