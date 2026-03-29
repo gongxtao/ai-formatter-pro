@@ -197,19 +197,15 @@ export function CreateConversationView({
               }
 
               if (event.type === 'continue') {
-                // Continue conversation - finalize streaming message
-                const finalContent = accumulatedContent || event.content || event.data || '';
-
-                // Clear streaming state
-                setStreamingContent('');
-
-                // Add final message if we have content
-                if (finalContent) {
+                // Continue conversation - streaming content is already displayed
+                // Just finalize by moving streaming content to messages
+                if (accumulatedContent) {
                   addMessage({
                     id: `assistant-${Date.now()}`,
                     role: 'assistant',
-                    content: finalContent,
+                    content: accumulatedContent,
                   });
+                  setStreamingContent('');
                 }
               }
 
