@@ -41,6 +41,7 @@ export function EditorShell() {
   const setEditorView = useDashboardStore((s) => s.setEditorView);
   const activeDocType = useDashboardStore((s) => s.activeDocType);
   const setActiveDocType = useDashboardStore((s) => s.setActiveDocType);
+  const setActiveTemplateCategory = useDashboardStore((s) => s.setActiveTemplateCategory);
   const currentEditorHtml = useDashboardStore((s) => s.currentEditorHtml);
   const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
   const pendingEditorContent = useDashboardStore((s) => s.pendingEditorContent);
@@ -197,6 +198,7 @@ export function EditorShell() {
     const conversationId = urlConversationId || generateParams.conversationId;
     const category = urlCategory || generateParams.category;
     const templateId = urlTemplateId || generateParams.templateId;
+    const isAutoGen = shouldAutoGenerate || generateParams.shouldAutoGenerate;
 
     if (!conversationId) return;
 
@@ -205,9 +207,13 @@ export function EditorShell() {
     loadedConversationRef.current = conversationId;
 
     // Clear old content when loading a new conversation
+    // BUT: if auto-generating, the messages are already in the chat store from CreateConversationView
+    // so we only clear editor content, not messages
     setContent('');
     setCurrentEditorHtml('');
-    clearMessages();
+    if (!isAutoGen) {
+      clearMessages();
+    }
 
     const loadConversation = async () => {
       try {
@@ -216,11 +222,13 @@ export function EditorShell() {
         // Handle 404 gracefully - conversation might not exist yet
         if (res.status === 404) {
           // Just set the conversation ID, the messages will be loaded later
+          // OR if auto-generating, messages are already in chat store
           setConversationId(conversationId);
 
           // Set category if provided
           if (category) {
             setActiveDocType(category);
+            setActiveTemplateCategory(category);
           }
 
           // Set template ID if provided
@@ -234,9 +242,16 @@ export function EditorShell() {
         if (!res.ok) throw new Error('Failed to load conversation');
 
         const data = await res.json();
-        if (data.messages && Array.isArray(data.messages)) {
+        if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
           // Initialize chat store with conversation history
-          initConversation(conversationId, data.messages);
+          // Only if not auto-generating (messages already in store) or if store is empty
+          const currentMessages = useChatStore.getState().messages;
+          if (!isAutoGen || currentMessages.length === 0) {
+            initConversation(conversationId, data.messages);
+          } else {
+            // Just set conversation ID, keep existing messages
+            setConversationId(conversationId);
+          }
         } else {
           // No messages yet, just set conversation ID
           setConversationId(conversationId);
@@ -245,6 +260,7 @@ export function EditorShell() {
         // Set category if provided
         if (category) {
           setActiveDocType(category);
+          setActiveTemplateCategory(category);
         }
 
         // Set template ID if provided (will be picked up by AIChatSidebar)
@@ -272,6 +288,7 @@ export function EditorShell() {
     initConversation,
     setConversationId,
     setActiveDocType,
+    setActiveTemplateCategory,
     setSelectedTemplateId,
     clearGenerateParams,
     clearMessages,
