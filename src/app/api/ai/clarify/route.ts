@@ -1,206 +1,156 @@
 // src/app/api/ai/clarify/route.ts
 
-import { NextRequest } from 'next/server';
-import { getSession, addMessage, deleteSession, setSessionCategory } from '@/lib/ai/clarify-session-store';
-import { streamChatCompletion } from '@/lib/ai/llm-client';
-import { PROMPT_TEMPLATES, getPromptTemplate } from '@/config/prompt-templates';
-import type { ClarifyResponse } from '@/types/clarify';
+import { NextRequest, NextResponse } from 'next/server';
+import { chatCompletion } from '@/lib/ai/llm-client';
+import { createServerSupabaseClient } from '@/lib/db/supabase-server';
+import { classifyIntent } from '@/lib/ai/intent-classifier';
 
 export const runtime = 'edge';
 export const maxDuration = 60;
 
-const CLARIFY_SYSTEM_PROMPT = `You are a helpful document creation assistant. Your goal is to help users create documents.
+const CLARIFY_SYSTEM_PROMPT = `You are a helpful document creation assistant. Help users clarify what document they want to create.
 
-First, determine what type of document the user wants to create.
-Available types: ${Object.keys(PROMPT_TEMPLATES).join(', ')}
+Available document types: document, businessPlan, report, manual, caseStudy, ebook, whitePaper, marketResearch, researchPaper, proposal, budget, todoList, resume, coverLetter, letter, meetingMinutes, writer, policy, payslip, companyProfile
 
-If you need more information to determine the document type, ask a clear question.
-When asking, provide relevant options as quick replies.
-
-When you have enough information, respond with JSON ONLY:
+When the user clarifies their intent, respond with JSON ONLY:
 {
-  "type": "complete",
+  "type": "intent_clear",
   "category": "resume",
-  "summary": "Brief summary of what you'll generate"
+  "summary": "I'll generate a resume for you"
 }
 
-When you need more info, respond with JSON ONLY:
+When you need more information, respond conversationally:
 {
   "type": "continue",
-  "content": "What type of document would you like to create?",
-  "quickReplies": ["Resume", "Cover Letter", "Report", "Letter"]
-}
-
-IMPORTANT: Always respond with valid JSON only. No markdown, no code blocks.`;
+  "content": "What type of document would you like?",
+  "quickReplies": ["简历", "求职信", "报告"]
+}`;
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const { sessionId, conversationId, message } = body;
 
-    // Runtime validation
-    if (!body || typeof body !== 'object') {
-      return new Response(
-        JSON.stringify({ error: 'Invalid request body' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+    if (!message) {
+      return NextResponse.json({ error: 'message is required' }, { status: 400 });
     }
 
-    const { sessionId, message } = body;
-
-    if (!sessionId || typeof sessionId !== 'string' || !message || typeof message !== 'string') {
-      return new Response(
-        JSON.stringify({ error: 'sessionId and message are required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+    // If conversationId provided, save message to database
+    if (conversationId) {
+      const supabase = createServerSupabaseClient();
+      await supabase.from('ai_messages').insert({
+        conversation_id: conversationId,
+        role: 'user',
+        content: message,
+        content_type: 'text',
+      });
     }
 
-    // Get the session
-    const session = getSession(sessionId);
-    if (!session) {
-      return new Response(
-        JSON.stringify({ error: 'Session not found or expired' }),
-        { status: 404, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
+    // Classify intent with the new message
+    const intentResult = await classifyIntent(message);
 
-    // Add user message to session
-    addMessage(sessionId, { role: 'user', content: message });
+    if (intentResult.readyToGenerate && intentResult.category) {
+      // Intent is clear - return ready_to_generate
+      const templateMatch = await matchTemplate(intentResult.category, message);
 
-    // Build messages for LLM
-    const messages = [
-      { role: 'system', content: CLARIFY_SYSTEM_PROMPT },
-      { role: 'user', content: `Original request: ${session.originalPrompt}` },
-      ...session.messages.map(m => ({ role: m.role, content: m.content })),
-    ];
-
-    // Call LLM
-    const generator = await streamChatCompletion({
-      model: 'kimi-k2.5',
-      messages,
-    });
-
-    let accumulated = '';
-
-    for await (const chunk of generator) {
-      if (chunk.type === 'delta') {
-        accumulated += chunk.data;
-      } else if (chunk.type === 'error') {
-        return new Response(
-          JSON.stringify({ error: chunk.data }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
-        );
+      // Save assistant message
+      if (conversationId) {
+        const supabase = createServerSupabaseClient();
+        await supabase.from('ai_messages').insert({
+          conversation_id: conversationId,
+          role: 'assistant',
+          content: `好的，我将为你生成${intentResult.category}文档...`,
+          content_type: 'text',
+          metadata: { category: intentResult.category },
+        });
       }
+
+      return NextResponse.json({
+        type: 'ready_to_generate',
+        conversationId,
+        category: intentResult.category,
+        templateId: templateMatch?.template?.id,
+      });
     }
 
-    // Parse the response
-    const response = parseClarifyResponse(accumulated);
+    // Need more clarification - use LLM for conversational response
+    const response = await getClarificationResponse(message);
 
-    // Add assistant message to session
-    addMessage(sessionId, {
-      role: 'assistant',
-      content: response.content || `Generating ${response.category}...`,
-      quickReplies: response.quickReplies
+    // Save assistant message
+    if (conversationId) {
+      const supabase = createServerSupabaseClient();
+      await supabase.from('ai_messages').insert({
+        conversation_id: conversationId,
+        role: 'assistant',
+        content: response.content || '',
+        content_type: 'text',
+        metadata: { quickReplies: response.quickReplies },
+      });
+    }
+
+    return NextResponse.json({
+      type: 'continue',
+      ...response,
     });
-
-    // If complete, generate the document
-    if (response.type === 'complete' && response.category) {
-      setSessionCategory(sessionId, response.category);
-
-      // Generate the actual document
-      const generatedHtml = await generateDocument(response.category, session);
-
-      // Clean up session
-      deleteSession(sessionId);
-
-      return new Response(
-        JSON.stringify({
-          type: 'complete',
-          html: generatedHtml,
-          category: response.category,
-        } as ClarifyResponse),
-        { headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Return continue response
-    return new Response(
-      JSON.stringify(response as ClarifyResponse),
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Clarify failed';
-    return new Response(
-      JSON.stringify({ error: message }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    const errorMessage = error instanceof Error ? error.message : 'Clarify failed';
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
 
-/**
- * Parse clarify response from LLM
- */
-function parseClarifyResponse(response: string): ClarifyResponse {
-  const validTypes = Object.keys(PROMPT_TEMPLATES);
-
+async function getClarificationResponse(userMessage: string): Promise<{
+  content: string;
+  quickReplies?: string[];
+}> {
   try {
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    const responseText = await chatCompletion({
+      model: 'kimi-k2.5',
+      messages: [
+        { role: 'system', content: CLARIFY_SYSTEM_PROMPT },
+        { role: 'user', content: userMessage },
+      ],
+    });
+
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
       return {
-        type: 'continue',
-        content: 'I didn\'t understand that. What type of document would you like to create?',
-        quickReplies: ['Resume', 'Cover Letter', 'Report', 'Letter'],
+        content: '你想创建什么类型的文档？',
+        quickReplies: ['简历', '求职信', '报告', '商业计划'],
       };
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
 
-    // Validate category if present
-    if (parsed.type === 'complete' && parsed.category && !validTypes.includes(parsed.category)) {
-      parsed.category = 'document'; // fallback to generic
+    if (parsed.type === 'intent_clear') {
+      return {
+        content: parsed.summary || '好的，我来为你生成文档。',
+      };
     }
 
-    return parsed as ClarifyResponse;
+    return {
+      content: parsed.content || '你想创建什么类型的文档？',
+      quickReplies: parsed.quickReplies,
+    };
   } catch {
     return {
-      type: 'continue',
-      content: 'I didn\'t understand that. What type of document would you like to create?',
-      quickReplies: ['Resume', 'Cover Letter', 'Report', 'Letter'],
+      content: '你想创建什么类型的文档？',
+      quickReplies: ['简历', '求职信', '报告', '商业计划'],
     };
   }
 }
 
-/**
- * Generate the actual document
- */
-async function generateDocument(category: string, session: { originalPrompt: string; messages: Array<{ role: string; content: string }> }): Promise<string> {
-  const systemPrompt = getPromptTemplate(category);
+async function matchTemplate(category: string, userPrompt: string) {
+  try {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const res = await fetch(`${baseUrl}/api/templates/match`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category, userPrompt }),
+    });
 
-  // Build user message with context
-  const userContext = session.messages
-    .filter(m => m.role === 'user')
-    .map(m => m.content)
-    .join('\n');
-
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: `${session.originalPrompt}\n\n${userContext}` },
-  ];
-
-  const generator = await streamChatCompletion({
-    model: 'kimi-k2.5',
-    messages,
-  });
-
-  let html = '';
-
-  for await (const chunk of generator) {
-    if (chunk.type === 'delta') {
-      html += chunk.data;
-    } else if (chunk.type === 'error') {
-      throw new Error(`Document generation failed: ${chunk.data}`);
-    }
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   }
-
-  return html;
 }
