@@ -184,7 +184,9 @@
     "realTimeUpdate": "Content updates in real-time",
     "clarifyTitle": "AI Document Creator",
     "clarifySubtitle": "Tell me what you'd like to create",
-    "clarifyPlaceholder": "Type your message..."
+    "clarifyPlaceholder": "Type your message...",
+    "generatingDocStatus": "Generating {docType}...",
+    "genCompleteStatus": "{docType} generated"
   },
   "editor": {
     "save": "Save",

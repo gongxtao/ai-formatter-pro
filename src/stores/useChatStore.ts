@@ -1,10 +1,16 @@
 import { create } from 'zustand';
 
-interface ChatMessage {
+export interface GenerationStatus {
+  status: 'generating' | 'completed';
+  documentType?: string;
+}
+
+export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   isStreaming?: boolean;
+  generationStatus?: GenerationStatus | null;
 }
 
 interface ChatState {
@@ -23,6 +29,7 @@ interface ChatState {
   finalizeStreaming: () => void;
   clearMessages: () => void;
   initConversation: (conversationId: string, messages: ChatMessage[]) => void;
+  updateMessageGenerationStatus: (messageId: string, generationStatus: GenerationStatus | null) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -79,4 +86,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
       streamingContent: '',
       isLoading: false,
     }),
+
+  updateMessageGenerationStatus: (messageId, generationStatus) =>
+    set((state) => ({
+      messages: state.messages.map((m) =>
+        m.id === messageId ? { ...m, generationStatus } : m,
+      ),
+    })),
 }));

@@ -41,6 +41,9 @@ interface DashboardState {
   isGenerating: boolean;
   setIsGenerating: (generating: boolean) => void;
 
+  isAutoGenerating: boolean;
+  setIsAutoGenerating: (auto: boolean) => void;
+
   isTemplateLoading: boolean;
   setIsTemplateLoading: (loading: boolean) => void;
 
@@ -100,6 +103,9 @@ export const useDashboardStore = create<DashboardState>()(
 
       isGenerating: false,
       setIsGenerating: (generating) => set({ isGenerating: generating }),
+
+      isAutoGenerating: false,
+      setIsAutoGenerating: (auto) => set({ isAutoGenerating: auto }),
 
       isTemplateLoading: false,
       setIsTemplateLoading: (loading) => set({ isTemplateLoading: loading }),

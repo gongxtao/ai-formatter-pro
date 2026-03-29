@@ -21,8 +21,8 @@ export interface GenerationRequest {
 }
 
 export interface StreamEvent {
-  type: 'content' | 'status' | 'completion' | 'done' | 'error' | 'clarification_needed' | 'ready_to_generate' | 'continue';
-  data: string;
+  type: 'content' | 'status' | 'completion' | 'done' | 'error' | 'clarification_needed' | 'ready_to_generate' | 'continue' | 'generation_start' | 'generation_complete';
+  data?: string;
   percentage?: number;
   sessionId?: string;  // For clarification_needed
   question?: string;   // For clarification_needed
@@ -33,4 +33,5 @@ export interface StreamEvent {
   message?: string; // For clarification_needed
   quickReplies?: string[]; // For clarification_needed
   content?: string; // For continue
+  documentType?: string; // For generation_start and generation_complete
 }

@@ -184,7 +184,9 @@
     "realTimeUpdate": "内容实时更新中",
     "clarifyTitle": "AI 文档创建器",
     "clarifySubtitle": "告诉我您想创建什么",
-    "clarifyPlaceholder": "输入您的消息..."
+    "clarifyPlaceholder": "输入您的消息...",
+    "generatingDocStatus": "正在生成{docType}...",
+    "genCompleteStatus": "{docType}生成完成"
   },
   "editor": {
     "save": "保存",

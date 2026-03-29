@@ -54,6 +54,20 @@ export function sendSSECompletion(
   sendSSEEvent(controller, { type: 'done', data: '', percentage: 100 });
 }
 
+export function sendSSEGenerationStart(
+  controller: ReadableStreamDefaultController,
+  documentType: string,
+): void {
+  sendSSEEvent(controller, { type: 'generation_start', documentType });
+}
+
+export function sendSSEGenerationComplete(
+  controller: ReadableStreamDefaultController,
+  documentType: string,
+): void {
+  sendSSEEvent(controller, { type: 'generation_complete', documentType });
+}
+
 export function sendSSEClarificationNeeded(
   controller: ReadableStreamDefaultController,
   sessionId: string,

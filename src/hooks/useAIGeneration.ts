@@ -77,23 +77,27 @@ export function useAIGeneration() {
 
               switch (event.type) {
                 case 'status':
-                  setStatusMessage(event.data);
+                  if (event.data) setStatusMessage(event.data);
                   if (event.percentage) setProgress(event.percentage);
                   break;
                 case 'content':
-                  accumulated += event.data;
-                  setGeneratedContent(accumulated);
+                  if (event.data) {
+                    accumulated += event.data;
+                    setGeneratedContent(accumulated);
+                  }
                   break;
                 case 'completion':
-                  accumulated = event.data;
-                  setGeneratedContent(accumulated);
+                  if (event.data) {
+                    accumulated = event.data;
+                    setGeneratedContent(accumulated);
+                  }
                   setProgress(100);
                   break;
                 case 'done':
                   setProgress(100);
                   break;
                 case 'error':
-                  throw new Error(event.data);
+                  throw new Error(event.data || 'Unknown error');
                 case 'clarification_needed':
                   // Navigate to create page with conversation ID and original prompt
                   if (event.conversationId) {

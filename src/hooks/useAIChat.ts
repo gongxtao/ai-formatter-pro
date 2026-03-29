@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { useChatStore } from '@/stores/useChatStore';
+import type { GenerationStatus } from '@/stores/useChatStore';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import type { StreamEvent } from '@/types/ai';
 
@@ -14,17 +15,17 @@ interface UseAIChatOptions {
 
 export function useAIChat(options?: UseAIChatOptions) {
   const {
-    messages,
     addMessage,
     setIsLoading,
     setStreamingContent,
     appendStreamingContent,
     finalizeStreaming,
-    setConversationId,
+    updateMessageGenerationStatus,
   } = useChatStore();
 
   const setPendingEditorContent = useDashboardStore((s) => s.setPendingEditorContent);
   const setIsGenerating = useDashboardStore((s) => s.setIsGenerating);
+  const setIsAutoGenerating = useDashboardStore((s) => s.setIsAutoGenerating);
 
   const [isLoading, setIsLoadingLocal] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +54,11 @@ export function useAIChat(options?: UseAIChatOptions) {
         return;
       }
 
-      // Add user message (skip if autoGenerate - message already exists in history)
       const isAutoGenerate = sendOptions?.autoGenerate;
+
+      // Track the assistant message ID for generation status updates
+      let assistantMsgId = '';
+
       if (!isAutoGenerate) {
         addMessage({
           id: `user-${Date.now()}`,
@@ -62,13 +66,20 @@ export function useAIChat(options?: UseAIChatOptions) {
           content: message,
         });
 
-        // Add placeholder assistant message for normal chat
+        assistantMsgId = `assistant-${Date.now()}`;
         addMessage({
-          id: `assistant-${Date.now()}`,
+          id: assistantMsgId,
           role: 'assistant',
           content: '',
           isStreaming: true,
         });
+      } else {
+        // For auto-generate, find the existing streaming message
+        const msgs = useChatStore.getState().messages;
+        const streamingMsg = msgs.findLast((m) => m.isStreaming);
+        if (streamingMsg) {
+          assistantMsgId = streamingMsg.id;
+        }
       }
 
       setIsLoading(true);
@@ -76,7 +87,6 @@ export function useAIChat(options?: UseAIChatOptions) {
       setStreamingContent('');
       setError(null);
 
-      // Set generating state for auto-generate mode (document generation)
       if (isAutoGenerate) {
         setIsGenerating(true);
       }
@@ -105,7 +115,9 @@ export function useAIChat(options?: UseAIChatOptions) {
 
         const decoder = new TextDecoder();
         let buffer = '';
-        let accumulatedHtml = ''; // Local accumulation for onChunk callback
+        let accumulatedHtml = '';
+        // Whether the API signalled this is a document generation (not a plain text chat)
+        let isDocGeneration = false;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -119,54 +131,100 @@ export function useAIChat(options?: UseAIChatOptions) {
             const trimmed = line.trim();
             if (!trimmed || !trimmed.startsWith('data: ')) continue;
 
+            let event: StreamEvent;
             try {
-              const event: StreamEvent = JSON.parse(trimmed.slice(6));
+              event = JSON.parse(trimmed.slice(6));
+            } catch {
+              continue;
+            }
 
-              switch (event.type) {
-                case 'content':
+            switch (event.type) {
+              case 'generation_start':
+                isDocGeneration = true;
+                if (assistantMsgId) {
+                  updateMessageGenerationStatus(assistantMsgId, {
+                    status: 'generating',
+                    documentType: event.documentType,
+                  });
+                }
+                break;
+
+              case 'content':
+                if (event.data) {
                   accumulatedHtml += event.data;
-                  // For auto-generate, only update editor, not chat
-                  if (!isAutoGenerate) {
+                  // For document generation: only update editor, not chat stream
+                  if (!isDocGeneration) {
                     appendStreamingContent(event.data);
                   }
-                  // Always call onChunk callback for real-time editor update
+                  // Always update editor via callback
                   onChunkRef.current?.(accumulatedHtml);
-                  break;
-                case 'status':
-                  // Optional: could show status in UI
-                  break;
-                case 'done':
-                  break;
-                case 'error':
-                  throw new Error(event.data);
-              }
-            } catch (e) {
-              if (e instanceof Error && e.message !== 'Unexpected end of JSON input') {
-                throw e;
-              }
+                }
+                break;
+
+              case 'generation_complete':
+                if (assistantMsgId) {
+                  updateMessageGenerationStatus(assistantMsgId, {
+                    status: 'completed',
+                    documentType: event.documentType,
+                  });
+                }
+                break;
+
+              case 'status':
+                break;
+
+              case 'done':
+                break;
+
+              case 'error':
+                throw new Error(event.data || 'Unknown error');
             }
           }
         }
 
-        // Only finalize streaming for normal chat (not auto-generate)
-        if (!isAutoGenerate) {
-          finalizeStreaming();
-        }
+        // Finalize: sync accumulated content into the message
+        // For doc generation the content goes to editor only, clear the streaming content
+        finalizeStreaming();
 
-        // Reset generating state after successful completion
         if (isAutoGenerate) {
           setIsGenerating(false);
+          setIsAutoGenerating(false);
         }
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return;
-        setError(err instanceof Error ? err.message : 'Chat failed');
+
+        const errMsg = err instanceof Error ? err.message : 'Chat failed';
+        setError(errMsg);
+
+        // Mark generation as failed if it was generating
+        if (assistantMsgId) {
+          const msgs = useChatStore.getState().messages;
+          const msg = msgs.find((m) => m.id === assistantMsgId);
+          if (msg?.generationStatus?.status === 'generating') {
+            updateMessageGenerationStatus(assistantMsgId, null);
+          }
+        }
+
         setIsGenerating(false);
+        setIsAutoGenerating(false);
       } finally {
         setIsLoading(false);
         setIsLoadingLocal(false);
       }
     },
-    [options?.conversationId, options?.category, options?.templateId, addMessage, setIsLoading, setStreamingContent, appendStreamingContent, finalizeStreaming, setIsGenerating],
+    [
+      options?.conversationId,
+      options?.category,
+      options?.templateId,
+      addMessage,
+      setIsLoading,
+      setStreamingContent,
+      appendStreamingContent,
+      finalizeStreaming,
+      updateMessageGenerationStatus,
+      setIsGenerating,
+      setIsAutoGenerating,
+    ],
   );
 
   const insertIntoEditor = useCallback(
@@ -180,7 +238,6 @@ export function useAIChat(options?: UseAIChatOptions) {
     sendMessage,
     insertIntoEditor,
     isLoading,
-    messages,
     error,
   };
 }

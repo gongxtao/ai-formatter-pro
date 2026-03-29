@@ -6,8 +6,10 @@ import { useTranslations } from 'next-intl';
 import { useChatStore } from '@/stores/useChatStore';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useAIChat } from '@/hooks/useAIChat';
+import { useEditorInit } from '@/hooks/useEditorInit';
 import { ChatStream } from '@/components/ai/ChatStream';
 import { getUserId } from '@/lib/utils/user-id';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 export function AIChatSidebar() {
   const t = useTranslations('editor');
@@ -15,8 +17,6 @@ export function AIChatSidebar() {
   const searchParams = useSearchParams();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-  const autoGenerateTriggeredRef = useRef(false);
-  const isAutoGeneratingRef = useRef(false);
 
   // URL params for smart template matching flow
   const urlConversationId = searchParams.get('conversationId');
@@ -28,23 +28,41 @@ export function AIChatSidebar() {
   const messages = useChatStore((s) => s.messages);
   const streamingContent = useChatStore((s) => s.streamingContent);
   const isLoading = useChatStore((s) => s.isLoading);
+  const addMessage = useChatStore((s) => s.addMessage);
 
-  const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
-  const generateParams = useDashboardStore((s) => s.generateParams);
   const currentEditorHtml = useDashboardStore((s) => s.currentEditorHtml);
   const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
-  const isGenerating = useDashboardStore((s) => s.isGenerating);
+  const isAutoGenerating = useDashboardStore((s) => s.isAutoGenerating);
 
-  // Determine the effective template ID (URL param > store > generateParams)
-  const effectiveTemplateId = urlTemplateId || selectedTemplateId || generateParams.templateId;
-  const effectiveCategory = urlCategory || generateParams.category;
+  const { effectiveCategory, effectiveTemplateId } = useEditorInit({
+    conversationId: urlConversationId,
+    category: urlCategory,
+    templateId: urlTemplateId,
+    shouldAutoGenerate,
+    // Safe to reference sendMessage here even though it's declared below:
+    // the callback is stored in a ref and only invoked from a useEffect
+    // (after the entire component has rendered and sendMessage is assigned).
+    onAutoGenerate: (lastUserMessage) => {
+      addMessage({
+        id: `assistant-autogen-${Date.now()}`,
+        role: 'assistant',
+        content: '',
+        isStreaming: true,
+      });
+
+      sendMessage(lastUserMessage, {
+        contextHtml: currentEditorHtml,
+        autoGenerate: true,
+        templateId: effectiveTemplateId,
+      });
+    },
+  });
 
   const { sendMessage } = useAIChat({
     conversationId,
     category: effectiveCategory ?? undefined,
     templateId: effectiveTemplateId,
     onChunk: (html: string) => {
-      // Real-time update to editor
       setCurrentEditorHtml(html);
     },
   });
@@ -83,49 +101,6 @@ export function AIChatSidebar() {
         });
     }
   }, []);
-
-  // Auto-generate when navigating from smart template matching flow
-  useEffect(() => {
-    const autoGen = shouldAutoGenerate || generateParams.shouldAutoGenerate;
-    const convId = urlConversationId || generateParams.conversationId;
-
-    // Only trigger once per session
-    if (autoGenerateTriggeredRef.current) return;
-
-    // Check if we should auto-generate
-    if (autoGen && convId && conversationId === convId && messages.length > 0 && !isLoading) {
-      autoGenerateTriggeredRef.current = true;
-      isAutoGeneratingRef.current = true;
-
-      // Find the last user message to use as the generation prompt
-      const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
-      if (lastUserMessage?.content) {
-        // Trigger generation
-        sendMessage(lastUserMessage.content, {
-          contextHtml: currentEditorHtml,
-          autoGenerate: true,
-          templateId: effectiveTemplateId,
-        });
-      }
-    }
-  }, [
-    shouldAutoGenerate,
-    generateParams,
-    urlConversationId,
-    conversationId,
-    messages,
-    isLoading,
-    sendMessage,
-    currentEditorHtml,
-    effectiveTemplateId,
-  ]);
-
-  // Reset auto-generating ref when generation completes
-  useEffect(() => {
-    if (!isGenerating && isAutoGeneratingRef.current) {
-      isAutoGeneratingRef.current = false;
-    }
-  }, [isGenerating]);
 
   const handleSend = useCallback(() => {
     const text = input.trim();
@@ -175,8 +150,8 @@ export function AIChatSidebar() {
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((msg) => {
-          // During auto-generation, show a simple generating message instead of document content
-          const isAutoGenMessage = msg.isStreaming && isAutoGeneratingRef.current;
+          const genStatus = msg.generationStatus;
+          const isAutoGenMessage = msg.isStreaming && isAutoGenerating && !genStatus;
 
           return (
             <div
@@ -190,8 +165,27 @@ export function AIChatSidebar() {
                     : 'bg-gray-100 text-gray-800 rounded-bl-md prose prose-sm prose-gray max-w-none [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5 [&_p]:mb-2 [&_ul]:my-1 [&_li]:mb-0.5'
                 }`}
               >
-                {isAutoGenMessage ? (
-                  // Show generating animation during document generation
+                {genStatus?.status === 'generating' ? (
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span className="text-gray-600">
+                      {ta('generatingDocStatus', { docType: genStatus.documentType || t('document') })}
+                    </span>
+                  </div>
+                ) : genStatus?.status === 'completed' ? (
+                  <div className="flex items-center gap-2">
+                    <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="text-gray-700 font-medium">
+                      {ta('genCompleteStatus', { docType: genStatus.documentType || t('document') })}
+                    </span>
+                  </div>
+                ) : isAutoGenMessage ? (
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1">
                       <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -206,7 +200,7 @@ export function AIChatSidebar() {
                     isStreaming={msg.isStreaming}
                   />
                 ) : (
-                  <span dangerouslySetInnerHTML={{ __html: msg.content }} />
+                  <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(msg.content) }} />
                 )}
               </div>
             </div>
