@@ -177,7 +177,7 @@ export async function getSystemPrompt(category: string): Promise<string> {
     .single();
 
   if (error || !data) {
-    // Fallback to default
+    console.warn('getSystemPrompt: falling back to hardcoded prompt for category:', category, error?.message);
     return getPromptTemplate(category);
   }
 
@@ -259,8 +259,11 @@ ${params.contextHtml}
     { role: 'system', content: systemParts.join('\n') },
   ];
 
-  // Add history
-  for (const msg of params.history) {
+  // Filter out system messages and limit to last 20 messages
+  const recentHistory = params.history
+    .filter((m) => m.role !== 'system')
+    .slice(-20);
+  for (const msg of recentHistory) {
     messages.push({ role: msg.role, content: msg.content });
   }
 
