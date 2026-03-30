@@ -21,8 +21,10 @@ export function createAutoSave(
   delay = 5000,
 ) {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  let lastContent: string | null = null;
 
   function schedule(content: string) {
+    lastContent = content;
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
       onSave(content);
@@ -38,12 +40,12 @@ export function createAutoSave(
   }
 
   function flush() {
-    if (timeoutId) {
+    if (timeoutId && lastContent !== null) {
       clearTimeout(timeoutId);
+      onSave(lastContent);
       timeoutId = null;
+      lastContent = null;
     }
-    // We cannot flush the pending value here without storing it,
-    // but the debounce delay is short enough that this is acceptable.
   }
 
   return { schedule, cancel, flush };

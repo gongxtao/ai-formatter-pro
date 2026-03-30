@@ -92,7 +92,7 @@ export const useDashboardStore = create<DashboardState>()(
       selectedTemplateId: null,
       setSelectedTemplateId: (id) => set({ selectedTemplateId: id }),
 
-      editorView: 'templates',
+      editorView: 'editor',
       setEditorView: (view) => set({ editorView: view }),
 
       showDocTypesOverlay: false,
@@ -139,10 +139,15 @@ export const useDashboardStore = create<DashboardState>()(
     {
       name: 'dashboard-storage',
       partialize: (state) => ({
-        activeDocType: state.activeDocType,
-        activeTemplateCategory: state.activeTemplateCategory,
-        editorView: state.editorView,
-      }),
+      activeDocType: state.activeDocType,
+      activeTemplateCategory: state.activeTemplateCategory,
+      generateParams: {
+        conversationId: state.generateParams.conversationId,
+        category: state.generateParams.category,
+        templateId: state.generateParams.templateId,
+        shouldAutoGenerate: false, // Never persist this flag
+      },
+    }),
     }
   )
 );

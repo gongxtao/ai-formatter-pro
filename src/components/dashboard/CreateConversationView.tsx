@@ -8,6 +8,7 @@ import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useTemplatesStore } from '@/stores/useTemplatesStore';
 import { MiniNav } from './MiniNav';
 import { getUserId } from '@/lib/utils/user-id';
+import { useSSEStream } from '@/hooks/useSSEStream';
 import type { NavItem } from '@/types/dashboard';
 
 interface CreateConversationViewProps {
@@ -28,38 +29,32 @@ export function CreateConversationView({
   const scrollRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
 
+  const { start: startStream, abort: abortStream } = useSSEStream();
+
+  // Read-only selectors
   const conversationId = useChatStore((s) => s.conversationId);
   const messages = useChatStore((s) => s.messages);
-  const setConversationId = useChatStore((s) => s.setConversationId);
-  const setMessages = useChatStore((s) => s.setMessages);
-  const addMessage = useChatStore((s) => s.addMessage);
-
-  const setActiveNav = useDashboardStore((s) => s.setActiveNav);
-  const setActiveFilterTag = useDashboardStore((s) => s.setActiveFilterTag);
-  const setActiveDocType = useDashboardStore((s) => s.setActiveDocType);
-  const setActiveTemplateCategory = useDashboardStore((s) => s.setActiveTemplateCategory);
-  const setGenerateParams = useDashboardStore((s) => s.setGenerateParams);
   const categories = useTemplatesStore((s) => s.categories);
-  const resetTemplates = useTemplatesStore((s) => s.resetTemplates);
 
   // Handle navigation from MiniNav
   const handleNav = useCallback(
     (key: NavItem) => {
-      setActiveNav(key);
+      const dashStore = useDashboardStore.getState();
+      dashStore.setActiveNav(key);
 
       if (key === 'home') {
-        setActiveFilterTag(null);
-        resetTemplates();
+        dashStore.setActiveFilterTag(null);
+        useTemplatesStore.getState().resetTemplates();
         if (categories.length > 0) {
-          setActiveDocType(categories[0]);
-          setActiveTemplateCategory(categories[0]);
+          dashStore.setActiveDocType(categories[0]);
+          dashStore.setActiveTemplateCategory(categories[0]);
         }
         router.push('/dashboard');
       } else {
         router.push(`/dashboard?view=${key}`);
       }
     },
-    [setActiveNav, setActiveFilterTag, setActiveDocType, setActiveTemplateCategory, resetTemplates, categories, router]
+    [categories, router]
   );
 
   // Initialize conversation
@@ -67,20 +62,20 @@ export function CreateConversationView({
     const init = async () => {
       if (isInitialized) return;
 
+      const chatStore = useChatStore.getState();
+
       if (initialConversationId) {
-        setConversationId(initialConversationId);
-        // Load messages from database
+        chatStore.setConversationId(initialConversationId);
         try {
           const res = await fetch(`/api/ai/chat/conversations/${initialConversationId}/messages`);
           if (res.ok) {
             const data = await res.json();
-            setMessages(data.data || []);
+            chatStore.setMessages(data.data || []);
           }
         } catch (e) {
           console.error('Failed to load messages:', e);
         }
       } else {
-        // Create new conversation
         try {
           const res = await fetch('/api/ai/chat/conversations', {
             method: 'POST',
@@ -89,7 +84,7 @@ export function CreateConversationView({
           });
           const data = await res.json();
           if (data.data?.id) {
-            setConversationId(data.data.id);
+            chatStore.setConversationId(data.data.id);
           }
         } catch (e) {
           console.error('Failed to create conversation:', e);
@@ -100,7 +95,118 @@ export function CreateConversationView({
     };
 
     init();
-  }, [initialConversationId, setConversationId, setMessages, isInitialized]);
+  }, [initialConversationId, isInitialized]);
+
+  const handleSend = useCallback(
+    async (messageText?: string) => {
+      const text = (messageText || input).trim();
+      if (!text || isLoading || !conversationId) return;
+
+      setInput('');
+      setIsLoading(true);
+      setStreamingContent('');
+
+      // Abort any previous request
+      abortStream();
+
+      const chatStore = useChatStore.getState();
+      const dashStore = useDashboardStore.getState();
+
+      // Add user message to UI
+      chatStore.addMessage({
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: text,
+      });
+
+      let accumulatedContent = '';
+
+      await startStream('/api/ai/clarify', {
+        conversationId,
+        message: text,
+      }, {
+        onEvent: (event) => {
+          if (event.type === 'content') {
+            accumulatedContent += (event.data || '');
+            setStreamingContent(accumulatedContent);
+          }
+
+          if (event.type === 'ready_to_generate') {
+            const finalContent = accumulatedContent || event.data || t('generatingDocument');
+            setStreamingContent('');
+
+            chatStore.addMessage({
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: finalContent,
+            });
+
+            if (event.category) {
+              dashStore.setActiveDocType(event.category);
+              dashStore.setActiveTemplateCategory(event.category);
+            }
+
+            dashStore.setGenerateParams({
+              conversationId,
+              category: event.category,
+              templateId: event.templateId,
+              shouldAutoGenerate: true,
+            });
+
+            setIsLoading(false);
+            router.push('/dashboard/editor');
+            return true; // early exit
+          }
+
+          if (event.type === 'continue') {
+            if (accumulatedContent) {
+              chatStore.addMessage({
+                id: crypto.randomUUID(),
+                role: 'assistant',
+                content: accumulatedContent,
+              });
+              setStreamingContent('');
+              accumulatedContent = '';
+            }
+          }
+
+          if (event.type === 'error') {
+            setStreamingContent('');
+            chatStore.addMessage({
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: event.data || t('errorOccurred'),
+            });
+          }
+
+          return false;
+        },
+        onError: (err) => {
+          console.error('Clarify error:', err);
+          setStreamingContent('');
+          chatStore.addMessage({
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: t('errorOccurred'),
+          });
+        },
+        onComplete: () => {
+          // If stream ended with accumulated content but no terminal event, save it
+          if (accumulatedContent) {
+            setStreamingContent('');
+            chatStore.addMessage({
+              id: crypto.randomUUID(),
+              role: 'assistant',
+              content: accumulatedContent,
+            });
+          }
+        },
+      });
+
+      setIsLoading(false);
+    },
+    [input, isLoading, conversationId, router, t, startStream, abortStream]
+  );
 
   // Send initial message if provided
   useEffect(() => {
@@ -114,145 +220,7 @@ export function CreateConversationView({
       initialMessageSentRef.current = true;
       handleSend(initialMessage);
     }
-  }, [initialMessage, conversationId, messages.length, isInitialized]);
-
-  const handleSend = useCallback(
-    async (messageText?: string) => {
-      const text = (messageText || input).trim();
-      if (!text || isLoading || !conversationId) return;
-
-      setInput('');
-      setIsLoading(true);
-      setStreamingContent('');
-
-      // Add user message to UI
-      addMessage({
-        id: `user-${Date.now()}`,
-        role: 'user',
-        content: text,
-      });
-
-      try {
-        const response = await fetch('/api/ai/clarify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            conversationId,
-            message: text,
-          }),
-        });
-
-        const reader = response.body?.getReader();
-        if (!reader) throw new Error('No response body');
-
-        const decoder = new TextDecoder();
-        let buffer = '';
-        let accumulatedContent = '';
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() ?? '';
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed || !trimmed.startsWith('data: ')) continue;
-
-            try {
-              const event = JSON.parse(trimmed.slice(6));
-
-              if (event.type === 'content') {
-                // Accumulate streaming content
-                accumulatedContent += event.data;
-                setStreamingContent(accumulatedContent);
-              }
-
-              if (event.type === 'ready_to_generate') {
-                // Intent is clear - finalize streaming message and navigate to editor
-                const finalContent = accumulatedContent || event.data || t('generatingDocument');
-
-                // Clear streaming state first
-                setStreamingContent('');
-
-                // Add final message
-                addMessage({
-                  id: `assistant-${Date.now()}`,
-                  role: 'assistant',
-                  content: finalContent,
-                });
-
-                // Set the document type for templates grid
-                if (event.category) {
-                  setActiveDocType(event.category);
-                  setActiveTemplateCategory(event.category);
-                }
-
-                setGenerateParams({
-                  conversationId,
-                  category: event.category,
-                  templateId: event.templateId,
-                  shouldAutoGenerate: true,
-                });
-
-                setIsLoading(false);
-                router.push('/dashboard/editor');
-                return;
-              }
-
-              if (event.type === 'continue') {
-                // Continue conversation - streaming content is already displayed
-                // Just finalize by moving streaming content to messages
-                if (accumulatedContent) {
-                  addMessage({
-                    id: `assistant-${Date.now()}`,
-                    role: 'assistant',
-                    content: accumulatedContent,
-                  });
-                  setStreamingContent('');
-                  accumulatedContent = ''; // Clear to prevent fallback from adding again
-                }
-              }
-
-              if (event.type === 'error') {
-                setStreamingContent('');
-                addMessage({
-                  id: `assistant-${Date.now()}`,
-                  role: 'assistant',
-                  content: event.data || t('errorOccurred'),
-                });
-              }
-            } catch {
-              // Ignore parse errors
-            }
-          }
-        }
-
-        // If we still have streaming content but no final event, add it as a message
-        if (accumulatedContent) {
-          setStreamingContent('');
-          addMessage({
-            id: `assistant-${Date.now()}`,
-            role: 'assistant',
-            content: accumulatedContent,
-          });
-        }
-      } catch (error) {
-        console.error('Clarify error:', error);
-        setStreamingContent('');
-        addMessage({
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: t('errorOccurred'),
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [input, isLoading, conversationId, addMessage, setGenerateParams, router, t]
-  );
+  }, [initialMessage, conversationId, messages.length, isInitialized, handleSend]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

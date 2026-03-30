@@ -53,18 +53,14 @@ export function TemplateCard({ template }: TemplateCardProps) {
           {template.is_premium ? t('premium') : t('free')}
         </div>
 
-        {/* Image with Next.js optimization */}
+        {/* Image */}
         {template.thumbnail_url ? (
-          <Image
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={template.thumbnail_url}
             alt={template.name}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 220px"
-            placeholder="blur"
-            blurDataURL={SHIMMER_PLACEHOLDER}
-            className="object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
-            unoptimized={template.thumbnail_url.startsWith('data:')}
           />
         ) : (
           <div className="w-full h-full bg-gray-50 flex flex-col items-center justify-center p-6 text-center">

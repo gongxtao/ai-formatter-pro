@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef, useEffect, type RefObject } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useHistoryStore } from '@/stores/useHistoryStore';
 import { useToast } from '@/components/ui/Toast';
@@ -35,86 +35,95 @@ import { useTemplates } from '@/hooks/useTemplates';
  */
 export function EditorShell() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const t = useTranslations('editor');
   const th = useTranslations('history');
   const { toast } = useToast();
 
-  // URL params - only for clearing editor content on new conversation
-  const urlConversationId = searchParams.get('conversationId');
-
-  // Store
+  // Read-only selectors
   const editorView = useDashboardStore((s) => s.editorView);
   const showDocTypesOverlay = useDashboardStore((s) => s.showDocTypesOverlay);
-  const setActiveNav = useDashboardStore((s) => s.setActiveNav);
-  const toggleDocTypesOverlay = useDashboardStore((s) => s.toggleDocTypesOverlay);
-  const setEditorView = useDashboardStore((s) => s.setEditorView);
   const activeDocType = useDashboardStore((s) => s.activeDocType);
   const currentEditorHtml = useDashboardStore((s) => s.currentEditorHtml);
-  const setCurrentEditorHtml = useDashboardStore((s) => s.setCurrentEditorHtml);
   const pendingEditorContent = useDashboardStore((s) => s.pendingEditorContent);
-  const setPendingEditorContent = useDashboardStore((s) => s.setPendingEditorContent);
   const isGenerating = useDashboardStore((s) => s.isGenerating);
   const isAutoGenerating = useDashboardStore((s) => s.isAutoGenerating);
   const isTemplateLoading = useDashboardStore((s) => s.isTemplateLoading);
-  const setIsTemplateLoading = useDashboardStore((s) => s.setIsTemplateLoading);
   const selectedTemplateId = useDashboardStore((s) => s.selectedTemplateId);
-  const setSelectedTemplateId = useDashboardStore((s) => s.setSelectedTemplateId);
   const saveDocument = useHistoryStore((s) => s.saveDocument);
 
-  // Track last loaded conversation to clear editor when switching
+  // Refs
   const lastConversationRef = useRef<string | null>(null);
+  const previewRef = useRef<EditablePreviewRef | null>(null);
+  const autoSaveRef = useRef(createAutoSave(saveToLocalStorage, 5000));
+
+  // Local state
+  const [docTitle, setDocTitle] = useState(t('untitled'));
+  const [showSavedIcon, setShowSavedIcon] = useState(false);
+  const [floatingImages, setFloatingImages] = useState<FloatingImageItem[]>([]);
+  const [iframeRef, setIframeRef] = useState<RefObject<HTMLIFrameElement> | null>(null);
 
   // Ensure templates data is loaded
   useTemplates();
 
-  // Local state
-  const [docTitle, setDocTitle] = useState(t('untitled'));
-  const [isSaving, setIsSaving] = useState(false);
-  const [showSavedIcon, setShowSavedIcon] = useState(false);
-  const [content, setContent] = useState(() => loadFromLocalStorage());
-  const [floatingImages, setFloatingImages] = useState<FloatingImageItem[]>([]);
-  const [iframeRef, setIframeRef] = useState<RefObject<HTMLIFrameElement> | null>(null);
-  const previewRef = useRef<EditablePreviewRef | null>(null);
-  const autoSaveRef = useRef(createAutoSave(saveToLocalStorage, 5000));
+  // Initialize editor content from localStorage on mount
+  // Skip if auto-generation is pending (avoids flashing stale content)
+  useEffect(() => {
+    const store = useDashboardStore.getState();
+    if (store.generateParams.shouldAutoGenerate) return;
+    if (!store.currentEditorHtml) {
+      const saved = loadFromLocalStorage();
+      if (saved) {
+        store.setCurrentEditorHtml(saved);
+      }
+    }
+  }, []);
 
-  // Handlers
+  // Flush auto-save on unmount
+  useEffect(() => {
+    const autoSave = autoSaveRef.current;
+    return () => autoSave.flush();
+  }, []);
+
+  // Handle navigation from MiniNav
   const handleNav = useCallback(
     (key: NavItem) => {
+      const dashStore = useDashboardStore.getState();
       switch (key) {
         case 'home':
-          setActiveNav('home');
+          dashStore.setActiveNav('home');
           router.push('/dashboard');
           break;
         case 'document':
-          toggleDocTypesOverlay();
+          dashStore.setActiveNav('document');
+          dashStore.toggleDocTypesOverlay();
           break;
         case 'templates':
-          setActiveNav('templates');
+          dashStore.setActiveNav('templates');
           router.push('/dashboard');
           break;
         case 'history':
-          setActiveNav('history');
+          dashStore.setActiveNav('history');
           router.push('/dashboard');
           break;
       }
+
+      // 只要触发导航，就切换到编辑器视图
+      useDashboardStore.getState().setEditorView('editor');
     },
-    [router, setActiveNav, toggleDocTypesOverlay],
+    [router],
   );
 
   const handleBackToTemplates = useCallback(() => {
-    setEditorView('templates');
-  }, [setEditorView]);
+    useDashboardStore.getState().setEditorView('templates');
+  }, []);
 
   const handleBackToEditor = useCallback(() => {
-    setEditorView('editor');
-  }, [setEditorView]);
+    useDashboardStore.getState().setEditorView('editor');
+  }, []);
 
   const handleSave = useCallback(() => {
     if (!currentEditorHtml.trim()) return;
-    setIsSaving(true);
     const ok = saveDocument({ title: docTitle || t('untitled'), content: currentEditorHtml, category: activeDocType });
-    setIsSaving(false);
     if (ok) {
       setShowSavedIcon(true);
       setTimeout(() => setShowSavedIcon(false), 2000);
@@ -124,14 +133,13 @@ export function EditorShell() {
     }
   }, [currentEditorHtml, docTitle, activeDocType, saveDocument, t, th, toast]);
 
-  // Content change handler
+  // Content change handler — single source of truth via store
   const handleContentChange = useCallback((newContent: string) => {
-    setContent(newContent);
-    setCurrentEditorHtml(newContent);
+    useDashboardStore.getState().setCurrentEditorHtml(newContent);
     autoSaveRef.current.schedule(newContent);
-  }, [setCurrentEditorHtml]);
+  }, []);
 
-  // Receive iframe ref directly from A4PageCanvas when iframe is ready
+  // Receive iframe ref from A4PageCanvas
   const handleIframeReady = useCallback((ref: RefObject<HTMLIFrameElement>) => {
     if (ref && ref.current) {
       setIframeRef(ref);
@@ -141,62 +149,47 @@ export function EditorShell() {
   // Consume pending content from generation or chat insert
   useEffect(() => {
     if (pendingEditorContent) {
-      setContent(pendingEditorContent);
-      setCurrentEditorHtml(pendingEditorContent);
+      const dashStore = useDashboardStore.getState();
+      dashStore.setCurrentEditorHtml(pendingEditorContent);
       autoSaveRef.current.schedule(pendingEditorContent);
-      setPendingEditorContent(null);
+      dashStore.setPendingEditorContent(null);
     }
-  }, [pendingEditorContent, setPendingEditorContent, setCurrentEditorHtml]);
+  }, [pendingEditorContent]);
 
-  // Sync currentEditorHtml from store to local content (for AI chat streaming)
-  // Only update when different to avoid loops
+  // Clear editor when navigating to a new conversation (store-driven)
   useEffect(() => {
-    if (currentEditorHtml && currentEditorHtml !== content) {
-      setContent(currentEditorHtml);
-      autoSaveRef.current.schedule(currentEditorHtml);
+    const store = useDashboardStore.getState();
+    const convId = store.generateParams.conversationId;
+    if (convId && convId !== lastConversationRef.current) {
+      lastConversationRef.current = convId;
+      store.setCurrentEditorHtml('');
     }
-  }, [currentEditorHtml]);
+  }, []);
 
-  // Clear editor when navigating to a new conversation
-  useEffect(() => {
-    if (urlConversationId && urlConversationId !== lastConversationRef.current) {
-      lastConversationRef.current = urlConversationId;
-      setContent('');
-      setCurrentEditorHtml('');
-    }
-  }, [urlConversationId, setCurrentEditorHtml]);
-
-  // Load template HTML when a template is selected from the dashboard or templates grid
+  // Load template HTML when a template is selected
   useEffect(() => {
     if (!selectedTemplateId) return;
     const loadTemplate = async () => {
-      setIsTemplateLoading(true);
+      const dashStore = useDashboardStore.getState();
+      dashStore.setIsTemplateLoading(true);
       try {
         const res = await fetch(`/api/templates?id=${selectedTemplateId}`);
         if (!res.ok) throw new Error('Failed to load template');
         const data = await res.json();
         if (data.html) {
-          setContent(data.html);
-          setCurrentEditorHtml(data.html);
+          dashStore.setCurrentEditorHtml(data.html);
           autoSaveRef.current.schedule(data.html);
           if (data.template?.name) setDocTitle(data.template.name);
         }
       } catch (e) {
         console.error('Failed to load template:', e);
       } finally {
-        setSelectedTemplateId(null);
-        setIsTemplateLoading(false);
+        dashStore.setSelectedTemplateId(null);
+        dashStore.setIsTemplateLoading(false);
       }
     };
     loadTemplate();
-  }, [selectedTemplateId, setSelectedTemplateId, setCurrentEditorHtml, setIsTemplateLoading]);
-
-  // Flush auto-save on unmount
-  useEffect(() => {
-    return () => {
-      autoSaveRef.current.flush();
-    };
-  }, []);
+  }, [selectedTemplateId]);
 
   // Combined generating state for UI
   const showGeneratingState = isGenerating || isAutoGenerating;
@@ -207,7 +200,7 @@ export function EditorShell() {
       iframeRef={iframeRef}
       onContentChange={handleContentChange}
       isEditing={true}
-      disabled={!content}
+      disabled={!currentEditorHtml}
       onFloatingImageInsert={(url) => previewRef.current?.insertFloatingImage(url)}
       refreshToken={0}
     />
@@ -236,7 +229,7 @@ export function EditorShell() {
           onBackToTemplates={handleBackToTemplates}
           onBackToEditor={handleBackToEditor}
           docTitle={docTitle}
-          isSaving={isSaving}
+          isSaving={false}
           showSavedIcon={showSavedIcon}
           handleSave={handleSave}
           editorToolbar={editorToolbar}
@@ -257,7 +250,7 @@ export function EditorShell() {
             )}
             <EditablePreview
               selectedFile="editor"
-              content={content}
+              content={currentEditorHtml}
               onContentChange={handleContentChange}
               floatingImages={floatingImages}
               onFloatingImagesChange={setFloatingImages}

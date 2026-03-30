@@ -11,6 +11,11 @@ import {
   sendSSEError,
 } from '@/lib/ai/sse-helper';
 import { getDefaultModel } from '@/lib/ai/llm-client';
+import {
+  saveMessage,
+  matchTemplate,
+  getCategoryDisplayName,
+} from '@/lib/ai/conversation-helper';
 
 export const runtime = 'edge';
 export const maxDuration = 60;
@@ -44,17 +49,18 @@ export async function POST(request: NextRequest) {
 
     (async () => {
       const supabase = createServerSupabaseClient();
+      const effectiveConvId = conversationId || sessionId;
 
       try {
         sendSSEStatus(controller!, 'Analyzing...', 10);
 
         // Load conversation history
         let historyMessages: Array<{ role: 'user' | 'assistant'; content: string }> = [];
-        if (conversationId) {
+        if (effectiveConvId) {
           const { data: dbMessages } = await supabase
             .from('ai_messages')
             .select('role, content')
-            .eq('conversation_id', conversationId)
+            .eq('conversation_id', effectiveConvId)
             .order('created_at', { ascending: true })
             .limit(20);
 
@@ -66,12 +72,7 @@ export async function POST(request: NextRequest) {
           }
 
           // Save user message to database
-          await supabase.from('ai_messages').insert({
-            conversation_id: conversationId,
-            role: 'user',
-            content: message,
-            content_type: 'text',
-          });
+          await saveMessage(effectiveConvId, 'user', message);
         }
 
         // Combine history with current message for intent classification
@@ -90,19 +91,15 @@ export async function POST(request: NextRequest) {
           const aiContent = `好的，我将为你生成${getCategoryDisplayName(intentResult.category)}文档。`;
 
           // Save assistant message
-          if (conversationId) {
-            await supabase.from('ai_messages').insert({
-              conversation_id: conversationId,
-              role: 'assistant',
-              content: aiContent,
-              content_type: 'text',
-              metadata: { category: intentResult.category },
+          if (effectiveConvId) {
+            await saveMessage(effectiveConvId, 'assistant', aiContent, {
+              category: intentResult.category,
             });
           }
 
           sendSSEEvent(controller!, {
             type: 'ready_to_generate',
-            conversationId,
+            conversationId: effectiveConvId,
             category: intentResult.category,
             templateId: templateMatch?.template?.id,
             data: aiContent,
@@ -143,13 +140,8 @@ export async function POST(request: NextRequest) {
             });
           } else if (chunk.type === 'done') {
             // Streaming complete - save and finalize
-            if (conversationId && fullResponse) {
-              await supabase.from('ai_messages').insert({
-                conversation_id: conversationId,
-                role: 'assistant',
-                content: fullResponse,
-                content_type: 'text',
-              });
+            if (effectiveConvId && fullResponse) {
+              await saveMessage(effectiveConvId, 'assistant', fullResponse);
             }
 
             // Just signal continue, don't send the content again
@@ -185,30 +177,3 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function getCategoryDisplayName(category: string): string {
-  const names: Record<string, string> = {
-    resume: '简历',
-    coverLetter: '求职信',
-    report: '报告',
-    businessPlan: '商业计划',
-    proposal: '提案',
-    document: '文档',
-  };
-  return names[category] || category;
-}
-
-async function matchTemplate(category: string, userPrompt: string) {
-  try {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const res = await fetch(`${baseUrl}/api/templates/match`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category, userPrompt }),
-    });
-
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
-    return null;
-  }
-}

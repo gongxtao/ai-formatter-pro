@@ -21,7 +21,7 @@ export function DashboardChatBox() {
     setActiveDocType('');
   };
 
-  const { generate, isGenerating, progress, statusMessage, error } = useAIGeneration();
+  const { generate, cancel, isGenerating } = useAIGeneration();
 
   const handleGenerate = () => {
     if (!prompt.trim()) return;
@@ -34,25 +34,13 @@ export function DashboardChatBox() {
   if (isGenerating) {
     return (
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 max-w-[840px] mx-auto">
-        <GeneratingIndicator progress={progress} statusMessage={statusMessage} />
+        <GeneratingIndicator />
       </div>
     );
   }
 
   return (
     <div className="max-w-[840px] mx-auto">
-      {error && (
-        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between">
-          <p className="text-sm text-red-600">{tAi('errorGenerating')}</p>
-          <button
-            onClick={handleGenerate}
-            className="text-sm text-red-600 font-medium hover:underline"
-          >
-            {tAi('errorRetry')}
-          </button>
-        </div>
-      )}
-
       {/* Unified chat input container */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 flex flex-col gap-4 relative">
         {/* Top: Text Input */}

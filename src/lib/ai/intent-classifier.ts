@@ -105,7 +105,7 @@ export async function classifyIntent(
 
   try {
     const generator = await streamChatCompletion({
-      model: 'kimi-k2.5', // Use fast model for classification
+      model: process.env.OPENAI_MODEL || 'kimi-k2.5', // Use fast model for classification
       messages: [
         { role: 'system', content: INTENT_CLASSIFICATION_SYSTEM + categoryContext },
         { role: 'user', content: prompt },

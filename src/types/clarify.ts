@@ -1,7 +1,7 @@
 // src/types/clarify.ts
 
 /**
- * Intent classification result from /api/ai/generate
+ * Intent classification result from /api/ai/init
  */
 export interface IntentClassificationResult {
   // New fields for template matching

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useChatStore } from '@/stores/useChatStore';
 import { useDashboardStore } from '@/stores/useDashboardStore';
@@ -14,15 +13,8 @@ import { sanitizeHtml } from '@/lib/utils/sanitize';
 export function AIChatSidebar() {
   const t = useTranslations('editor');
   const ta = useTranslations('ai');
-  const searchParams = useSearchParams();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  // URL params for smart template matching flow
-  const urlConversationId = searchParams.get('conversationId');
-  const urlCategory = searchParams.get('category');
-  const urlTemplateId = searchParams.get('templateId');
-  const shouldAutoGenerate = searchParams.get('generate') === '1';
 
   const conversationId = useChatStore((s) => s.conversationId);
   const messages = useChatStore((s) => s.messages);
@@ -35,16 +27,10 @@ export function AIChatSidebar() {
   const isAutoGenerating = useDashboardStore((s) => s.isAutoGenerating);
 
   const { effectiveCategory, effectiveTemplateId } = useEditorInit({
-    conversationId: urlConversationId,
-    category: urlCategory,
-    templateId: urlTemplateId,
-    shouldAutoGenerate,
-    // Safe to reference sendMessage here even though it's declared below:
-    // the callback is stored in a ref and only invoked from a useEffect
-    // (after the entire component has rendered and sendMessage is assigned).
     onAutoGenerate: (lastUserMessage) => {
+      const msgId = crypto.randomUUID();
       addMessage({
-        id: `assistant-autogen-${Date.now()}`,
+        id: msgId,
         role: 'assistant',
         content: '',
         isStreaming: true,
@@ -54,6 +40,7 @@ export function AIChatSidebar() {
         contextHtml: currentEditorHtml,
         autoGenerate: true,
         templateId: effectiveTemplateId,
+        assistantMsgId: msgId,
       });
     },
   });
@@ -78,6 +65,10 @@ export function AIChatSidebar() {
       })
         .then((res) => res.json())
         .then((json) => {
+          // Guard: useEditorInit may have loaded messages while we were fetching
+          const currentState = useChatStore.getState();
+          if (currentState.messages.length > 0 || currentState.conversationId) return;
+
           if (json.data?.id) {
             useChatStore.getState().setConversationId(json.data.id);
             useChatStore.getState().setMessages([
@@ -90,7 +81,10 @@ export function AIChatSidebar() {
           }
         })
         .catch(() => {
-          // Fallback: show greeting without conversation
+          // Guard: same check for fallback path
+          const currentState = useChatStore.getState();
+          if (currentState.messages.length > 0 || currentState.conversationId) return;
+
           useChatStore.getState().setMessages([
             {
               id: 'greeting',
@@ -137,7 +131,7 @@ export function AIChatSidebar() {
         <div className="flex items-center gap-2 mb-1">
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7" />
             </svg>
           </div>
           <div>
@@ -194,7 +188,7 @@ export function AIChatSidebar() {
                     </div>
                     <span className="text-gray-600">{ta('generating')}</span>
                   </div>
-                ) : msg.isStreaming ? (
+                ) : msg.isStreaming? (
                   <ChatStream
                     content={streamingMessage ? streamingContent : msg.content}
                     isStreaming={msg.isStreaming}

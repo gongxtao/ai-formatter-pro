@@ -23,7 +23,6 @@ export function useAIChat(options?: UseAIChatOptions) {
     updateMessageGenerationStatus,
   } = useChatStore();
 
-  const setPendingEditorContent = useDashboardStore((s) => s.setPendingEditorContent);
   const setIsGenerating = useDashboardStore((s) => s.setIsGenerating);
   const setIsAutoGenerating = useDashboardStore((s) => s.setIsAutoGenerating);
 
@@ -39,7 +38,7 @@ export function useAIChat(options?: UseAIChatOptions) {
   const sendMessage = useCallback(
     async (
       message: string,
-      sendOptions?: { contextHtml?: string; autoGenerate?: boolean; templateId?: string | null }
+      sendOptions?: { contextHtml?: string; autoGenerate?: boolean; templateId?: string | null; assistantMsgId?: string }
     ) => {
       if (!message.trim()) return;
 
@@ -57,7 +56,7 @@ export function useAIChat(options?: UseAIChatOptions) {
       const isAutoGenerate = sendOptions?.autoGenerate;
 
       // Track the assistant message ID for generation status updates
-      let assistantMsgId = '';
+      let assistantMsgId: string | null = sendOptions?.assistantMsgId ?? null;
 
       if (!isAutoGenerate) {
         addMessage({
@@ -73,12 +72,14 @@ export function useAIChat(options?: UseAIChatOptions) {
           content: '',
           isStreaming: true,
         });
-      } else {
-        // For auto-generate, find the existing streaming message
+      } else if (!assistantMsgId) {
+        // Fallback: find the existing streaming message if caller didn't pass an ID
         const msgs = useChatStore.getState().messages;
         const streamingMsg = msgs.findLast((m) => m.isStreaming);
         if (streamingMsg) {
           assistantMsgId = streamingMsg.id;
+        } else {
+          console.warn('[useAIChat] auto-generate: no streaming message found in store');
         }
       }
 
@@ -141,7 +142,7 @@ export function useAIChat(options?: UseAIChatOptions) {
             switch (event.type) {
               case 'generation_start':
                 isDocGeneration = true;
-                if (assistantMsgId) {
+                if (assistantMsgId != null) {
                   updateMessageGenerationStatus(assistantMsgId, {
                     status: 'generating',
                     documentType: event.documentType,
@@ -162,7 +163,7 @@ export function useAIChat(options?: UseAIChatOptions) {
                 break;
 
               case 'generation_complete':
-                if (assistantMsgId) {
+                if (assistantMsgId != null) {
                   updateMessageGenerationStatus(assistantMsgId, {
                     status: 'completed',
                     documentType: event.documentType,
@@ -197,7 +198,7 @@ export function useAIChat(options?: UseAIChatOptions) {
         setError(errMsg);
 
         // Mark generation as failed if it was generating
-        if (assistantMsgId) {
+        if (assistantMsgId != null) {
           const msgs = useChatStore.getState().messages;
           const msg = msgs.find((m) => m.id === assistantMsgId);
           if (msg?.generationStatus?.status === 'generating') {
@@ -227,16 +228,8 @@ export function useAIChat(options?: UseAIChatOptions) {
     ],
   );
 
-  const insertIntoEditor = useCallback(
-    (content: string) => {
-      setPendingEditorContent(content);
-    },
-    [setPendingEditorContent],
-  );
-
   return {
     sendMessage,
-    insertIntoEditor,
     isLoading,
     error,
   };
