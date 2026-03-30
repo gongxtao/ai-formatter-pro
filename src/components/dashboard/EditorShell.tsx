@@ -16,7 +16,7 @@ import EditorToolbar from '@/components/editor/EditorToolbar';
 import type { NavItem } from '@/types/dashboard';
 import type { FloatingImageItem } from '@/components/editor/FloatingImageLayer';
 import type { EditablePreviewRef } from '@/components/editor/EditablePreview';
-import { createAutoSave, saveToLocalStorage, loadFromLocalStorage } from '@/lib/editor-auto-save';
+import { createAutoSave, saveToLocalStorage } from '@/lib/editor-auto-save';
 import { useTemplates } from '@/hooks/useTemplates';
 
 /**
@@ -65,17 +65,16 @@ export function EditorShell() {
   // Ensure templates data is loaded
   useTemplates();
 
-  // Initialize editor content from localStorage on mount
-  // Skip if auto-generation is pending (avoids flashing stale content)
+  // Initialize editor content on mount
+  // Only restore from localStorage when explicitly re-entering with pending content
+  // (e.g. from history). Normal navigation from other pages starts with blank editor.
+  // Content is injected via pendingEditorContent, selectedTemplateId, or AI generation.
   useEffect(() => {
     const store = useDashboardStore.getState();
     if (store.generateParams.shouldAutoGenerate) return;
-    if (!store.currentEditorHtml) {
-      const saved = loadFromLocalStorage();
-      if (saved) {
-        store.setCurrentEditorHtml(saved);
-      }
-    }
+    if (store.pendingEditorContent) return;
+    if (store.selectedTemplateId) return;
+    // Blank editor for normal navigation — no localStorage restore
   }, []);
 
   // Flush auto-save on unmount
