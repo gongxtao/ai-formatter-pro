@@ -1,11 +1,12 @@
 import type { ExportOptions, ExportResult } from './types';
+import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 export async function exportPdf(options: ExportOptions): Promise<ExportResult> {
   try {
     const html2pdf = (await import('html2pdf.js')).default;
 
     const container = document.createElement('div');
-    container.innerHTML = options.content;
+    container.innerHTML = sanitizeHtml(options.content);
     container.style.width = '210mm';
     container.style.padding = '20mm';
     container.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";

@@ -11,6 +11,7 @@ import {
   sendSSEError,
 } from '@/lib/ai/sse-helper';
 import { getDefaultModel } from '@/lib/ai/llm-client';
+import { applyRateLimit } from '@/lib/rate-limit';
 import {
   saveMessage,
   matchTemplate,
@@ -37,12 +38,21 @@ User: "Create a document" → "What type of document would you like? I can help 
 User: "帮我写个东西" → "你想创建什么类型的文档？我可以帮你生成简历、报告、商业计划书等。"`;
 
 export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = applyRateLimit(request, { maxRequests: 30, windowMs: 60_000 });
+  if (rateLimitResponse) return rateLimitResponse as any;
+
   try {
     const body = await request.json();
     const { sessionId, conversationId, message } = body;
 
     if (!message) {
       return NextResponse.json({ error: 'message is required' }, { status: 400 });
+    }
+
+    // Input length validation
+    if (message.length > 10000) {
+      return NextResponse.json({ error: 'Message too long (max 10000 characters)' }, { status: 400 });
     }
 
     const { controller, stream } = createSSEStream();

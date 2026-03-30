@@ -138,7 +138,9 @@ export async function GET(request: NextRequest) {
 
       // Apply search filter (ILIKE for case-insensitive)
       if (search && search.trim()) {
-        const searchPattern = `%${search.trim()}%`;
+        // Escape LIKE wildcards to prevent injection
+        const sanitizedSearch = search.trim().replace(/[%_\\]/g, '\\$&');
+        const searchPattern = `%${sanitizedSearch}%`;
         const orFilter = `name.ilike.${searchPattern},description.ilike.${searchPattern}`;
         countQuery = countQuery.or(orFilter);
         dataQuery = dataQuery.or(orFilter);

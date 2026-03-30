@@ -11,6 +11,11 @@ export function createSSEStream(): {
     start(ctrl) {
       controller = ctrl;
     },
+    cancel() {
+      // Ensure controller reference is cleared when stream is cancelled
+      // to allow garbage collection
+      controller = null;
+    },
   });
 
   return { controller, stream };

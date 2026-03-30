@@ -12,17 +12,27 @@ import {
   matchTemplate,
   getCategoryDisplayName,
 } from '@/lib/ai/conversation-helper';
+import { applyRateLimit } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = applyRateLimit(request, { maxRequests: 20, windowMs: 60_000 });
+  if (rateLimitResponse) return rateLimitResponse as any;
+
   try {
     const body = await request.json();
     const { category, prompt } = body;
 
     if (!prompt) {
       return NextResponse.json({ error: 'prompt is required' }, { status: 400 });
+    }
+
+    // Input length validation
+    if (prompt.length > 5000) {
+      return NextResponse.json({ error: 'Prompt too long (max 5000 characters)' }, { status: 400 });
     }
 
     const { controller, stream } = createSSEStream();

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/db/supabase-server';
+import { createServerSupabaseClient, getEffectiveUserId } from '@/lib/db/supabase-server';
 
 export const runtime = 'edge';
 
@@ -20,6 +20,12 @@ export async function GET(
 
     if (convError || !conversation) {
       return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
+
+    // Verify user ownership
+    const userId = request.headers.get('x-user-id');
+    if (userId && conversation.user_id && conversation.user_id !== getEffectiveUserId(userId)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Get messages

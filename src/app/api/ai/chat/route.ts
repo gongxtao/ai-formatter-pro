@@ -3,6 +3,7 @@ import { buildChatMessagesWithTemplateStyle } from '@/lib/ai/prompt-builder';
 import { streamChatCompletion } from '@/lib/ai/llm-client';
 import { createSSEStream, sendSSEContent, sendSSEError, sendSSEEvent, sendSSEGenerationComplete, sendSSEGenerationStart, sendSSEStatus } from '@/lib/ai/sse-helper';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
+import { applyRateLimit } from '@/lib/rate-limit';
 
 function getCategoryLabel(category: string): string {
   const labels: Record<string, string> = {
@@ -31,12 +32,24 @@ export const runtime = 'edge';
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
+  // Rate limiting
+  const rateLimitResponse = applyRateLimit(request, { maxRequests: 20, windowMs: 60_000 });
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await request.json();
     const { conversationId, message, contextHtml, model, category, templateId, autoGenerate } = body;
 
     if (!conversationId || !message) {
       return new Response(JSON.stringify({ error: 'conversationId and message are required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Input length validation
+    if (message.length > 10000) {
+      return new Response(JSON.stringify({ error: 'Message too long (max 10000 characters)' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
@@ -93,12 +106,14 @@ export async function POST(request: NextRequest) {
 
     // Start streaming in background
     (async () => {
+      let accumulated = '';
+      let selectedModel = model;
       try {
         const startTime = Date.now();
 
         sendSSEStatus(controller!, 'Thinking...', 10);
 
-        const { model: selectedModel, messages } = await buildChatMessagesWithTemplateStyle({
+        const result = await buildChatMessagesWithTemplateStyle({
           category: category || 'document',
           templateHtml,
           contextHtml,
@@ -107,6 +122,7 @@ export async function POST(request: NextRequest) {
           model,
           isAutoGenerate: autoGenerate,
         });
+        selectedModel = result.model;
 
         sendSSEStatus(controller!, 'Generating response...', 30);
 
@@ -114,9 +130,8 @@ export async function POST(request: NextRequest) {
         const docLabel = getCategoryLabel(category || 'document');
         sendSSEGenerationStart(controller!, docLabel);
 
-        const generator = await streamChatCompletion({ model: selectedModel, messages });
+        const generator = await streamChatCompletion({ model: selectedModel, messages: result.messages });
 
-        let accumulated = '';
         let chunkCount = 0;
 
         for await (const chunk of generator) {
@@ -133,17 +148,6 @@ export async function POST(request: NextRequest) {
 
         const duration = Date.now() - startTime;
 
-        // Persist assistant message
-        await supabase.from('ai_messages').insert({
-          conversation_id: conversationId,
-          role: 'assistant',
-          content: accumulated,
-          content_type: 'text',
-          metadata: { stream_duration_ms: duration, category },
-          duration_ms: duration,
-          model: selectedModel,
-        });
-
         // Signal document generation complete
         sendSSEGenerationComplete(controller!, docLabel);
 
@@ -156,9 +160,25 @@ export async function POST(request: NextRequest) {
         );
         controller!.close();
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Chat failed';
-        sendSSEError(controller!, message);
+        const msg = error instanceof Error ? error.message : 'Chat failed';
+        sendSSEError(controller!, msg);
         controller!.close();
+      } finally {
+        // Always persist accumulated content, even on client disconnect
+        if (accumulated && conversationId) {
+          try {
+            await supabase.from('ai_messages').insert({
+              conversation_id: conversationId,
+              role: 'assistant',
+              content: accumulated,
+              content_type: 'text',
+              metadata: { category },
+              model: selectedModel,
+            });
+          } catch (persistError) {
+            console.error('Failed to persist assistant message:', persistError);
+          }
+        }
       }
     })();
 

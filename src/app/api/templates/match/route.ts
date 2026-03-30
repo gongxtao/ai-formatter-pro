@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/db/supabase-server';
-import { chatCompletion } from '@/lib/ai/llm-client';
+import { chatCompletion, getDefaultModel } from '@/lib/ai/llm-client';
 import type { TemplateMatchResponse } from '@/types/template';
 
 export const runtime = 'edge';
@@ -116,7 +116,7 @@ Select based on:
 
   try {
     const responseText = await chatCompletion({
-      model: 'kimi-k2.5',
+      model: getDefaultModel(),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `User request: ${userPrompt}` },
