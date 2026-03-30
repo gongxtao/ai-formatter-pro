@@ -218,7 +218,8 @@ export function CreateConversationView({
       isInitialized
     ) {
       initialMessageSentRef.current = true;
-      handleSend(initialMessage);
+      // Defer to avoid synchronous setState within effect (React 19 warning)
+      queueMicrotask(() => handleSend(initialMessage));
     }
   }, [initialMessage, conversationId, messages.length, isInitialized, handleSend]);
 
