@@ -1,21 +1,33 @@
 import type { ExportOptions, ExportResult } from './types';
-import { sanitizeHtml } from '@/lib/utils/sanitize';
+
+/** Extract body innerHTML from a full HTML document string */
+function extractBodyContent(html: string): string {
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  if (bodyMatch) return bodyMatch[1];
+  // If no <body> tag, return as-is (already body content)
+  return html;
+}
 
 export async function exportPdf(options: ExportOptions): Promise<ExportResult> {
   try {
     const html2pdf = (await import('html2pdf.js')).default;
 
+    // Extract body content from full HTML documents
+    const bodyContent = extractBodyContent(options.content);
+
     const container = document.createElement('div');
-    container.innerHTML = sanitizeHtml(options.content);
+    container.innerHTML = bodyContent;
     container.style.width = '210mm';
     container.style.padding = '20mm';
     container.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
     container.style.lineHeight = '1.6';
     container.style.color = '#333';
-    container.style.position = 'absolute';
-    container.style.left = '-9999px';
+    container.style.position = 'fixed';
+    container.style.left = '0';
     container.style.top = '0';
     container.style.background = 'white';
+    container.style.zIndex = '-9999';
+    container.style.visibility = 'hidden';
 
     document.body.appendChild(container);
 

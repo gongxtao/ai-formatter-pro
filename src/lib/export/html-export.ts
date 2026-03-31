@@ -1,8 +1,16 @@
 import { saveAs } from 'file-saver';
 import type { ExportOptions, ExportResult } from './types';
 
+/** Extract body innerHTML from a full HTML document string */
+function extractBodyContent(html: string): string {
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+  if (bodyMatch) return bodyMatch[1];
+  return html;
+}
+
 export async function exportHtml(options: ExportOptions): Promise<ExportResult> {
   try {
+    const bodyContent = extractBodyContent(options.content);
     const fullHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,7 +27,7 @@ export async function exportHtml(options: ExportOptions): Promise<ExportResult> 
   </style>
 </head>
 <body>
-${options.content}
+${bodyContent}
 </body>
 </html>`;
     const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
