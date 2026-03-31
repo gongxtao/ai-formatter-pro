@@ -32,7 +32,7 @@ export type GenerateSSEEventType = 'status' | 'content' | 'completion' | 'done' 
  * Relationship to StreamEvent:
  * - StreamEvent (ai.ts): Core SSE types for standard generation flow
  * - GenerateSSEEvent (this file): Extended for clarify flow with additional fields
- * - When clarification_needed, client should redirect to /dashboard/ai-chat/[sessionId]
+ * - When clarification_needed, client should redirect to /ai-chat/[sessionId]
  */
 export interface GenerateSSEEvent {
   type: GenerateSSEEventType;

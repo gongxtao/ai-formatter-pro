@@ -204,7 +204,8 @@
     "searchPlaceholder": "你想创建什么？",
     "askAiToEdit": "让 AI 编辑",
     "exporting": "导出中...",
-    "loadingTemplate": "正在加载模板..."
+    "loadingTemplate": "正在加载模板...",
+    "noContentToSave": "文档为空，没有可保存的内容。"
   },
   "history": {
     "title": "历史记录",

@@ -6,9 +6,8 @@ import { useChatStore } from '@/stores/useChatStore';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useAIChat } from '@/hooks/useAIChat';
 import { useEditorInit } from '@/hooks/useEditorInit';
-import { ChatStream } from '@/components/ai/ChatStream';
+import { ChatMessageBubble } from '@/components/ai/ChatMessageBubble';
 import { getUserId } from '@/lib/utils/user-id';
-import { sanitizeHtml } from '@/lib/utils/sanitize';
 
 export function AIChatSidebar() {
   const t = useTranslations('editor');
@@ -147,57 +146,54 @@ export function AIChatSidebar() {
           const genStatus = msg.generationStatus;
           const isAutoGenMessage = msg.isStreaming && isAutoGenerating && !genStatus;
 
-          return (
-            <div
-              key={msg.id}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                  msg.role === 'user'
-                    ? 'bg-primary text-white rounded-br-md'
-                    : 'bg-gray-100 text-gray-800 rounded-bl-md prose prose-sm prose-gray max-w-none [&_h1]:text-base [&_h1]:font-bold [&_h1]:mb-2 [&_h2]:text-sm [&_h2]:font-semibold [&_h2]:mb-1.5 [&_p]:mb-2 [&_ul]:my-1 [&_li]:mb-0.5'
-                }`}
-              >
-                {genStatus?.status === 'generating' ? (
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          // Editor-specific generation status indicators — keep inline
+          if (genStatus || isAutoGenMessage) {
+            return (
+              <div key={msg.id} className="flex justify-start">
+                <div className="max-w-[85%] bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md px-3.5 py-2.5 text-sm leading-relaxed">
+                  {genStatus?.status === 'generating' ? (
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex gap-1">
+                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <span className="text-gray-600">
+                        {ta('generatingDocStatus', { docType: genStatus.documentType || t('document') })}
+                      </span>
                     </div>
-                    <span className="text-gray-600">
-                      {ta('generatingDocStatus', { docType: genStatus.documentType || t('document') })}
-                    </span>
-                  </div>
-                ) : genStatus?.status === 'completed' ? (
-                  <div className="flex items-center gap-2">
-                    <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-gray-700 font-medium">
-                      {ta('genCompleteStatus', { docType: genStatus.documentType || t('document') })}
-                    </span>
-                  </div>
-                ) : isAutoGenMessage ? (
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  ) : genStatus?.status === 'completed' ? (
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-700 font-medium">
+                        {ta('genCompleteStatus', { docType: genStatus.documentType || t('document') })}
+                      </span>
                     </div>
-                    <span className="text-gray-600">{ta('generating')}</span>
-                  </div>
-                ) : msg.isStreaming? (
-                  <ChatStream
-                    content={streamingMessage ? streamingContent : msg.content}
-                    isStreaming={msg.isStreaming}
-                  />
-                ) : (
-                  <span dangerouslySetInnerHTML={{ __html: sanitizeHtml(msg.content) }} />
-                )}
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1">
+                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <span className="text-gray-600">{ta('generating')}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            );
+          }
+
+          // Normal messages — use shared ChatMessageBubble
+          return (
+            <ChatMessageBubble
+              key={msg.id}
+              role={msg.role}
+              content={msg.isStreaming && streamingMessage ? streamingContent : msg.content}
+              isStreaming={msg.isStreaming}
+            />
           );
         })}
       </div>

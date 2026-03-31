@@ -204,7 +204,8 @@
     "searchPlaceholder": "What are you creating?",
     "askAiToEdit": "Ask AI to Edit",
     "exporting": "Exporting...",
-    "loadingTemplate": "Loading template..."
+    "loadingTemplate": "Loading template...",
+    "noContentToSave": "Nothing to save — the document is empty."
   },
   "history": {
     "title": "History",

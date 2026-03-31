@@ -90,7 +90,7 @@ export function EditorShell() {
       switch (key) {
         case 'home':
           dashStore.setActiveNav('home');
-          router.push('/dashboard');
+          router.push('/');
           break;
         case 'document':
           dashStore.setActiveNav('document');
@@ -98,11 +98,11 @@ export function EditorShell() {
           break;
         case 'templates':
           dashStore.setActiveNav('templates');
-          router.push('/dashboard');
+          router.push('/');
           break;
         case 'history':
           dashStore.setActiveNav('history');
-          router.push('/dashboard');
+          router.push('/');
           break;
       }
 
@@ -121,8 +121,15 @@ export function EditorShell() {
   }, []);
 
   const handleSave = useCallback(() => {
-    if (!currentEditorHtml.trim()) return;
-    const ok = saveDocument({ title: docTitle || t('untitled'), content: currentEditorHtml, category: activeDocType });
+    // Flush pending debounced content from iframe before reading from store
+    previewRef.current?.flushContent?.();
+    // Read fresh content from store after flush
+    const html = useDashboardStore.getState().currentEditorHtml;
+    if (!html.trim()) {
+      toast(t('noContentToSave'), 'info', 2000);
+      return;
+    }
+    const ok = saveDocument({ title: docTitle || t('untitled'), content: html, category: activeDocType });
     if (ok) {
       setShowSavedIcon(true);
       setTimeout(() => setShowSavedIcon(false), 2000);
@@ -130,7 +137,7 @@ export function EditorShell() {
     } else {
       toast(th('storageFull'), 'error', 3000);
     }
-  }, [currentEditorHtml, docTitle, activeDocType, saveDocument, t, th, toast]);
+  }, [docTitle, activeDocType, saveDocument, t, th, toast]);
 
   // Content change handler — single source of truth via store
   const handleContentChange = useCallback((newContent: string) => {
@@ -233,6 +240,7 @@ export function EditorShell() {
           handleSave={handleSave}
           editorToolbar={editorToolbar}
           isGenerating={showGeneratingState}
+          onBeforeExport={() => previewRef.current?.flushContent?.()}
         />
 
         {editorView === 'templates' ? (

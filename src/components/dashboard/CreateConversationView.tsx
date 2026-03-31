@@ -7,6 +7,7 @@ import { useChatStore } from '@/stores/useChatStore';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useTemplatesStore } from '@/stores/useTemplatesStore';
 import { MiniNav } from './MiniNav';
+import { ChatMessageBubble } from '@/components/ai/ChatMessageBubble';
 import { getUserId } from '@/lib/utils/user-id';
 import { useSSEStream } from '@/hooks/useSSEStream';
 import type { NavItem } from '@/types/dashboard';
@@ -49,9 +50,9 @@ export function CreateConversationView({
           dashStore.setActiveDocType(categories[0]);
           dashStore.setActiveTemplateCategory(categories[0]);
         }
-        router.push('/dashboard');
+        router.push('/');
       } else {
-        router.push(`/dashboard?view=${key}`);
+        router.push(`/?view=${key}`);
       }
     },
     [categories, router]
@@ -154,7 +155,7 @@ export function CreateConversationView({
             });
 
             setIsLoading(false);
-            router.push('/dashboard/editor');
+            router.push('/editor');
             return true; // early exit
           }
 
@@ -260,36 +261,13 @@ export function CreateConversationView({
             </div>
           )}
           {messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div
-                className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                  msg.role === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-md'
-                    : 'bg-gray-100 text-gray-800 rounded-bl-md'
-                }`}
-              >
-                {msg.content}
-              </div>
-            </div>
+            <ChatMessageBubble key={msg.id} role={msg.role} content={msg.content} />
           ))}
-          {/* Streaming content - show in real-time */}
           {streamingContent && (
-            <div className="flex justify-start">
-              <div className="max-w-[80%] bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md px-4 py-3 text-sm leading-relaxed">
-                {streamingContent}
-              </div>
-            </div>
+            <ChatMessageBubble role="assistant" content={streamingContent} isStreaming />
           )}
-          {/* Loading indicator - only show when no streaming content yet */}
           {isLoading && !streamingContent && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 text-gray-800 rounded-2xl rounded-bl-md px-4 py-3 text-sm">
-                <span className="animate-pulse">{t('thinking')}</span>
-              </div>
-            </div>
+            <ChatMessageBubble role="assistant" content="" isLoading loadingText={t('thinking')} />
           )}
         </div>
 

@@ -22,7 +22,7 @@ export function HistoryCard({ doc }: HistoryCardProps) {
 
   const handleOpen = () => {
     setPendingEditorContent(doc.content);
-    window.location.href = '/dashboard/editor';
+    window.location.href = '/editor';
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

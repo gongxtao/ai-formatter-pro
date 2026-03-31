@@ -49,7 +49,7 @@ export function getDefaultModel(): string {
   if (isOpenAIDirectMode()) {
     return getOpenAIModel();
   }
-  return 'openai/gpt-4o';
+  return 'kimi-k2.5';
 }
 
 /**

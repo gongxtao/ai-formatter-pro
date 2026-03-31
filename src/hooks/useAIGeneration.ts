@@ -44,12 +44,12 @@ export function useAIGeneration() {
               throw new Error(event.data || 'Unknown error');
             case 'clarification_needed':
               if (event.conversationId) {
-                router.push(`/dashboard/create?conversationId=${event.conversationId}&message=${encodeURIComponent(params.prompt)}`);
+                router.push(`/create?conversationId=${event.conversationId}&message=${encodeURIComponent(params.prompt)}`);
                 return true;
               }
               if (event.sessionId) {
                 setGenerationSessionId(event.sessionId);
-                router.push(`/dashboard/create?sessionId=${event.sessionId}&message=${encodeURIComponent(params.prompt)}`);
+                router.push(`/create?sessionId=${event.sessionId}&message=${encodeURIComponent(params.prompt)}`);
                 return true;
               }
               console.error('[useAIGeneration] clarification_needed event missing conversationId/sessionId');
@@ -62,7 +62,7 @@ export function useAIGeneration() {
                   templateId: event.templateId ?? null,
                   shouldAutoGenerate: true,
                 });
-                router.push('/dashboard/editor');
+                router.push('/editor');
                 return true;
               }
               console.error('[useAIGeneration] ready_to_generate event missing required fields');

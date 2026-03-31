@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { TemplateFilterBar } from './TemplateFilterBar';
@@ -28,7 +28,7 @@ export function TemplatesView() {
     }
     // Navigate to document view (expanded sidebar with categories)
     setActiveNav('document');
-    router.push('/dashboard');
+    router.push('/');
   }, [currentCategory, activeDocType, setActiveDocType, setActiveNav, router]);
 
   return (

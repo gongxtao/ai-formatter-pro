@@ -10,6 +10,8 @@ import type { ExportFormat } from '@/lib/export/types';
 interface ExportDropdownProps {
   docTitle: string;
   disabled?: boolean;
+  /** Called before export to flush any pending content (e.g. iframe debounce) */
+  onBeforeExport?: () => void;
 }
 
 const formats: { key: ExportFormat; label: string; color: string }[] = [
@@ -18,11 +20,10 @@ const formats: { key: ExportFormat; label: string; color: string }[] = [
   { key: 'html', label: 'HTML', color: 'text-orange-500' },
 ];
 
-export function ExportDropdown({ docTitle, disabled = false }: ExportDropdownProps) {
+export function ExportDropdown({ docTitle, disabled = false, onBeforeExport }: ExportDropdownProps) {
   const t = useTranslations('editor');
   const th = useTranslations('history');
   const { isExporting, exportDocument } = useExport();
-  const currentEditorHtml = useDashboardStore((s) => s.currentEditorHtml);
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -45,15 +46,24 @@ export function ExportDropdown({ docTitle, disabled = false }: ExportDropdownPro
     setIsOpen(false);
     setActiveIndex(-1);
 
+    // Flush any pending debounced iframe content before reading
+    onBeforeExport?.();
+    const html = useDashboardStore.getState().currentEditorHtml;
+
+    if (!html.trim()) {
+      toast(th('exportFailed', { error: 'No content' }), 'error', 3000);
+      return;
+    }
+
     if (format === 'docx') {
       toast(th('docxImageWarning'), 'info', 3000);
     }
 
-    const result = await exportDocument(format, docTitle, currentEditorHtml);
+    const result = await exportDocument(format, docTitle, html);
     if (!result.success) {
       toast(th('exportFailed', { error: result.error || 'Unknown error' }), 'error', 3000);
     }
-  }, [docTitle, currentEditorHtml, exportDocument, toast, th]);
+  }, [docTitle, exportDocument, toast, th, onBeforeExport]);
 
   handleExportRef.current = handleExport;
 

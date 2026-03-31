@@ -72,7 +72,7 @@ export function AIClarifyChat({ sessionId }: AIClarifyChatProps) {
         setPendingEditorContent(data.html);
 
         setTimeout(() => {
-          router.push('/dashboard/editor');
+          router.push('/editor');
         }, 500);
       } else if (data.type === 'continue') {
         // Need more information

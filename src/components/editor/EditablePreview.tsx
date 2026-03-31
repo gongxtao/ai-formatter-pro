@@ -118,6 +118,8 @@ export interface EditablePreviewProps {
 export interface EditablePreviewRef {
   insertFloatingImage: (imageUrl: string) => void
   getIframeRef: () => React.RefObject<HTMLIFrameElement>
+  /** Force-flush pending debounced content to the store */
+  flushContent: () => void
 }
 
 export type { FloatingImageItem } from './FloatingImageLayer'
@@ -775,8 +777,9 @@ const EditablePreviewWithRef = function EditablePreview({
   // Expose insertFloatingImage method to parent components via previewRef
   useImperativeHandle(externalPreviewRef, () => ({
     insertFloatingImage: handleInsertFloatingImage,
-    getIframeRef: () => iframeRef
-  }), [handleInsertFloatingImage, iframeRef])
+    getIframeRef: () => iframeRef,
+    flushContent: syncLatestContent
+  }), [handleInsertFloatingImage, iframeRef, syncLatestContent])
 
   // Notify parent when iframe ref is ready
   useEffect(() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { DocumentCategoryList } from './DocumentCategoryList';
 
@@ -21,7 +21,7 @@ export function DocTypesOverlay() {
 
     // 如果选择了不同的类别，导航到 dashboard 页面
     if (isDifferentCategory) {
-      router.push('/dashboard');
+      router.push('/');
     }
   };
 

@@ -13,6 +13,8 @@ interface EditorToolbarBarProps {
   handleSave: () => void;
   editorToolbar: React.ReactNode;
   isGenerating?: boolean;
+  /** Flush iframe content before export */
+  onBeforeExport?: () => void;
 }
 
 export function EditorToolbarBar({
@@ -25,6 +27,7 @@ export function EditorToolbarBar({
   handleSave,
   editorToolbar,
   isGenerating = false,
+  onBeforeExport,
 }: EditorToolbarBarProps) {
   const t = useTranslations('editor');
   const th = useTranslations('history');
@@ -86,7 +89,7 @@ export function EditorToolbarBar({
             )}
             {t('save')}
           </button>
-          <ExportDropdown docTitle={docTitle || t('untitled')} disabled={isGenerating} />
+          <ExportDropdown docTitle={docTitle || t('untitled')} disabled={isGenerating} onBeforeExport={onBeforeExport} />
         </div>
       </header>
 

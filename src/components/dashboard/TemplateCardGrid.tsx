@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useTemplatesStore } from '@/stores/useTemplatesStore';
@@ -55,7 +55,7 @@ export function TemplateCardGrid() {
   const handleCardClick = useCallback((templateId: string) => {
     setSelectedTemplateId(templateId);
     setEditorView('editor');
-    router.push('/dashboard/editor');
+    router.push('/editor');
   }, [setSelectedTemplateId, setEditorView, router]);
 
   const shuffleCards = useCallback(() => {
