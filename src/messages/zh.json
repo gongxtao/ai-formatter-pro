@@ -124,7 +124,7 @@
     "signUp": "注册",
     "searchPlaceholder": "你想创建什么？",
     "templateSearchPlaceholder": "搜索模板...",
-    "heroTitle": "免费 AI {docType}",
+    "heroTitle": "免费生成 {docType} 文档",
     "heroDescription": "通过文本或语音提示，我们的 AI 即时生成可编辑的 {docTypeLower}。无需注册即可创建专业提案。免费、快速、在线。",
     "chatTopicTag": "创建一份 {docTypeLower}，用于",
     "topic": "主题",
