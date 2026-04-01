@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useTranslations } from 'next-intl';
 import { ExportDropdown } from './ExportDropdown';
 
@@ -19,7 +20,7 @@ interface EditorToolbarBarProps {
   getIframeElement?: () => HTMLIFrameElement | null;
 }
 
-export function EditorToolbarBar({
+const EditorToolbarBarInner = ({
   editorView,
   onBackToTemplates,
   onBackToEditor,
@@ -31,11 +32,10 @@ export function EditorToolbarBar({
   isGenerating = false,
   onBeforeExport,
   getIframeElement,
-}: EditorToolbarBarProps) {
+}: EditorToolbarBarProps) => {
   const t = useTranslations('editor');
-  const th = useTranslations('history');
 
-  // 模板视图：只显示返回编辑器按钮
+  // Templates view: only show back-to-editor button
   if (editorView === 'templates') {
     return (
       <div className="h-[50px] border-b border-gray-100 flex items-center px-6 flex-shrink-0 bg-white">
@@ -52,7 +52,7 @@ export function EditorToolbarBar({
     );
   }
 
-  // 编辑器视图：两行工具栏
+  // Editor view: two-row toolbar
   return (
     <div className="flex flex-col bg-white border-b border-gray-200 shrink-0">
       {/* First row: Back & Actions */}
@@ -104,4 +104,6 @@ export function EditorToolbarBar({
       )}
     </div>
   );
-}
+};
+
+export const EditorToolbarBar = React.memo(EditorToolbarBarInner);
