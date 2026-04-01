@@ -11,13 +11,18 @@ export const maxDuration = 60;
 const PRINT_CSS = `
   @page {
     size: A4;
-    margin: 15mm;
+    margin: 0;
   }
   html, body {
-    margin: 0;
+    width: 210mm;
+    margin: 0 auto;
     padding: 0;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+  }
+  body {
+    padding: 15mm;
+    box-sizing: border-box;
   }
   /* Match editor iframe: reset block margins so template controls spacing */
   body p, body div, body h1, body h2, body h3, body h4, body h5, body h6, body blockquote {
@@ -116,9 +121,10 @@ export async function POST(request: NextRequest) {
       });
 
       // Generate vector PDF via Chromium's built-in PDF renderer
+      // Margins handled by CSS (body padding 15mm), not Puppeteer — avoids double-stacking
       const pdfBuffer = await page.pdf({
         format: 'A4',
-        margin: { top: '15mm', right: '15mm', bottom: '15mm', left: '15mm' },
+        margin: { top: '0', right: '0', bottom: '0', left: '0' },
         printBackground: true,
         preferCSSPageSize: true,
       });
