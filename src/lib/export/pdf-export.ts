@@ -60,13 +60,9 @@ async function exportViaPrint(
 <title>${title}</title>
 <style>
   @page { size: A4; margin: 15mm; }
-  html, body { margin: 0; padding: 0; }
-  body {
-    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", "Segoe UI", Tahoma, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  html, body { margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body p, body div, body h1, body h2, body h3, body h4, body h5, body h6, body blockquote {
+    margin: 0;
   }
   img { max-width: 100%; }
   table { border-collapse: collapse; width: 100%; }
