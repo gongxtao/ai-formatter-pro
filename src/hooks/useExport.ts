@@ -8,7 +8,7 @@ import type { ExportFormat, ExportResult } from '@/lib/export/types';
 
 const exporters: Record<
   ExportFormat,
-  (options: { title: string; content: string }) => Promise<ExportResult>
+  (options: { title: string; content: string; iframeElement?: HTMLIFrameElement }) => Promise<ExportResult>
 > = {
   pdf: (opts) => exportPdf({ ...opts, format: 'pdf' }),
   docx: (opts) => exportDocx({ ...opts, format: 'docx' }),
@@ -19,13 +19,18 @@ export function useExport() {
   const [isExporting, setIsExporting] = useState(false);
 
   const exportDocument = useCallback(
-    async (format: ExportFormat, title: string, content: string): Promise<ExportResult> => {
+    async (
+      format: ExportFormat,
+      title: string,
+      content: string,
+      iframeElement?: HTMLIFrameElement,
+    ): Promise<ExportResult> => {
       if (!content.trim()) {
         return { success: false, filename: '', format, error: 'No content to export' };
       }
       setIsExporting(true);
       try {
-        const result = await exporters[format]({ title, content });
+        const result = await exporters[format]({ title, content, iframeElement });
         return result;
       } finally {
         setIsExporting(false);

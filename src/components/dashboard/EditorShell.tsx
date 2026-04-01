@@ -241,6 +241,7 @@ export function EditorShell() {
           editorToolbar={editorToolbar}
           isGenerating={showGeneratingState}
           onBeforeExport={() => previewRef.current?.flushContent?.()}
+          getIframeElement={() => previewRef.current?.getIframeRef?.()?.current ?? null}
         />
 
         {editorView === 'templates' ? (

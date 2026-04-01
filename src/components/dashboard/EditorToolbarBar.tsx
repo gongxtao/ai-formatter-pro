@@ -15,6 +15,8 @@ interface EditorToolbarBarProps {
   isGenerating?: boolean;
   /** Flush iframe content before export */
   onBeforeExport?: () => void;
+  /** Returns the editor iframe element for WYSIWYG PDF export */
+  getIframeElement?: () => HTMLIFrameElement | null;
 }
 
 export function EditorToolbarBar({
@@ -28,6 +30,7 @@ export function EditorToolbarBar({
   editorToolbar,
   isGenerating = false,
   onBeforeExport,
+  getIframeElement,
 }: EditorToolbarBarProps) {
   const t = useTranslations('editor');
   const th = useTranslations('history');
@@ -89,7 +92,7 @@ export function EditorToolbarBar({
             )}
             {t('save')}
           </button>
-          <ExportDropdown docTitle={docTitle || t('untitled')} disabled={isGenerating} onBeforeExport={onBeforeExport} />
+          <ExportDropdown docTitle={docTitle || t('untitled')} disabled={isGenerating} onBeforeExport={onBeforeExport} getIframeElement={getIframeElement} />
         </div>
       </header>
 

@@ -97,7 +97,7 @@ test('PDF export produces non-blank PDF with realistic content', async ({ page }
     try { const d = JSON.parse(s.textContent); return d.done === true || !!d.error; } catch { return false; }
   }, { timeout: 60000 });
 
-  const result = await page.evaluate(() => JSON.parse(document.getElementById('status').textContent));
+  const result = await page.evaluate(() => JSON.parse(document.getElementById('status')!.textContent!));
   console.log('PDF export test:', JSON.stringify(result));
 
   expect(result.error).toBeUndefined();

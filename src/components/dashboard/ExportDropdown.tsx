@@ -12,6 +12,8 @@ interface ExportDropdownProps {
   disabled?: boolean;
   /** Called before export to flush any pending content (e.g. iframe debounce) */
   onBeforeExport?: () => void;
+  /** Returns the editor iframe element for WYSIWYG PDF export */
+  getIframeElement?: () => HTMLIFrameElement | null;
 }
 
 const formats: { key: ExportFormat; label: string; color: string }[] = [
@@ -20,7 +22,7 @@ const formats: { key: ExportFormat; label: string; color: string }[] = [
   { key: 'html', label: 'HTML', color: 'text-orange-500' },
 ];
 
-export function ExportDropdown({ docTitle, disabled = false, onBeforeExport }: ExportDropdownProps) {
+export function ExportDropdown({ docTitle, disabled = false, onBeforeExport, getIframeElement }: ExportDropdownProps) {
   const t = useTranslations('editor');
   const th = useTranslations('history');
   const { isExporting, exportDocument } = useExport();
@@ -59,11 +61,13 @@ export function ExportDropdown({ docTitle, disabled = false, onBeforeExport }: E
       toast(th('docxImageWarning'), 'info', 3000);
     }
 
-    const result = await exportDocument(format, docTitle, html);
+    // For PDF, pass the iframe element for true WYSIWYG rendering
+    const iframeEl = format === 'pdf' ? getIframeElement?.() ?? undefined : undefined;
+    const result = await exportDocument(format, docTitle, html, iframeEl);
     if (!result.success) {
       toast(th('exportFailed', { error: result.error || 'Unknown error' }), 'error', 3000);
     }
-  }, [docTitle, exportDocument, toast, th, onBeforeExport]);
+  }, [docTitle, exportDocument, toast, th, onBeforeExport, getIframeElement]);
 
   handleExportRef.current = handleExport;
 
