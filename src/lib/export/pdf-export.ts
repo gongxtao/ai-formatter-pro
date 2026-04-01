@@ -22,12 +22,10 @@ export async function exportPdf(options: ExportOptions): Promise<ExportResult> {
     container.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
     container.style.lineHeight = '1.6';
     container.style.color = '#333';
-    container.style.position = 'fixed';
-    container.style.left = '0';
+    container.style.position = 'absolute';
+    container.style.left = '-9999px';
     container.style.top = '0';
     container.style.background = 'white';
-    container.style.zIndex = '-9999';
-    container.style.visibility = 'hidden';
 
     document.body.appendChild(container);
 
