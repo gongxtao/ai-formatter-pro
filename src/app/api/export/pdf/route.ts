@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
         : `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${PRINT_CSS}</style></head><body>${html}</body></html>`;
 
       await page.setContent(fullHtml, {
-        waitUntil: 'networkidle0',
+        waitUntil: 'domcontentloaded',
         timeout: 15000,
       });
 
