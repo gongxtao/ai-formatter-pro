@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect, useMemo, type RefObject } from 'react';
+import React, { useState, useCallback, useRef, useEffect, useMemo, type RefObject } from 'react';
 import { useRouter } from '@/i18n/navigation';
 import { useDashboardStore } from '@/stores/useDashboardStore';
 import { useTranslations } from 'next-intl';
@@ -9,15 +9,39 @@ import { AIChatSidebar } from './AIChatSidebar';
 import { DocTypesOverlay } from './DocTypesOverlay';
 import { EditorToolbarBar } from './EditorToolbarBar';
 import { EditorTemplatesGrid } from './EditorTemplatesGrid';
-import EditablePreview from '@/components/editor/EditablePreview';
+import { EditorContentArea } from './EditorContentArea';
 import EditorToolbar from '@/components/editor/EditorToolbar';
 import type { NavItem } from '@/types/dashboard';
-import type { FloatingImageItem } from '@/components/editor/FloatingImageLayer';
 import type { EditablePreviewRef } from '@/components/editor/EditablePreview';
 import { createAutoSave, saveToLocalStorage } from '@/lib/editor-auto-save';
 import { useTemplates } from '@/hooks/useTemplates';
 import { useEditorSave } from '@/hooks/useEditorSave';
 import { useTemplateLoader } from '@/hooks/useTemplateLoader';
+
+// Step 5: React.memo wrapper for EditorToolbar — prevents re-renders when parent re-renders
+// but toolbar props haven't changed (iframeRef, onContentChange, disabled are all stable)
+const MemoizedEditorToolbar = React.memo(function MemoizedEditorToolbar({
+  iframeRef,
+  onContentChange,
+  disabled,
+  onFloatingImageInsert,
+}: {
+  iframeRef: RefObject<HTMLIFrameElement>;
+  onContentChange: (content: string) => void;
+  disabled: boolean;
+  onFloatingImageInsert: (url: string) => void;
+}) {
+  return (
+    <EditorToolbar
+      iframeRef={iframeRef}
+      onContentChange={onContentChange}
+      isEditing={true}
+      disabled={disabled}
+      onFloatingImageInsert={onFloatingImageInsert}
+      refreshToken={0}
+    />
+  );
+});
 
 /**
  * EditorShell - Main editor layout component
@@ -35,28 +59,30 @@ import { useTemplateLoader } from '@/hooks/useTemplateLoader';
  * NOT responsible for:
  * - Conversation loading (handled by AIChatSidebar via useEditorInit)
  * - Auto-generation triggering (handled by AIChatSidebar via useEditorInit)
+ * - Content subscription (handled by EditorContentArea to isolate re-renders)
  */
 export function EditorShell() {
   const router = useRouter();
   const t = useTranslations('editor');
 
-  // Read-only selectors
+  // Read-only selectors (currentEditorHtml removed — subscribed in EditorContentArea)
   const editorView = useDashboardStore((s) => s.editorView);
   const showDocTypesOverlay = useDashboardStore((s) => s.showDocTypesOverlay);
-  const currentEditorHtml = useDashboardStore((s) => s.currentEditorHtml);
   const pendingEditorContent = useDashboardStore((s) => s.pendingEditorContent);
   const isGenerating = useDashboardStore((s) => s.isGenerating);
   const isAutoGenerating = useDashboardStore((s) => s.isAutoGenerating);
   const isTemplateLoading = useDashboardStore((s) => s.isTemplateLoading);
+  const conversationId = useDashboardStore((s) => s.generateParams.conversationId);
 
   // Refs
   const lastConversationRef = useRef<string | null>(null);
   const previewRef = useRef<EditablePreviewRef | null>(null);
   const autoSaveRef = useRef(createAutoSave(saveToLocalStorage, 5000));
+  const iframeRef = useRef<RefObject<HTMLIFrameElement> | null>(null);
 
   // Local state
-  const [floatingImages, setFloatingImages] = useState<FloatingImageItem[]>([]);
-  const [iframeRef, setIframeRef] = useState<RefObject<HTMLIFrameElement> | null>(null);
+  const [iframeReady, setIframeReady] = useState(0);
+  const [hasContent, setHasContent] = useState(false);
 
   // Extracted hooks
   const { docTitle, setDocTitle, isSaving, showSavedIcon, handleSave } = useEditorSave({ previewRef });
@@ -96,6 +122,7 @@ export function EditorShell() {
         case 'document':
           dashStore.setActiveNav('document');
           dashStore.toggleDocTypesOverlay();
+          dashStore.setEditorView('editor');
           break;
         case 'templates':
           dashStore.setActiveNav('templates');
@@ -106,7 +133,6 @@ export function EditorShell() {
           router.push('/');
           break;
       }
-      useDashboardStore.getState().setEditorView('editor');
     },
     [router],
   );
@@ -119,38 +145,42 @@ export function EditorShell() {
     useDashboardStore.getState().setEditorView('editor');
   }, []);
 
-  // Content change handler — single source of truth via store
+  // Content change handler — updates store + tracks hasContent for toolbar state
   const handleContentChange = useCallback((newContent: string) => {
     useDashboardStore.getState().setCurrentEditorHtml(newContent);
     autoSaveRef.current.schedule(newContent);
+    setHasContent(!!newContent);
   }, []);
 
-  // Receive iframe ref from A4PageCanvas
+  // Receive iframe ref from EditablePreview
   const handleIframeReady = useCallback((ref: RefObject<HTMLIFrameElement>) => {
     if (ref && ref.current) {
-      setIframeRef(ref);
+      iframeRef.current = ref;
+      setIframeReady((n) => n + 1);
     }
   }, []);
 
   // Consume pending content from generation or chat insert
+  // (Step 6: destructured store actions for clarity)
   useEffect(() => {
     if (pendingEditorContent) {
-      const dashStore = useDashboardStore.getState();
-      dashStore.setCurrentEditorHtml(pendingEditorContent);
+      const { setCurrentEditorHtml, setPendingEditorContent } = useDashboardStore.getState();
+      setCurrentEditorHtml(pendingEditorContent);
       autoSaveRef.current.schedule(pendingEditorContent);
-      dashStore.setPendingEditorContent(null);
+      setPendingEditorContent(null);
+      setHasContent(!!pendingEditorContent);
     }
   }, [pendingEditorContent]);
 
-  // Clear editor when navigating to a new conversation (store-driven)
+  // Clear editor when navigating to a new conversation
   useEffect(() => {
-    const store = useDashboardStore.getState();
-    const convId = store.generateParams.conversationId;
-    if (convId && convId !== lastConversationRef.current) {
-      lastConversationRef.current = convId;
-      store.setCurrentEditorHtml('');
+    if (conversationId && conversationId !== lastConversationRef.current) {
+      lastConversationRef.current = conversationId;
+      autoSaveRef.current.cancel();
+      useDashboardStore.getState().setCurrentEditorHtml('');
+      setHasContent(false);
     }
-  }, []);
+  }, [conversationId]);
 
   // Combined generating state for UI
   const showGeneratingState = isGenerating || isAutoGenerating;
@@ -164,10 +194,9 @@ export function EditorShell() {
     return previewRef.current?.getIframeRef?.()?.current ?? null;
   }, []);
 
-  // Memoized editor toolbar — only recreates when iframeRef or hasContent changes
-  const hasContent = !!currentEditorHtml;
+  // Memoized editor toolbar — uses React.memo child + useMemo for slot stability
   const editorToolbar = useMemo(() => {
-    if (!iframeRef) {
+    if (!iframeRef.current) {
       return (
         <div className="flex items-center justify-center h-10 text-gray-400 text-xs">
           Loading editor...
@@ -175,16 +204,14 @@ export function EditorShell() {
       );
     }
     return (
-      <EditorToolbar
-        iframeRef={iframeRef}
+      <MemoizedEditorToolbar
+        iframeRef={iframeRef.current}
         onContentChange={handleContentChange}
-        isEditing={true}
         disabled={!hasContent}
         onFloatingImageInsert={(url) => previewRef.current?.insertFloatingImage(url)}
-        refreshToken={0}
       />
     );
-  }, [iframeRef, handleContentChange, hasContent]);
+  }, [iframeReady, handleContentChange, hasContent]);
 
   return (
     <div className="flex h-screen w-full max-w-[1920px] mx-auto">
@@ -217,29 +244,13 @@ export function EditorShell() {
         {editorView === 'templates' ? (
           <EditorTemplatesGrid />
         ) : (
-          <div className="relative flex-1">
-            {isTemplateLoading && (
-              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                  <span className="text-sm text-gray-600">{t('loadingTemplate')}</span>
-                </div>
-              </div>
-            )}
-            <EditablePreview
-              selectedFile="editor"
-              content={currentEditorHtml}
-              onContentChange={handleContentChange}
-              floatingImages={floatingImages}
-              onFloatingImagesChange={setFloatingImages}
-              isGenerating={showGeneratingState}
-              initialEditing
-              hideControls
-              hideToolbar
-              previewRef={previewRef}
-              onIframeReady={handleIframeReady}
-            />
-          </div>
+          <EditorContentArea
+            isTemplateLoading={isTemplateLoading}
+            isGenerating={showGeneratingState}
+            previewRef={previewRef}
+            onContentChange={handleContentChange}
+            onIframeReady={handleIframeReady}
+          />
         )}
       </main>
     </div>

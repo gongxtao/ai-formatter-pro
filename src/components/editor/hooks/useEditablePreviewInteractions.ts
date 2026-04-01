@@ -133,6 +133,10 @@ export const useEditablePreviewInteractions = ({
           node = node.parentElement
         }
         const element = node as HTMLElement
+        if (typeof element.closest !== 'function') {
+          setActiveTable(null)
+          return
+        }
         const table = element.closest('table')
         if (table) {
           setActiveTable(table as HTMLTableElement)
