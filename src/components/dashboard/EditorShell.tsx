@@ -78,10 +78,9 @@ export function EditorShell() {
   const lastConversationRef = useRef<string | null>(null);
   const previewRef = useRef<EditablePreviewRef | null>(null);
   const autoSaveRef = useRef(createAutoSave(saveToLocalStorage, 5000));
-  const iframeRef = useRef<RefObject<HTMLIFrameElement> | null>(null);
-
-  // Local state
-  const [iframeReady, setIframeReady] = useState(0);
+  // iframeRef stored as state so it's safe to read during render (useMemo)
+  // — avoids "Cannot access refs during render" lint error from React 19
+  const [iframeRefObj, setIframeRefObj] = useState<RefObject<HTMLIFrameElement> | null>(null);
   const [hasContent, setHasContent] = useState(false);
 
   // Extracted hooks
@@ -155,8 +154,7 @@ export function EditorShell() {
   // Receive iframe ref from EditablePreview
   const handleIframeReady = useCallback((ref: RefObject<HTMLIFrameElement>) => {
     if (ref && ref.current) {
-      iframeRef.current = ref;
-      setIframeReady((n) => n + 1);
+      setIframeRefObj(ref);
     }
   }, []);
 
@@ -194,9 +192,9 @@ export function EditorShell() {
     return previewRef.current?.getIframeRef?.()?.current ?? null;
   }, []);
 
-  // Memoized editor toolbar — uses React.memo child + useMemo for slot stability
+  // Memoized editor toolbar — iframeRefObj is state (safe to read in useMemo)
   const editorToolbar = useMemo(() => {
-    if (!iframeRef.current) {
+    if (!iframeRefObj) {
       return (
         <div className="flex items-center justify-center h-10 text-gray-400 text-xs">
           Loading editor...
@@ -205,13 +203,13 @@ export function EditorShell() {
     }
     return (
       <MemoizedEditorToolbar
-        iframeRef={iframeRef.current}
+        iframeRef={iframeRefObj}
         onContentChange={handleContentChange}
         disabled={!hasContent}
         onFloatingImageInsert={(url) => previewRef.current?.insertFloatingImage(url)}
       />
     );
-  }, [iframeReady, handleContentChange, hasContent]);
+  }, [iframeRefObj, handleContentChange, hasContent]);
 
   return (
     <div className="flex h-screen w-full max-w-[1920px] mx-auto">
