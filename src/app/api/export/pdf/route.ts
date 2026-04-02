@@ -21,6 +21,7 @@ const PRINT_CSS = `
     print-color-adjust: exact;
   }
   body {
+    background-color: white;
     padding: 15mm;
     box-sizing: border-box;
   }
@@ -110,10 +111,22 @@ export async function POST(request: NextRequest) {
     try {
       const page = await browser.newPage();
 
-      // Build complete HTML document with print styles
-      const fullHtml = html.includes('<html')
-        ? html
-        : `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${PRINT_CSS}</style></head><body>${html}</body></html>`;
+      // Build complete HTML document with print styles — always inject PRINT_CSS
+      const printStyleTag = `<style>${PRINT_CSS}</style>`;
+      let fullHtml: string;
+      if (html.includes('<html')) {
+        // HTML is a full document — inject PRINT_CSS into <head>
+        const headIdx = html.indexOf('<head');
+        if (headIdx !== -1) {
+          const closeIdx = html.indexOf('>', headIdx);
+          fullHtml = html.slice(0, closeIdx + 1) + printStyleTag + html.slice(closeIdx + 1);
+        } else {
+          // No <head> — prepend before body
+          fullHtml = html.replace(/<body/i, `${printStyleTag}<body`);
+        }
+      } else {
+        fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">${printStyleTag}</head><body>${html}</body></html>`;
+      }
 
       await page.setContent(fullHtml, {
         waitUntil: 'domcontentloaded',
