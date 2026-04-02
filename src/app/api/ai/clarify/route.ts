@@ -40,7 +40,7 @@ User: "帮我写个东西" → "你想创建什么类型的文档？我可以帮
 export async function POST(request: NextRequest) {
   // Rate limiting
   const rateLimitResponse = applyRateLimit(request, { maxRequests: 30, windowMs: 60_000 });
-  if (rateLimitResponse) return rateLimitResponse as any;
+  if (rateLimitResponse) return rateLimitResponse;
 
   try {
     const body = await request.json();
