@@ -81,7 +81,8 @@ export function EditorShell() {
   // iframeRef stored as state so it's safe to read during render (useMemo)
   // — avoids "Cannot access refs during render" lint error from React 19
   const [iframeRefObj, setIframeRefObj] = useState<RefObject<HTMLIFrameElement> | null>(null);
-  const [hasContent, setHasContent] = useState(false);
+  // Derived from store — avoids setState in effects (React 19 cascading-render warning)
+  const hasContent = useDashboardStore((s) => !!s.currentEditorHtml);
 
   // Extracted hooks
   const { docTitle, setDocTitle, isSaving, showSavedIcon, handleSave } = useEditorSave({ previewRef });
@@ -144,11 +145,10 @@ export function EditorShell() {
     useDashboardStore.getState().setEditorView('editor');
   }, []);
 
-  // Content change handler — updates store + tracks hasContent for toolbar state
+  // Content change handler — updates store + schedules auto-save
   const handleContentChange = useCallback((newContent: string) => {
     useDashboardStore.getState().setCurrentEditorHtml(newContent);
     autoSaveRef.current.schedule(newContent);
-    setHasContent(!!newContent);
   }, []);
 
   // Receive iframe ref from EditablePreview
@@ -166,7 +166,6 @@ export function EditorShell() {
       setCurrentEditorHtml(pendingEditorContent);
       autoSaveRef.current.schedule(pendingEditorContent);
       setPendingEditorContent(null);
-      setHasContent(!!pendingEditorContent);
     }
   }, [pendingEditorContent]);
 
@@ -176,7 +175,6 @@ export function EditorShell() {
       lastConversationRef.current = conversationId;
       autoSaveRef.current.cancel();
       useDashboardStore.getState().setCurrentEditorHtml('');
-      setHasContent(false);
     }
   }, [conversationId]);
 
