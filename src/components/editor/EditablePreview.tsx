@@ -1013,7 +1013,7 @@ const EditablePreviewWithRef = function EditablePreview({
 
       {/* Editable Preview Area */}
       <div
-        className="flex-1 overflow-y-auto bg-gray-50 p-4 relative"
+        className="flex-1 overflow-y-auto bg-gray-50 p-8 relative"
         onMouseDown={(e) => {
           // Clear selection when clicking on the gray background area
           if (isEditing && e.target === e.currentTarget) {
