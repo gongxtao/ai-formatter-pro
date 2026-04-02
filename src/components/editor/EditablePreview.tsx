@@ -908,7 +908,7 @@ const EditablePreviewWithRef = function EditablePreview({
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full">
       {/* Control Buttons - only show if not hidden */}
       {!hideControls && (
         <div className="flex items-center bg-white border-b border-neutral-200 px-6 py-3">
@@ -1023,7 +1023,8 @@ const EditablePreviewWithRef = function EditablePreview({
       >
         {selectedFile ? (
           <div
-            className="max-w-5xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden relative"
+            className="mx-auto bg-white shadow-sm overflow-hidden relative"
+            style={{ width: '210mm' }}
             ref={previewContainerRef}
             onMouseDown={(e) => {
               // Also clear when clicking on the paper margin (if any)
@@ -1047,7 +1048,8 @@ const EditablePreviewWithRef = function EditablePreview({
             <iframe
               key={previewKey}
               ref={iframeRef}
-              className="w-full h-full min-h-[800px] border-0"
+              className="w-full border-0"
+              style={{ minHeight: '297mm' }}
               title="Editable Preview"
               sandbox="allow-same-origin allow-modals"
             />

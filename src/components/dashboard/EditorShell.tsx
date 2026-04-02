@@ -222,7 +222,7 @@ export function EditorShell() {
       </aside>
 
       {/* Main area */}
-      <main className="flex-1 min-w-0 bg-[#F3F4F6] h-screen flex flex-col">
+      <main className="flex-1 min-w-0 h-screen flex flex-col">
         <EditorToolbarBar
           editorView={editorView}
           onBackToTemplates={handleBackToTemplates}
