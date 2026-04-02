@@ -908,7 +908,7 @@ const EditablePreviewWithRef = function EditablePreview({
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Control Buttons - only show if not hidden */}
       {!hideControls && (
         <div className="flex items-center bg-white border-b border-neutral-200 px-6 py-3">

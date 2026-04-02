@@ -35,7 +35,7 @@ export function EditorContentArea({
   const [floatingImages, setFloatingImages] = useState<FloatingImageItem[]>([]);
 
   return (
-    <div className="relative flex-1">
+    <div className="relative flex-1 min-h-0">
       {isTemplateLoading && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
