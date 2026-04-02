@@ -16,8 +16,6 @@ import { TableHandler } from './utils/table'
 const EDITOR_STYLE_CSS = `
   html, body {
     min-height: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
     overflow-wrap: break-word;
     word-wrap: break-word;
   }
@@ -1015,7 +1013,7 @@ const EditablePreviewWithRef = function EditablePreview({
 
       {/* Editable Preview Area */}
       <div
-        className="flex-1 overflow-y-auto overflow-x-hidden bg-gray-50 p-4 relative"
+        className="flex-1 overflow-y-auto bg-gray-50 p-4 relative"
         onMouseDown={(e) => {
           // Clear selection when clicking on the gray background area
           if (isEditing && e.target === e.currentTarget) {
@@ -1027,8 +1025,8 @@ const EditablePreviewWithRef = function EditablePreview({
       >
         {selectedFile ? (
           <div
-            className="mx-auto bg-white shadow-sm overflow-hidden relative w-full"
-            style={{ maxWidth: '210mm' }}
+            className="mx-auto bg-white shadow-sm relative"
+            style={{ width: '210mm', maxWidth: '100%' }}
             ref={previewContainerRef}
             onMouseDown={(e) => {
               // Also clear when clicking on the paper margin (if any)
